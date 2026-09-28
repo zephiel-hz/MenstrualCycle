@@ -28,7 +28,6 @@ interface SettingsViewProps {
     reminderPeriod: boolean;
     reminderLogging: boolean;
     reminderSymptoms: boolean;
-    reminderPms?: boolean;
     cycleLengthDefault: number;
     periodDurationDefault: number;
   };
@@ -48,7 +47,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const [reminderPeriod, setReminderPeriod] = useState(initialSettings.reminderPeriod);
   const [reminderLogging, setReminderLogging] = useState(initialSettings.reminderLogging);
   const [reminderSymptoms, setReminderSymptoms] = useState(initialSettings.reminderSymptoms);
-  const [reminderPms, setReminderPms] = useState(initialSettings.reminderPms ?? true);
   const [cycleLengthDefault, setCycleLengthDefault] = useState(
     initialSettings.cycleLengthDefault || 28
   );
@@ -213,7 +211,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       setSettingsMsg(null);
 
       if (
-        (reminderPeriod || reminderLogging || reminderSymptoms || reminderPms) &&
+        (reminderPeriod || reminderLogging || reminderSymptoms) &&
         typeof window !== "undefined" &&
         "Notification" in window &&
         Notification.permission === "default"
@@ -229,7 +227,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           reminderPeriod,
           reminderLogging,
           reminderSymptoms,
-          reminderPms,
           cycleLengthDefault,
           periodDurationDefault,
         }),
@@ -346,7 +343,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             ) : !canPromptPwa && (
               <div className="p-3.5 rounded-xl bg-[#FAF8F5] border border-[#E8E0D5] text-[11px] space-y-1">
                 <p className="font-semibold text-[#2D2727]">Cara Pasang Manual di Chrome / Edge / Android:</p>
-                <p>Ketuk menu <strong>titik tiga (⋮)</strong> di kanan atas browser $ightarrow$ Pilih <strong>&quot;Instal Aplikasi&quot;</strong> atau <strong>&quot;Tambahkan ke Layar Utama&quot;</strong>.</p>
+                <p>Ketuk menu <strong>titik tiga (⋮)</strong> di kanan atas browser $
+ightarrow$ Pilih <strong>&quot;Instal Aplikasi&quot;</strong> atau <strong>&quot;Tambahkan ke Layar Utama&quot;</strong>.</p>
               </div>
             )}
           </div>
@@ -509,18 +507,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 className="w-4 h-4 rounded text-[#E07A5F] focus:ring-[#E07A5F]"
               />
               <span className="text-xs text-[#2D2727]">Pengingat perkiraan menstruasi</span>
-            </label>
-
-            <label className="flex items-center gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={reminderPms}
-                onChange={(e) => setReminderPms(e.target.checked)}
-                className="w-4 h-4 rounded text-[#E07A5F] focus:ring-[#E07A5F]"
-              />
-              <span className="text-xs text-[#2D2727]">
-                Pengingat saat memasuki fase PMS (Sindrom Pra-Menstruasi)
-              </span>
             </label>
 
             <label className="flex items-center gap-3 cursor-pointer">

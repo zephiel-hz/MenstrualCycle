@@ -40,7 +40,6 @@ export default async function DashboardPage() {
     <DashboardClient
       stats={stats}
       todayLog={todayLog || null}
-      reminderPms={settings?.reminderPms ?? true}
       latestCycle={
         latestCycle
           ? {
