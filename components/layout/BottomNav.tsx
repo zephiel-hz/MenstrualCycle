@@ -29,6 +29,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ onOpenQuickLog }) => {
             <Link
               key={item.href}
               href={item.href}
+              replace={pathname !== "/dashboard" && item.href !== "/dashboard"}
               prefetch={true}
               className={`flex flex-col items-center justify-center w-14 py-1.5 transition-all active:scale-90 rounded-xl ${
                 isActive ? "text-[#E78895] font-semibold" : "text-[#79716B] hover:text-[#2D2727]"
@@ -57,6 +58,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ onOpenQuickLog }) => {
             <Link
               key={item.href}
               href={item.href}
+              replace={pathname !== "/dashboard" && item.href !== "/dashboard"}
               prefetch={true}
               className={`flex flex-col items-center justify-center w-14 py-1.5 transition-all active:scale-90 rounded-xl ${
                 isActive ? "text-[#E78895] font-semibold" : "text-[#79716B] hover:text-[#2D2727]"

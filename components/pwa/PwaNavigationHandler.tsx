@@ -14,46 +14,46 @@ export const PwaNavigationHandler: React.FC = () => {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    // Ensure a history guard state is in place when on dashboard
     if (pathname === "/dashboard") {
+      // When on dashboard, ensure a guard state exists so back press can be intercepted
       try {
         if (!window.history.state?.lunaraGuard) {
           window.history.pushState({ lunaraGuard: true }, "", "/dashboard");
         }
-      } catch (e) {
-        console.warn("History pushState error:", e);
+      } catch (err) {
+        console.warn("History pushState error:", err);
       }
     }
 
-    const handlePopState = (e: PopStateEvent) => {
-      const currentPath = window.location.pathname;
+    const handlePopState = () => {
+      // If user is on any subpage (/calendar, /history, /statistics, /settings, /insights),
+      // pressing back immediately jumps directly to /dashboard in 1 step!
+      if (pathname !== "/dashboard") {
+        router.replace("/dashboard");
+        return;
+      }
 
-      if (currentPath === "/dashboard" || pathname === "/dashboard") {
-        const now = Date.now();
-        if (now - lastBackPressRef.current < 2000) {
-          // Double back pressed within 2s -> allow exit
-          setShowExitToast(false);
-          window.history.back();
-        } else {
-          // First back press on dashboard -> intercept and show prompt
-          lastBackPressRef.current = now;
-          try {
-            window.history.pushState({ lunaraGuard: true }, "", "/dashboard");
-          } catch (err) {
-            console.warn("History pushState error:", err);
-          }
-
-          setShowExitToast(true);
-          if (exitTimeoutRef.current) clearTimeout(exitTimeoutRef.current);
-          exitTimeoutRef.current = setTimeout(() => {
-            setShowExitToast(false);
-            lastBackPressRef.current = 0;
-          }, 2000);
-        }
+      // If user is already on /dashboard and presses back:
+      const now = Date.now();
+      if (now - lastBackPressRef.current < 2000) {
+        // Double-back within 2s -> allow exit
+        setShowExitToast(false);
+        window.history.back();
       } else {
-        // If on any subpage (/calendar, /history, /statistics, /settings, /insights),
-        // swipe back or hardware back button will always navigate back to /dashboard
-        router.push("/dashboard");
+        // First back press on dashboard -> intercept and show prompt
+        lastBackPressRef.current = now;
+        try {
+          window.history.pushState({ lunaraGuard: true }, "", "/dashboard");
+        } catch (err) {
+          console.warn("History pushState error:", err);
+        }
+
+        setShowExitToast(true);
+        if (exitTimeoutRef.current) clearTimeout(exitTimeoutRef.current);
+        exitTimeoutRef.current = setTimeout(() => {
+          setShowExitToast(false);
+          lastBackPressRef.current = 0;
+        }, 2000);
       }
     };
 

@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { Moon, LogOut, Settings } from "lucide-react";
 
 interface NavbarProps {
@@ -14,6 +14,7 @@ interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({ user }) => {
   const router = useRouter();
+  const pathname = usePathname();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
@@ -76,6 +77,7 @@ export const Navbar: React.FC<NavbarProps> = ({ user }) => {
                     </div>
                     <Link
                       href="/settings"
+                      replace={pathname !== "/dashboard"}
                       onClick={() => setDropdownOpen(false)}
                       className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-[#2D2727] hover:bg-[#FAF8F5] transition-colors"
                     >

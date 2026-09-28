@@ -46,6 +46,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenQuickLog }) => {
             <Link
               key={item.href}
               href={item.href}
+              replace={pathname !== "/dashboard" && item.href !== "/dashboard"}
               className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors ${
                 isActive
                   ? "bg-[#FCEEF1] text-[#E78895] font-semibold"
