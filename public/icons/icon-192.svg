@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <defs>
+    <linearGradient id="lunaraGrad192" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E07A5F" />
+      <stop offset="100%" stop-color="#F4A261" />
+    </linearGradient>
+  </defs>
+  <rect width="192" height="192" rx="48" fill="url(#lunaraGrad192)" />
+  <path d="M124 56 C 90 56 64 82 64 116 C 64 128 67 138 72 147 C 58 138 50 122 50 104 C 50 74 74 50 104 50 C 111 50 118 52 124 56 Z" fill="#FFFFFF" opacity="0.95" />
+  <circle cx="132" cy="78" r="6" fill="#FFFFFF" opacity="0.8" />
+</svg>
