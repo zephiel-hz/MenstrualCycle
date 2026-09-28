@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useTransition } from "react";
+import React, { useState, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { CycleSummaryStats, DailyLogData } from "@/lib/calculations/cycle";
 import { CycleCircle } from "@/components/dashboard/CycleCircle";
@@ -16,6 +16,7 @@ import { formatShortDate } from "@/lib/utils";
 interface DashboardClientProps {
   stats: CycleSummaryStats;
   todayLog: DailyLogData | null;
+  reminderPms?: boolean;
   latestCycle?: {
     id: string;
     startDate: string;
@@ -30,6 +31,7 @@ interface DashboardClientProps {
 export const DashboardClient: React.FC<DashboardClientProps> = ({
   stats,
   todayLog,
+  reminderPms = true,
   latestCycle,
   user,
 }) => {
@@ -39,6 +41,49 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
   const [isCycleModalOpen, setIsCycleModalOpen] = useState(false);
   const [isEditCycleModalOpen, setIsEditCycleModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !reminderPms) return;
+    if (!stats.isPmsPhase || !stats.estimatedNextPeriodDate) return;
+
+    if ("Notification" in window && Notification.permission === "granted") {
+      const storageKey = `lunara_pms_notified_${stats.estimatedNextPeriodDate}`;
+      const alreadyNotified = localStorage.getItem(storageKey);
+      if (!alreadyNotified) {
+        const daysLeft = stats.daysUntilNextPeriod ?? 0;
+        const title = "🌸 Lunara - Fase PMS";
+        const body = `Kamu diperkirakan telah memasuki fase PMS (${daysLeft} hari lagi menuju haid). Tetap terhidrasi, istirahat cukup, dan jaga kenyamanan tubuhmu hari ini! ✨`;
+
+        let sentViaSw = false;
+        if ("serviceWorker" in navigator) {
+          navigator.serviceWorker.getRegistration().then((reg) => {
+            if (reg && reg.showNotification) {
+              reg.showNotification(title, {
+                body,
+                icon: "/icon-192.png",
+                tag: `lunara-pms-${stats.estimatedNextPeriodDate}`,
+              });
+              sentViaSw = true;
+            }
+          }).catch(() => {});
+        }
+
+        if (!sentViaSw) {
+          try {
+            new Notification(title, {
+              body,
+              icon: "/icon-192.png",
+              tag: `lunara-pms-${stats.estimatedNextPeriodDate}`,
+            });
+          } catch (e) {
+            console.warn("Direct PMS notification error:", e);
+          }
+        }
+
+        localStorage.setItem(storageKey, "true");
+      }
+    }
+  }, [stats.isPmsPhase, stats.estimatedNextPeriodDate, stats.daysUntilNextPeriod, reminderPms]);
 
   const handleSmoothRefresh = () => {
     startTransition(() => {

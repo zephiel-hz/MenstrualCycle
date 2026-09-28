@@ -4,6 +4,7 @@ export const userSettingsSchema = z.object({
   reminderPeriod: z.boolean().default(true),
   reminderLogging: z.boolean().default(true),
   reminderSymptoms: z.boolean().default(false),
+  reminderPms: z.boolean().default(true),
   cycleLengthDefault: z
     .number()
     .int()
