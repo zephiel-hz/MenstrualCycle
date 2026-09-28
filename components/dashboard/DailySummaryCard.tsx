@@ -11,9 +11,9 @@ interface DailySummaryCardProps {
 
 const FLOW_LABELS: Record<string, { label: string; color: string }> = {
   none: { label: "Tidak Ada", color: "bg-[#F2ECE4] text-[#79716B]" },
-  light: { label: "Ringan", color: "bg-[#FCECE8] text-[#E07A5F]" },
-  medium: { label: "Sedang", color: "bg-[#FCECE8] text-[#E07A5F] font-semibold" },
-  heavy: { label: "Berat", color: "bg-[#E07A5F] text-white font-semibold" },
+  light: { label: "Ringan", color: "bg-[#FCEEF1] text-[#E78895]" },
+  medium: { label: "Sedang", color: "bg-[#FCEEF1] text-[#E78895] font-semibold" },
+  heavy: { label: "Berat", color: "bg-[#E78895] text-white font-semibold" },
 };
 
 const MOOD_LABELS: Record<string, { label: string; emoji: string }> = {
@@ -50,12 +50,12 @@ export const DailySummaryCard: React.FC<DailySummaryCardProps> = ({
     <div className="card-soft p-5 flex flex-col justify-between">
       <div className="flex items-center justify-between pb-3 border-b border-[#F2ECE4]">
         <div className="flex items-center gap-2">
-          <Activity className="w-4 h-4 text-[#E07A5F]" />
+          <Activity className="w-4 h-4 text-[#E78895]" />
           <h3 className="text-sm font-semibold text-[#2D2727]">Catatan Hari Ini</h3>
         </div>
         <button
           onClick={onEditClick}
-          className="text-xs font-semibold text-[#E07A5F] hover:text-[#d0694e] flex items-center gap-1 cursor-pointer transition-colors"
+          className="text-xs font-semibold text-[#E78895] hover:text-[#d66d7d] flex items-center gap-1 cursor-pointer transition-colors"
         >
           {hasLog ? (
             <>
@@ -76,7 +76,7 @@ export const DailySummaryCard: React.FC<DailySummaryCardProps> = ({
           <p>Belum ada catatan untuk hari ini.</p>
           <button
             onClick={onEditClick}
-            className="mt-2 text-xs font-semibold text-[#E07A5F] underline hover:no-underline cursor-pointer"
+            className="mt-2 text-xs font-semibold text-[#E78895] underline hover:no-underline cursor-pointer"
           >
             Tambahkan catatan harian
           </button>
@@ -85,7 +85,7 @@ export const DailySummaryCard: React.FC<DailySummaryCardProps> = ({
         <div className="py-3 space-y-3 text-xs">
           <div className="flex items-center justify-between">
             <span className="text-[#79716B] flex items-center gap-1.5">
-              <Droplet className="w-3.5 h-3.5 text-[#E07A5F]" />
+              <Droplet className="w-3.5 h-3.5 text-[#E78895]" />
               Aliran Darah
             </span>
             <span

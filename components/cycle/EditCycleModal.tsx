@@ -84,7 +84,7 @@ export const EditCycleModal: React.FC<EditCycleModalProps> = ({
             required
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
-            className="w-full px-3.5 py-2 rounded-xl bg-[#FAF8F5] border border-[#E8E0D5] text-sm text-[#2D2727] focus:outline-none focus:ring-2 focus:ring-[#E07A5F]/40"
+            className="w-full px-3.5 py-2 rounded-xl bg-[#FAF8F5] border border-[#E8E0D5] text-sm text-[#2D2727] focus:outline-none focus:ring-2 focus:ring-[#E78895]/40"
           />
           <p className="text-[11px] text-[#79716B] mt-1">
             Ubah jika tanggal hari pertama haid Anda ternyata lebih cepat atau lambat dari catatan sebelumnya.
@@ -99,7 +99,7 @@ export const EditCycleModal: React.FC<EditCycleModalProps> = ({
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
-            className="w-full px-3.5 py-2 rounded-xl bg-[#FAF8F5] border border-[#E8E0D5] text-sm text-[#2D2727] focus:outline-none focus:ring-2 focus:ring-[#E07A5F]/40"
+            className="w-full px-3.5 py-2 rounded-xl bg-[#FAF8F5] border border-[#E8E0D5] text-sm text-[#2D2727] focus:outline-none focus:ring-2 focus:ring-[#E78895]/40"
           />
           <p className="text-[11px] text-[#79716B] mt-1">
             Isi tanggal haid Anda benar-benar bersih. Biarkan kosong jika masih berlangsung.
@@ -115,7 +115,7 @@ export const EditCycleModal: React.FC<EditCycleModalProps> = ({
             onChange={(e) => setNotes(e.target.value)}
             rows={2}
             placeholder="Catatan tambahan mengenai siklus ini..."
-            className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF8F5] border border-[#E8E0D5] text-xs text-[#2D2727] focus:outline-none focus:ring-2 focus:ring-[#E07A5F]/40 resize-none"
+            className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF8F5] border border-[#E8E0D5] text-xs text-[#2D2727] focus:outline-none focus:ring-2 focus:ring-[#E78895]/40 resize-none"
           />
         </div>
 
@@ -137,7 +137,7 @@ export const EditCycleModal: React.FC<EditCycleModalProps> = ({
           <button
             type="submit"
             disabled={isSaving}
-            className="px-5 py-2 text-xs font-semibold text-white bg-[#E07A5F] hover:bg-[#d0694e] rounded-xl shadow-sm transition-all cursor-pointer disabled:opacity-50"
+            className="px-5 py-2 text-xs font-semibold text-white bg-[#E78895] hover:bg-[#d66d7d] rounded-xl shadow-sm transition-all cursor-pointer disabled:opacity-50"
           >
             {isSaving ? "Menyimpan..." : "Simpan Perubahan"}
           </button>

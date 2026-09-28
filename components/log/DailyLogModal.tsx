@@ -173,7 +173,7 @@ export const DailyLogModal: React.FC<DailyLogModalProps> = ({
       <form onSubmit={handleSave} className="space-y-5">
         <div>
           <label className="block text-xs font-semibold text-[#2D2727] mb-1.5 flex items-center gap-1.5">
-            <Calendar className="w-3.5 h-3.5 text-[#E07A5F]" />
+            <Calendar className="w-3.5 h-3.5 text-[#E78895]" />
             Tanggal
           </label>
           <input
@@ -183,7 +183,7 @@ export const DailyLogModal: React.FC<DailyLogModalProps> = ({
               setDate(e.target.value);
               fetchLogForDate(e.target.value);
             }}
-            className="w-full px-3.5 py-2 rounded-xl bg-[#FAF8F5] border border-[#E8E0D5] text-sm text-[#2D2727] focus:outline-none focus:ring-2 focus:ring-[#E07A5F]/40"
+            className="w-full px-3.5 py-2 rounded-xl bg-[#FAF8F5] border border-[#E8E0D5] text-sm text-[#2D2727] focus:outline-none focus:ring-2 focus:ring-[#E78895]/40"
           />
         </div>
 
@@ -193,7 +193,7 @@ export const DailyLogModal: React.FC<DailyLogModalProps> = ({
           <>
             <div>
               <label className="block text-xs font-semibold text-[#2D2727] mb-2 flex items-center gap-1.5">
-                <Droplet className="w-3.5 h-3.5 text-[#E07A5F]" />
+                <Droplet className="w-3.5 h-3.5 text-[#E78895]" />
                 Aliran Darah (Menstruasi)
               </label>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -206,7 +206,7 @@ export const DailyLogModal: React.FC<DailyLogModalProps> = ({
                       onClick={() => setFlow(item.id)}
                       className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer ${
                         isSelected
-                          ? "bg-[#FCECE8] border-[#E07A5F] text-[#E07A5F] font-semibold ring-1 ring-[#E07A5F]"
+                          ? "bg-[#FCEEF1] border-[#E78895] text-[#E78895] font-semibold ring-1 ring-[#E78895]"
                           : "bg-white border-[#E8E0D5] text-[#2D2727] hover:bg-[#FAF8F5]"
                       }`}
                     >
@@ -277,7 +277,7 @@ export const DailyLogModal: React.FC<DailyLogModalProps> = ({
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder="Bagaimana perasaan atau aktivitasmu hari ini?"
                 rows={3}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF8F5] border border-[#E8E0D5] text-xs text-[#2D2727] placeholder:text-[#79716B]/60 focus:outline-none focus:ring-2 focus:ring-[#E07A5F]/40 resize-none"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF8F5] border border-[#E8E0D5] text-xs text-[#2D2727] placeholder:text-[#79716B]/60 focus:outline-none focus:ring-2 focus:ring-[#E78895]/40 resize-none"
               />
             </div>
           </>
@@ -323,7 +323,7 @@ export const DailyLogModal: React.FC<DailyLogModalProps> = ({
             <button
               type="submit"
               disabled={isSaving || isDeleting}
-              className="px-5 py-2 text-xs font-semibold text-white bg-[#E07A5F] hover:bg-[#d0694e] rounded-xl shadow-sm transition-all cursor-pointer disabled:opacity-50"
+              className="px-5 py-2 text-xs font-semibold text-white bg-[#E78895] hover:bg-[#d66d7d] rounded-xl shadow-sm transition-all cursor-pointer disabled:opacity-50"
             >
               {isSaving ? "Menyimpan..." : "Simpan Catatan"}
             </button>

@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#E07A5F",
+  themeColor: "#E78895",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -37,7 +37,7 @@ export default function RootLayout({
       </head>
       <body
         suppressHydrationWarning
-        className="min-h-screen bg-[#FAF8F5] text-[#2D2727] antialiased selection:bg-[#FCECE8] selection:text-[#E07A5F]"
+        className="min-h-screen bg-[#FAF8F5] text-[#2D2727] antialiased selection:bg-[#FCEEF1] selection:text-[#E78895]"
       >
         {children}
       </body>

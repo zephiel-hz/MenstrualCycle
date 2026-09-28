@@ -44,7 +44,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2.5 group">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#E07A5F] to-[#F4A261] flex items-center justify-center text-white shadow-md shadow-[#E07A5F]/20 group-hover:scale-105 transition-transform">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#E78895] to-[#F3A6B4] flex items-center justify-center text-white shadow-md shadow-[#E78895]/20 group-hover:scale-105 transition-transform">
               <Moon className="w-6 h-6 fill-white" />
             </div>
             <span className="font-bold text-2xl text-[#2D2727] tracking-tight">Lunara</span>
@@ -66,7 +66,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="nama@email.com"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF8F5] border border-[#E8E0D5] text-xs text-[#2D2727] placeholder:text-[#79716B]/60 focus:outline-none focus:ring-2 focus:ring-[#E07A5F]/40"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF8F5] border border-[#E8E0D5] text-xs text-[#2D2727] placeholder:text-[#79716B]/60 focus:outline-none focus:ring-2 focus:ring-[#E78895]/40"
               />
             </div>
 
@@ -78,7 +78,7 @@ export default function LoginPage() {
                 </label>
                 <Link
                   href="/forgot-password"
-                  className="text-[11px] text-[#E07A5F] hover:underline"
+                  className="text-[11px] text-[#E78895] hover:underline"
                 >
                   Lupa sandi?
                 </Link>
@@ -89,7 +89,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF8F5] border border-[#E8E0D5] text-xs text-[#2D2727] placeholder:text-[#79716B]/60 focus:outline-none focus:ring-2 focus:ring-[#E07A5F]/40"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF8F5] border border-[#E8E0D5] text-xs text-[#2D2727] placeholder:text-[#79716B]/60 focus:outline-none focus:ring-2 focus:ring-[#E78895]/40"
               />
             </div>
 
@@ -103,7 +103,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 rounded-full bg-[#E07A5F] hover:bg-[#d0694e] text-white text-xs font-semibold shadow-md shadow-[#E07A5F]/20 hover:shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
+              className="w-full py-3 rounded-full bg-[#E78895] hover:bg-[#d66d7d] text-white text-xs font-semibold shadow-md shadow-[#E78895]/20 hover:shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {isLoading ? "Memproses..." : "Masuk ke Akun"}
               <ArrowRight className="w-4 h-4" />
@@ -112,7 +112,7 @@ export default function LoginPage() {
 
           <div className="mt-6 pt-4 border-t border-[#F2ECE4] text-center text-xs text-[#79716B]">
             Belum punya akun?{" "}
-            <Link href="/register" className="text-[#E07A5F] font-semibold hover:underline">
+            <Link href="/register" className="text-[#E78895] font-semibold hover:underline">
               Daftar sekarang
             </Link>
           </div>

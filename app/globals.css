@@ -6,9 +6,9 @@
     --foreground: #2D2727;
     --card: #FFFFFF;
     --card-foreground: #2D2727;
-    --primary: #E07A5F;
+    --primary: #E78895;
     --primary-foreground: #FFFFFF;
-    --primary-light: #FCECE8;
+    --primary-light: #FCEEF1;
     --secondary: #81B29A;
     --secondary-foreground: #FFFFFF;
     --secondary-light: #EBF4F0;
@@ -18,7 +18,7 @@
     --muted: #F2ECE4;
     --muted-foreground: #79716B;
     --border: #E8E0D5;
-    --ring: #E07A5F;
+    --ring: #E78895;
     --radius: 1rem;
   }
 

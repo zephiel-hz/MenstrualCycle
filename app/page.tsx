@@ -14,7 +14,7 @@ export default async function HomePage() {
     <div className="min-h-screen flex flex-col bg-[#FAF8F5]">
       <header className="w-full max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#E07A5F] to-[#F4A261] flex items-center justify-center text-white shadow-md shadow-[#E07A5F]/20">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#E78895] to-[#F3A6B4] flex items-center justify-center text-white shadow-md shadow-[#E78895]/20">
             <Moon className="w-5 h-5 fill-white" />
           </div>
           <span className="font-bold text-xl text-[#2D2727] tracking-tight">Lunara</span>
@@ -22,13 +22,13 @@ export default async function HomePage() {
         <div className="flex items-center gap-3">
           <Link
             href="/login"
-            className="px-4 py-2 text-xs font-semibold text-[#2D2727] hover:text-[#E07A5F] transition-colors"
+            className="px-4 py-2 text-xs font-semibold text-[#2D2727] hover:text-[#E78895] transition-colors"
           >
             Masuk
           </Link>
           <Link
             href="/register"
-            className="px-5 py-2.5 text-xs font-semibold text-white bg-[#E07A5F] hover:bg-[#d0694e] rounded-full shadow-sm shadow-[#E07A5F]/20 transition-all"
+            className="px-5 py-2.5 text-xs font-semibold text-white bg-[#E78895] hover:bg-[#d66d7d] rounded-full shadow-sm shadow-[#E78895]/20 transition-all"
           >
             Mulai Gratis
           </Link>
@@ -36,7 +36,7 @@ export default async function HomePage() {
       </header>
 
       <main className="flex-1 max-w-4xl mx-auto px-6 py-12 sm:py-20 flex flex-col items-center text-center">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#FCECE8] text-[#E07A5F] text-xs font-semibold mb-6">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#FCEEF1] text-[#E78895] text-xs font-semibold mb-6">
           <Sparkles className="w-3.5 h-3.5" />
           <span>Your Personal Cycle Companion</span>
         </div>
@@ -52,13 +52,13 @@ export default async function HomePage() {
         <div className="mt-8 flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
           <Link
             href="/register"
-            className="px-8 py-3.5 rounded-full bg-[#E07A5F] hover:bg-[#d0694e] text-white font-semibold text-sm shadow-lg shadow-[#E07A5F]/25 hover:shadow-xl hover:scale-105 active:scale-95 transition-all text-center"
+            className="px-8 py-3.5 rounded-full bg-[#E78895] hover:bg-[#d66d7d] text-white font-semibold text-sm shadow-lg shadow-[#E78895]/25 hover:shadow-xl hover:scale-105 active:scale-95 transition-all text-center"
           >
             Mulai Catat Siklus
           </Link>
           <Link
             href="/login"
-            className="px-8 py-3.5 rounded-full bg-white hover:bg-[#FAF8F5] text-[#2D2727] border border-[#E8E0D5] font-semibold text-sm shadow-2xs hover:border-[#E07A5F]/40 transition-all text-center"
+            className="px-8 py-3.5 rounded-full bg-white hover:bg-[#FAF8F5] text-[#2D2727] border border-[#E8E0D5] font-semibold text-sm shadow-2xs hover:border-[#E78895]/40 transition-all text-center"
           >
             Masuk ke Akun
           </Link>
@@ -66,7 +66,7 @@ export default async function HomePage() {
 
         <div className="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-4 text-left w-full">
           <div className="card-soft p-5">
-            <div className="w-9 h-9 rounded-xl bg-[#FCECE8] text-[#E07A5F] flex items-center justify-center mb-3">
+            <div className="w-9 h-9 rounded-xl bg-[#FCEEF1] text-[#E78895] flex items-center justify-center mb-3">
               <Calendar className="w-5 h-5" />
             </div>
             <h2 className="text-sm font-bold text-[#2D2727]">Pelacakan Siklus Cerdas</h2>

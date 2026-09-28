@@ -48,7 +48,7 @@ export const StatisticsView: React.FC<StatisticsViewProps> = ({
       {/* Ringkasan Utama */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
         <div className="card-soft p-4">
-          <div className="w-8 h-8 rounded-xl bg-[#FCECE8] text-[#E07A5F] flex items-center justify-center mb-2">
+          <div className="w-8 h-8 rounded-xl bg-[#FCEEF1] text-[#E78895] flex items-center justify-center mb-2">
             <Clock className="w-4 h-4" />
           </div>
           <span className="text-xl font-extrabold text-[#2D2727]">
@@ -84,7 +84,7 @@ export const StatisticsView: React.FC<StatisticsViewProps> = ({
 
         <div className="card-soft p-4">
           <div className="w-8 h-8 rounded-xl bg-[#FAF8F5] text-[#2D2727] border border-[#E8E0D5] flex items-center justify-center mb-2">
-            <Heart className="w-4 h-4 text-[#E07A5F]" />
+            <Heart className="w-4 h-4 text-[#E78895]" />
           </div>
           <span className="text-xl font-extrabold text-[#2D2727]">
             {stats.totalCyclesLogged}
@@ -97,7 +97,7 @@ export const StatisticsView: React.FC<StatisticsViewProps> = ({
       {/* Wawasan Pola & PMS */}
       <div className="card-soft p-5 sm:p-6 space-y-4">
         <div className="flex items-center gap-2 pb-3 border-b border-[#F2ECE4]">
-          <Sparkles className="w-4 h-4 text-[#E07A5F]" />
+          <Sparkles className="w-4 h-4 text-[#E78895]" />
           <h2 className="text-sm font-bold text-[#2D2727]">Wawasan Tubuh & Fase PMS</h2>
         </div>
 
@@ -111,7 +111,7 @@ export const StatisticsView: React.FC<StatisticsViewProps> = ({
                   : ins.type === "regularity"
                   ? "bg-[#EBF4F0] border-[#81B29A]/30 text-[#2D2727]"
                   : ins.type === "symptom"
-                  ? "bg-[#FCECE8] border-[#E07A5F]/30 text-[#2D2727]"
+                  ? "bg-[#FCEEF1] border-[#E78895]/30 text-[#2D2727]"
                   : "bg-[#FAF8F5] border-[#E8E0D5] text-[#2D2727]"
               }`}
             >
@@ -119,7 +119,7 @@ export const StatisticsView: React.FC<StatisticsViewProps> = ({
                 {ins.type === "pms" ? (
                   <Feather className="w-3.5 h-3.5 text-[#9B59B6]" />
                 ) : (
-                  <Sparkles className="w-3.5 h-3.5 text-[#E07A5F]" />
+                  <Sparkles className="w-3.5 h-3.5 text-[#E78895]" />
                 )}
                 <h3 className="font-bold text-xs text-[#2D2727]">{ins.title}</h3>
               </div>
@@ -173,7 +173,7 @@ export const StatisticsView: React.FC<StatisticsViewProps> = ({
         <div className="card-soft p-5 sm:p-6">
           <div className="flex items-center justify-between pb-3 mb-4 border-b border-[#F2ECE4]">
             <div className="flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-[#E07A5F]" />
+              <TrendingUp className="w-4 h-4 text-[#E78895]" />
               <h2 className="text-sm font-bold text-[#2D2727]">Riwayat Durasi Haid</h2>
             </div>
             <span className="text-xs text-[#79716B]">{periodTrends.length} catatan</span>
@@ -190,11 +190,11 @@ export const StatisticsView: React.FC<StatisticsViewProps> = ({
                     <span className="font-medium text-[#2D2727]">
                       Haid #{p.cycleNumber} ({formatShortDate(p.startDate)})
                     </span>
-                    <span className="font-bold text-[#E07A5F]">{p.duration} Hari</span>
+                    <span className="font-bold text-[#E78895]">{p.duration} Hari</span>
                   </div>
                   <div className="w-full h-3 bg-[#FAF8F5] rounded-full overflow-hidden border border-[#E8E0D5]">
                     <div
-                      className="h-full rounded-full bg-gradient-to-r from-[#E07A5F] to-[#F4A261] transition-all duration-500"
+                      className="h-full rounded-full bg-gradient-to-r from-[#E78895] to-[#F3A6B4] transition-all duration-500"
                       style={{ width: `${barWidthPercent}%` }}
                     />
                   </div>

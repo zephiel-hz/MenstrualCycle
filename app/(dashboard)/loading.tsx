@@ -10,7 +10,7 @@ export default function DashboardLoading() {
       </div>
 
       <div className="card-soft p-8 flex flex-col items-center justify-center space-y-4">
-        <div className="w-48 h-48 rounded-full border-8 border-[#F2ECE4] border-t-[#E07A5F]/40 animate-spin" />
+        <div className="w-48 h-48 rounded-full border-8 border-[#F2ECE4] border-t-[#E78895]/40 animate-spin" />
         <div className="h-4 w-36 bg-[#E8E0D5]/40 rounded-lg" />
       </div>
 

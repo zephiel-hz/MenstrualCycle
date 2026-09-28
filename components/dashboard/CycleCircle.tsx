@@ -21,8 +21,8 @@ export const CycleCircle: React.FC<CycleCircleProps> = ({ stats, onLogClick }) =
   // Phase icon and color styling
   const phaseStyles: Record<string, { badgeColor: string; icon: React.ReactNode }> = {
     menstrual: {
-      badgeColor: "bg-[#FCECE8] text-[#E07A5F] border-[#E07A5F]/30",
-      icon: <Moon className="w-3.5 h-3.5 text-[#E07A5F]" />,
+      badgeColor: "bg-[#FCEEF1] text-[#E78895] border-[#E78895]/30",
+      icon: <Moon className="w-3.5 h-3.5 text-[#E78895]" />,
     },
     follicular: {
       badgeColor: "bg-[#EBF4F0] text-[#81B29A] border-[#81B29A]/30",
@@ -46,7 +46,7 @@ export const CycleCircle: React.FC<CycleCircleProps> = ({ stats, onLogClick }) =
 
   return (
     <div className="card-soft p-6 sm:p-8 flex flex-col items-center text-center relative overflow-hidden bg-gradient-to-b from-white via-white to-[#FAF8F5]">
-      <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-64 h-64 bg-[#E07A5F]/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-64 h-64 bg-[#E78895]/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="flex items-center gap-2 mb-4">
         <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${currentStyle.badgeColor}`}>
@@ -79,8 +79,8 @@ export const CycleCircle: React.FC<CycleCircleProps> = ({ stats, onLogClick }) =
           />
           <defs>
             <linearGradient id="cycleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#E07A5F" />
-              <stop offset="100%" stopColor="#F4A261" />
+              <stop offset="0%" stopColor="#E78895" />
+              <stop offset="100%" stopColor="#F3A6B4" />
             </linearGradient>
           </defs>
         </svg>
@@ -97,7 +97,7 @@ export const CycleCircle: React.FC<CycleCircleProps> = ({ stats, onLogClick }) =
             </>
           ) : (
             <>
-              <HeartHandshake className="w-10 h-10 text-[#E07A5F] mb-1" />
+              <HeartHandshake className="w-10 h-10 text-[#E78895] mb-1" />
               <span className="text-sm font-semibold text-[#2D2727]">Mulai Siklus</span>
             </>
           )}
@@ -120,11 +120,11 @@ export const CycleCircle: React.FC<CycleCircleProps> = ({ stats, onLogClick }) =
               )}
             </p>
           ) : daysUntilNext === 0 ? (
-            <p className="text-[#E07A5F] font-semibold">Perkiraan menstruasi dimulai hari ini.</p>
+            <p className="text-[#E78895] font-semibold">Perkiraan menstruasi dimulai hari ini.</p>
           ) : (
             <p>
               Melewati perkiraan siklus sekitar{" "}
-              <strong className="text-[#E07A5F] font-semibold">
+              <strong className="text-[#E78895] font-semibold">
                 {Math.abs(daysUntilNext)} hari
               </strong>
               .

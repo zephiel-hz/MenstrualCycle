@@ -32,7 +32,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenQuickLog }) => {
     <aside className="hidden md:flex flex-col w-64 border-r border-[#E8E0D5] bg-[#FAF8F5] p-5 shrink-0 min-h-[calc(100vh-4rem)]">
       <button
         onClick={onOpenQuickLog}
-        className="w-full mb-6 flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-gradient-to-r from-[#E07A5F] to-[#F4A261] text-white font-semibold text-sm shadow-md shadow-[#E07A5F]/20 hover:shadow-lg hover:shadow-[#E07A5F]/30 hover:scale-[1.01] active:scale-[0.99] transition-all cursor-pointer"
+        className="w-full mb-6 flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-gradient-to-r from-[#E78895] to-[#F3A6B4] text-white font-semibold text-sm shadow-md shadow-[#E78895]/20 hover:shadow-lg hover:shadow-[#E78895]/30 hover:scale-[1.01] active:scale-[0.99] transition-all cursor-pointer"
       >
         <Plus className="w-5 h-5 stroke-[2.5]" />
         Catat Hari Ini
@@ -48,11 +48,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenQuickLog }) => {
               href={item.href}
               className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors ${
                 isActive
-                  ? "bg-[#FCECE8] text-[#E07A5F] font-semibold"
+                  ? "bg-[#FCEEF1] text-[#E78895] font-semibold"
                   : "text-[#79716B] hover:text-[#2D2727] hover:bg-[#F2ECE4]"
               }`}
             >
-              <Icon className={`w-4 h-4 ${isActive ? "text-[#E07A5F]" : "text-[#79716B]"}`} />
+              <Icon className={`w-4 h-4 ${isActive ? "text-[#E78895]" : "text-[#79716B]"}`} />
               {item.label}
             </Link>
           );

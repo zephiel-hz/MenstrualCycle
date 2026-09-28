@@ -10,7 +10,6 @@ import {
   Sliders,
   FileJson,
   FileSpreadsheet,
-  Bell,
   CheckCircle2,
   Info,
   Smartphone,
@@ -59,9 +58,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const [settingsMsg, setSettingsMsg] = useState<string | null>(null);
 
   const [notifPermission, setNotifPermission] = useState<string>("default");
-  const [testNotifMsg, setTestNotifMsg] = useState<{ type: "success" | "error" | "info"; text: string } | null>(null);
-  const [isTestingNotif, setIsTestingNotif] = useState(false);
-  const [showToastPreview, setShowToastPreview] = useState(false);
 
   const [isStandalone, setIsStandalone] = useState(false);
   const [canPromptPwa, setCanPromptPwa] = useState(false);
@@ -105,84 +101,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         setCanPromptPwa(false);
         window.__LUNARA_PWA_PROMPT__ = null;
       }
-    }
-  };
-
-  const handleTestNotification = async () => {
-    try {
-      setIsTestingNotif(true);
-      setTestNotifMsg(null);
-      setShowToastPreview(false);
-
-      if (typeof window === "undefined" || !("Notification" in window)) {
-        setTestNotifMsg({
-          type: "error",
-          text: "Browser ini tidak mendukung Web Notification API. Silakan gunakan browser modern seperti Chrome, Edge, Safari, atau Firefox.",
-        });
-        return;
-      }
-
-      let perm = Notification.permission;
-      if (perm === "default") {
-        try {
-          perm = await Notification.requestPermission();
-        } catch {
-          perm = await new Promise((resolve) => Notification.requestPermission(resolve));
-        }
-        setNotifPermission(perm);
-      }
-
-      if (perm === "denied") {
-        setTestNotifMsg({
-          type: "error",
-          text: "Izin notifikasi diblokir browser. Untuk memunculkannya: Klik ikon gembok / slider di sebelah kiri URL pada address bar -> Ubah Notifikasi menjadi 'Izinkan' (Allow) -> Muat ulang (Refresh) halaman.",
-        });
-        return;
-      }
-
-      if (perm === "granted") {
-        setShowToastPreview(true);
-
-        const title = "🌸 Lunara - Pengingat Siklus";
-        const bodyText = "Halo! Ini adalah notifikasi uji coba dari Lunara. Pengingat siklus menstruasi dan catatan harian Anda aktif.";
-
-        let sentViaSw = false;
-        if ("serviceWorker" in navigator) {
-          try {
-            const reg = await navigator.serviceWorker.getRegistration();
-            if (reg && reg.showNotification) {
-              await reg.showNotification(title, {
-                body: bodyText,
-                tag: "lunara-test-notif-" + Date.now(),
-              });
-              sentViaSw = true;
-            }
-          } catch (swErr) {
-            console.warn("Service worker notification error:", swErr);
-          }
-        }
-
-        if (!sentViaSw) {
-          try {
-            new Notification(title, {
-              body: bodyText,
-              tag: "lunara-test-notif-" + Date.now(),
-            });
-          } catch (notifErr) {
-            console.warn("Direct notification error:", notifErr);
-          }
-        }
-
-        setTestNotifMsg({
-          type: "success",
-          text: "✅ Notifikasi berhasil dipicu! Jika banner pop-up OS tidak muncul, periksa Notification Center Windows / Fokus / Do Not Disturb perangkat Anda.",
-        });
-      }
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Gagal memunculkan notifikasi.";
-      setTestNotifMsg({ type: "error", text: msg });
-    } finally {
-      setIsTestingNotif(false);
     }
   };
 
@@ -296,13 +214,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       <div className="card-soft p-5 sm:p-6 bg-gradient-to-br from-white via-white to-[#FAF8F5]">
         <div className="flex items-center justify-between mb-3 pb-3 border-b border-[#F2ECE4]">
           <div className="flex items-center gap-2">
-            <Smartphone className="w-4 h-4 text-[#E07A5F]" />
+            <Smartphone className="w-4 h-4 text-[#E78895]" />
             <h3 className="text-sm font-bold text-[#2D2727]">Aplikasi Lunara (PWA)</h3>
           </div>
           <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${
             isStandalone
               ? "bg-green-100 text-green-700"
-              : "bg-[#FCECE8] text-[#E07A5F]"
+              : "bg-[#FCEEF1] text-[#E78895]"
           }`}>
             {isStandalone ? "✓ Aplikasi Terpasang (Standalone)" : "Mode Browser Web"}
           </span>
@@ -323,7 +241,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 <button
                   type="button"
                   onClick={handleInstallPwa}
-                  className="px-4 py-2 rounded-xl bg-[#E07A5F] hover:bg-[#d0694e] text-white text-xs font-semibold shadow-sm transition-all cursor-pointer flex items-center gap-2 active:scale-95"
+                  className="px-4 py-2 rounded-xl bg-[#E78895] hover:bg-[#d66d7d] text-white text-xs font-semibold shadow-sm transition-all cursor-pointer flex items-center gap-2 active:scale-95"
                 >
                   <Download className="w-4 h-4" />
                   Pasang Lunara Sekarang
@@ -334,7 +252,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             {isIosDevice ? (
               <div className="p-3.5 rounded-xl bg-[#FAF8F5] border border-[#E8E0D5] space-y-1.5">
                 <div className="flex items-center gap-1.5 font-semibold text-[#2D2727]">
-                  <Share className="w-3.5 h-3.5 text-[#E07A5F]" />
+                  <Share className="w-3.5 h-3.5 text-[#E78895]" />
                   <span>Cara Pasang di iPhone / iPad (Safari):</span>
                 </div>
                 <ol className="list-decimal list-inside text-[11px] space-y-1 text-[#79716B]">
@@ -346,7 +264,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             ) : !canPromptPwa && (
               <div className="p-3.5 rounded-xl bg-[#FAF8F5] border border-[#E8E0D5] text-[11px] space-y-1">
                 <p className="font-semibold text-[#2D2727]">Cara Pasang Manual di Chrome / Edge / Android:</p>
-                <p>Ketuk menu <strong>titik tiga (⋮)</strong> di kanan atas browser $ightarrow$ Pilih <strong>&quot;Instal Aplikasi&quot;</strong> atau <strong>&quot;Tambahkan ke Layar Utama&quot;</strong>.</p>
+                <p>Ketuk menu <strong>titik tiga (⋮)</strong> di kanan atas browser $
+ightarrow$ Pilih <strong>&quot;Instal Aplikasi&quot;</strong> atau <strong>&quot;Tambahkan ke Layar Utama&quot;</strong>.</p>
               </div>
             )}
           </div>
@@ -356,7 +275,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       {/* Profil Akun */}
       <div className="card-soft p-5 sm:p-6">
         <div className="flex items-center gap-2 mb-4 pb-3 border-b border-[#F2ECE4]">
-          <User className="w-4 h-4 text-[#E07A5F]" />
+          <User className="w-4 h-4 text-[#E78895]" />
           <h3 className="text-sm font-bold text-[#2D2727]">Profil Pengguna</h3>
         </div>
 
@@ -383,7 +302,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
                 placeholder="Nama kamu"
-                className="w-full px-3.5 py-2 rounded-xl bg-[#FAF8F5] border border-[#E8E0D5] text-xs text-[#2D2727] focus:outline-none focus:ring-2 focus:ring-[#E07A5F]/40"
+                className="w-full px-3.5 py-2 rounded-xl bg-[#FAF8F5] border border-[#E8E0D5] text-xs text-[#2D2727] focus:outline-none focus:ring-2 focus:ring-[#E78895]/40"
               />
             </div>
 
@@ -394,7 +313,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               <select
                 value={timezone}
                 onChange={(e) => setTimezone(e.target.value)}
-                className="w-full px-3.5 py-2 rounded-xl bg-[#FAF8F5] border border-[#E8E0D5] text-xs text-[#2D2727] focus:outline-none focus:ring-2 focus:ring-[#E07A5F]/40"
+                className="w-full px-3.5 py-2 rounded-xl bg-[#FAF8F5] border border-[#E8E0D5] text-xs text-[#2D2727] focus:outline-none focus:ring-2 focus:ring-[#E78895]/40"
               >
                 <option value="Asia/Jakarta">WIB (Asia/Jakarta)</option>
                 <option value="Asia/Makassar">WITA (Asia/Makassar)</option>
@@ -441,7 +360,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 max={60}
                 value={cycleLengthDefault}
                 onChange={(e) => setCycleLengthDefault(Number(e.target.value))}
-                className="w-full px-3.5 py-2 rounded-xl bg-[#FAF8F5] border border-[#E8E0D5] text-xs text-[#2D2727] focus:outline-none focus:ring-2 focus:ring-[#E07A5F]/40"
+                className="w-full px-3.5 py-2 rounded-xl bg-[#FAF8F5] border border-[#E8E0D5] text-xs text-[#2D2727] focus:outline-none focus:ring-2 focus:ring-[#E78895]/40"
               />
               <span className="text-[10px] text-[#79716B] mt-0.5 block">
                 Digunakan sebagai acuan awal sebelum data historis terkumpul
@@ -458,7 +377,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 max={20}
                 value={periodDurationDefault}
                 onChange={(e) => setPeriodDurationDefault(Number(e.target.value))}
-                className="w-full px-3.5 py-2 rounded-xl bg-[#FAF8F5] border border-[#E8E0D5] text-xs text-[#2D2727] focus:outline-none focus:ring-2 focus:ring-[#E07A5F]/40"
+                className="w-full px-3.5 py-2 rounded-xl bg-[#FAF8F5] border border-[#E8E0D5] text-xs text-[#2D2727] focus:outline-none focus:ring-2 focus:ring-[#E78895]/40"
               />
               <span className="text-[10px] text-[#79716B] mt-0.5 block">
                 Perkiraan durasi hari pendarahan
@@ -506,7 +425,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 type="checkbox"
                 checked={reminderPeriod}
                 onChange={(e) => setReminderPeriod(e.target.checked)}
-                className="w-4 h-4 rounded text-[#E07A5F] focus:ring-[#E07A5F]"
+                className="w-4 h-4 rounded text-[#E78895] focus:ring-[#E78895]"
               />
               <span className="text-xs text-[#2D2727]">Pengingat perkiraan menstruasi</span>
             </label>
@@ -516,7 +435,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 type="checkbox"
                 checked={reminderPms}
                 onChange={(e) => setReminderPms(e.target.checked)}
-                className="w-4 h-4 rounded text-[#E07A5F] focus:ring-[#E07A5F]"
+                className="w-4 h-4 rounded text-[#E78895] focus:ring-[#E78895]"
               />
               <span className="text-xs text-[#2D2727]">
                 Pengingat saat memasuki fase PMS (Sindrom Pra-Menstruasi)
@@ -528,7 +447,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 type="checkbox"
                 checked={reminderLogging}
                 onChange={(e) => setReminderLogging(e.target.checked)}
-                className="w-4 h-4 rounded text-[#E07A5F] focus:ring-[#E07A5F]"
+                className="w-4 h-4 rounded text-[#E78895] focus:ring-[#E78895]"
               />
               <span className="text-xs text-[#2D2727]">Pengingat mencatat siklus harian</span>
             </label>
@@ -538,66 +457,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 type="checkbox"
                 checked={reminderSymptoms}
                 onChange={(e) => setReminderSymptoms(e.target.checked)}
-                className="w-4 h-4 rounded text-[#E07A5F] focus:ring-[#E07A5F]"
+                className="w-4 h-4 rounded text-[#E78895] focus:ring-[#E78895]"
               />
               <span className="text-xs text-[#2D2727]">Pengingat mencatat gejala fisik & mood</span>
             </label>
-
-            {/* Test Notification Button */}
-            <div className="p-3.5 rounded-xl bg-[#FAF8F5] border border-[#E8E0D5] flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-2">
-              <div>
-                <p className="text-xs font-semibold text-[#2D2727]">Uji Notifikasi Perangkat</p>
-                <p className="text-[11px] text-[#79716B]">Klik untuk meminta izin atau mengirim notifikasi langsung ke perangkat.</p>
-              </div>
-              <button
-                type="button"
-                onClick={handleTestNotification}
-                disabled={isTestingNotif}
-                className="px-3.5 py-1.5 rounded-xl bg-white hover:bg-[#FAF8F5] border border-[#E07A5F]/40 text-xs font-semibold text-[#E07A5F] flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer shrink-0 disabled:opacity-50"
-              >
-                <Bell className="w-3.5 h-3.5" />
-                {isTestingNotif ? "Memproses..." : "Kirim Notifikasi Uji Coba"}
-              </button>
-            </div>
-
-            {testNotifMsg && (
-              <div
-                className={`text-xs p-3 rounded-xl border flex items-start gap-2 ${
-                  testNotifMsg.type === "success"
-                    ? "bg-green-50 text-green-700 border-green-200"
-                    : testNotifMsg.type === "error"
-                    ? "bg-red-50 text-red-700 border-red-200"
-                    : "bg-blue-50 text-blue-700 border-blue-200"
-                }`}
-              >
-                {testNotifMsg.type === "success" ? (
-                  <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
-                ) : (
-                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                )}
-                <div className="space-y-1">
-                  <p>{testNotifMsg.text}</p>
-                </div>
-              </div>
-            )}
-
-            {/* In-app Toast Preview simulation */}
-            {showToastPreview && (
-              <div className="p-3 rounded-2xl bg-white border-2 border-[#E07A5F] shadow-lg flex items-start gap-3 animate-in fade-in-50 slide-in-from-top-2 duration-300">
-                <div className="w-8 h-8 rounded-full bg-[#FCECE8] text-[#E07A5F] flex items-center justify-center shrink-0 font-bold text-sm">
-                  🌸
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs font-bold text-[#2D2727]">Lunara - Pengingat Siklus</p>
-                    <span className="text-[10px] text-[#79716B]">Baru saja</span>
-                  </div>
-                  <p className="text-[11px] text-[#79716B] mt-0.5">
-                    Halo! Ini adalah notifikasi uji coba dari Lunara. Pengingat siklus menstruasi dan catatan harian Anda aktif.
-                  </p>
-                </div>
-              </div>
-            )}
           </div>
 
           {settingsMsg && (
@@ -610,7 +473,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             <button
               type="submit"
               disabled={isSavingSettings}
-              className="px-4 py-2 text-xs font-semibold text-white bg-[#E07A5F] hover:bg-[#d0694e] rounded-xl shadow-xs transition-all cursor-pointer disabled:opacity-50"
+              className="px-4 py-2 text-xs font-semibold text-white bg-[#E78895] hover:bg-[#d66d7d] rounded-xl shadow-xs transition-all cursor-pointer disabled:opacity-50"
             >
               {isSavingSettings ? "Menyimpan..." : "Simpan Pengaturan"}
             </button>
@@ -621,7 +484,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       {/* Ekspor Data */}
       <div className="card-soft p-5 sm:p-6">
         <div className="flex items-center gap-2 mb-2 pb-3 border-b border-[#F2ECE4]">
-          <Download className="w-4 h-4 text-[#E07A5F]" />
+          <Download className="w-4 h-4 text-[#E78895]" />
           <h3 className="text-sm font-bold text-[#2D2727]">Ekspor Data Mandiri</h3>
         </div>
         <p className="text-xs text-[#79716B] mb-4">
@@ -631,9 +494,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         <div className="flex flex-wrap gap-3">
           <button
             onClick={() => handleExport("json")}
-            className="px-4 py-2 rounded-xl bg-white border border-[#E8E0D5] hover:border-[#E07A5F] text-xs font-semibold text-[#2D2727] flex items-center gap-2 transition-colors cursor-pointer shadow-2xs"
+            className="px-4 py-2 rounded-xl bg-white border border-[#E8E0D5] hover:border-[#E78895] text-xs font-semibold text-[#2D2727] flex items-center gap-2 transition-colors cursor-pointer shadow-2xs"
           >
-            <FileJson className="w-4 h-4 text-[#E07A5F]" />
+            <FileJson className="w-4 h-4 text-[#E78895]" />
             Unduh JSON
           </button>
           <button

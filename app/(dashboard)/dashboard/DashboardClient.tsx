@@ -107,17 +107,17 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({
 
         <button
           onClick={() => setIsCycleModalOpen(true)}
-          className="self-start sm:self-auto px-3.5 py-1.5 rounded-full border border-[#E8E0D5] bg-white hover:border-[#E07A5F] active:scale-95 text-xs font-semibold text-[#2D2727] flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
+          className="self-start sm:self-auto px-3.5 py-1.5 rounded-full border border-[#E8E0D5] bg-white hover:border-[#E78895] active:scale-95 text-xs font-semibold text-[#2D2727] flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
         >
-          <PlusCircle className="w-3.5 h-3.5 text-[#E07A5F]" />
+          <PlusCircle className="w-3.5 h-3.5 text-[#E78895]" />
           Catat Siklus Baru
         </button>
       </div>
 
       {isOngoingPeriod && (
-        <div className="p-4 rounded-2xl bg-gradient-to-r from-[#FCECE8] to-[#FFF3EA] border border-[#E07A5F]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+        <div className="p-4 rounded-2xl bg-gradient-to-r from-[#FCEEF1] to-[#FFF0F3] border border-[#E78895]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
           <div className="flex items-center gap-3">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#E07A5F] animate-pulse shrink-0" />
+            <span className="w-2.5 h-2.5 rounded-full bg-[#E78895] animate-pulse shrink-0" />
             <div>
               <p className="text-xs font-bold text-[#2D2727]">
                 Menstruasi sedang berlangsung
@@ -130,7 +130,7 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({
 
           <button
             onClick={() => setIsEditCycleModalOpen(true)}
-            className="self-start sm:self-auto px-3.5 py-1.5 rounded-xl bg-white hover:bg-[#FAF8F5] active:scale-95 border border-[#E07A5F]/40 text-xs font-semibold text-[#E07A5F] flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer"
+            className="self-start sm:self-auto px-3.5 py-1.5 rounded-xl bg-white hover:bg-[#FAF8F5] active:scale-95 border border-[#E78895]/40 text-xs font-semibold text-[#E78895] flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer"
           >
             <CheckCircle2 className="w-3.5 h-3.5" />
             Selesaikan / Edit Haid

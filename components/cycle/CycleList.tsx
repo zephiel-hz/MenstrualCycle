@@ -66,7 +66,7 @@ export const CycleList: React.FC<CycleListProps> = ({
         </div>
         <button
           onClick={onAddCycleClick}
-          className="px-4 py-2 rounded-xl bg-[#E07A5F] hover:bg-[#d0694e] text-white text-xs font-semibold shadow-sm transition-all cursor-pointer flex items-center gap-1.5"
+          className="px-4 py-2 rounded-xl bg-[#E78895] hover:bg-[#d66d7d] text-white text-xs font-semibold shadow-sm transition-all cursor-pointer flex items-center gap-1.5"
         >
           <Plus className="w-3.5 h-3.5" />
           Tambah Siklus
@@ -75,7 +75,7 @@ export const CycleList: React.FC<CycleListProps> = ({
 
       {displayCycles.length === 0 ? (
         <div className="card-soft p-8 text-center">
-          <div className="w-12 h-12 rounded-full bg-[#FCECE8] text-[#E07A5F] flex items-center justify-center mx-auto mb-3">
+          <div className="w-12 h-12 rounded-full bg-[#FCEEF1] text-[#E78895] flex items-center justify-center mx-auto mb-3">
             <Calendar className="w-6 h-6" />
           </div>
           <h3 className="text-sm font-bold text-[#2D2727]">Belum ada siklus</h3>
@@ -84,7 +84,7 @@ export const CycleList: React.FC<CycleListProps> = ({
           </p>
           <button
             onClick={onAddCycleClick}
-            className="px-5 py-2.5 rounded-full bg-[#E07A5F] text-white text-xs font-semibold shadow-sm transition-all cursor-pointer"
+            className="px-5 py-2.5 rounded-full bg-[#E78895] text-white text-xs font-semibold shadow-sm transition-all cursor-pointer"
           >
             Catat Siklus Pertama
           </button>
@@ -103,7 +103,7 @@ export const CycleList: React.FC<CycleListProps> = ({
             return (
               <div
                 key={cycle.id}
-                className="card-soft p-4.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all hover:border-[#E07A5F]/40"
+                className="card-soft p-4.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all hover:border-[#E78895]/40"
               >
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
@@ -111,7 +111,7 @@ export const CycleList: React.FC<CycleListProps> = ({
                       {formatMonthYear(cycle.startDate)}
                     </span>
                     {index === 0 && (
-                      <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-[#FCECE8] text-[#E07A5F]">
+                      <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-[#FCEEF1] text-[#E78895]">
                         Siklus Terbaru
                       </span>
                     )}
@@ -140,7 +140,7 @@ export const CycleList: React.FC<CycleListProps> = ({
 
                     {duration ? (
                       <div className="text-left sm:text-right">
-                        <span className="block text-xs font-bold text-[#E07A5F]">
+                        <span className="block text-xs font-bold text-[#E78895]">
                           {duration} Hari
                         </span>
                         <span className="block text-[10px] text-[#79716B]">Durasi Haid</span>
@@ -153,7 +153,7 @@ export const CycleList: React.FC<CycleListProps> = ({
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => setEditingCycle(cycle)}
-                      className="p-2 text-[#79716B] hover:text-[#E07A5F] hover:bg-[#FCECE8] rounded-xl transition-colors cursor-pointer"
+                      className="p-2 text-[#79716B] hover:text-[#E78895] hover:bg-[#FCEEF1] rounded-xl transition-colors cursor-pointer"
                       aria-label="Edit Siklus"
                       title="Edit Siklus"
                     >

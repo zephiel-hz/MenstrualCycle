@@ -135,7 +135,7 @@ export const NotificationPermissionPrompt: React.FC = () => {
         <>
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#E07A5F] to-[#F4A261] flex items-center justify-center text-white shrink-0 shadow-sm">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#E78895] to-[#F3A6B4] flex items-center justify-center text-white shrink-0 shadow-sm">
                 <Bell className="w-5 h-5 animate-bounce" />
               </div>
               <div>
@@ -164,7 +164,7 @@ export const NotificationPermissionPrompt: React.FC = () => {
             <button
               onClick={handleRequestPermission}
               disabled={isRequesting}
-              className="px-4 py-1.5 text-xs font-semibold bg-[#E07A5F] hover:bg-[#d0694e] text-white rounded-xl shadow-xs transition-all cursor-pointer active:scale-95 disabled:opacity-60"
+              className="px-4 py-1.5 text-xs font-semibold bg-[#E78895] hover:bg-[#d66d7d] text-white rounded-xl shadow-xs transition-all cursor-pointer active:scale-95 disabled:opacity-60"
             >
               {isRequesting ? "Memproses..." : "Aktifkan Sekarang"}
             </button>

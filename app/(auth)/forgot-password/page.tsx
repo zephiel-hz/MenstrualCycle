@@ -42,7 +42,7 @@ export default function ForgotPasswordPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2.5">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#E07A5F] to-[#F4A261] flex items-center justify-center text-white shadow-md shadow-[#E07A5F]/20">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#E78895] to-[#F3A6B4] flex items-center justify-center text-white shadow-md shadow-[#E78895]/20">
               <Moon className="w-6 h-6 fill-white" />
             </div>
             <span className="font-bold text-2xl text-[#2D2727] tracking-tight">Lunara</span>
@@ -62,7 +62,7 @@ export default function ForgotPasswordPage() {
               <p className="text-xs text-[#2D2727] leading-relaxed">{message}</p>
               <Link
                 href="/login"
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#E07A5F] hover:underline"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#E78895] hover:underline"
               >
                 <ArrowLeft className="w-3.5 h-3.5" />
                 Kembali ke halaman masuk
@@ -81,7 +81,7 @@ export default function ForgotPasswordPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="nama@email.com"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF8F5] border border-[#E8E0D5] text-xs text-[#2D2727] placeholder:text-[#79716B]/60 focus:outline-none focus:ring-2 focus:ring-[#E07A5F]/40"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF8F5] border border-[#E8E0D5] text-xs text-[#2D2727] placeholder:text-[#79716B]/60 focus:outline-none focus:ring-2 focus:ring-[#E78895]/40"
                 />
               </div>
 
@@ -95,7 +95,7 @@ export default function ForgotPasswordPage() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-3 rounded-full bg-[#E07A5F] hover:bg-[#d0694e] text-white text-xs font-semibold shadow-md shadow-[#E07A5F]/20 hover:shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
+                className="w-full py-3 rounded-full bg-[#E78895] hover:bg-[#d66d7d] text-white text-xs font-semibold shadow-md shadow-[#E78895]/20 hover:shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 {isLoading ? "Mengirim..." : "Kirim Permintaan Reset"}
               </button>

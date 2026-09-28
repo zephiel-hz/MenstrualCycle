@@ -35,9 +35,9 @@ interface CycleCalendarProps {
 
 const FLOW_LABELS: Record<string, { label: string; color: string }> = {
   none: { label: "Tidak Ada", color: "bg-[#F2ECE4] text-[#79716B]" },
-  light: { label: "Ringan", color: "bg-[#FCECE8] text-[#E07A5F]" },
-  medium: { label: "Sedang", color: "bg-[#FCECE8] text-[#E07A5F] font-semibold" },
-  heavy: { label: "Berat", color: "bg-[#E07A5F] text-white font-semibold" },
+  light: { label: "Ringan", color: "bg-[#FCEEF1] text-[#E78895]" },
+  medium: { label: "Sedang", color: "bg-[#FCEEF1] text-[#E78895] font-semibold" },
+  heavy: { label: "Berat", color: "bg-[#E78895] text-white font-semibold" },
 };
 
 const MOOD_LABELS: Record<string, { label: string; emoji: string }> = {
@@ -149,7 +149,7 @@ export const CycleCalendar: React.FC<CycleCalendarProps> = ({
           <div className="flex items-center gap-1.5">
             <button
               onClick={goToToday}
-              className="px-3 py-1.5 text-xs font-semibold rounded-xl bg-[#FAF8F5] border border-[#E8E0D5] hover:border-[#E07A5F] text-[#2D2727] transition-colors cursor-pointer mr-1"
+              className="px-3 py-1.5 text-xs font-semibold rounded-xl bg-[#FAF8F5] border border-[#E8E0D5] hover:border-[#E78895] text-[#2D2727] transition-colors cursor-pointer mr-1"
             >
               Hari Ini
             </button>
@@ -199,13 +199,13 @@ export const CycleCalendar: React.FC<CycleCalendarProps> = ({
                   !isCurrentMonth ? "opacity-30 text-[#79716B]" : "text-[#2D2727]"
                 } ${
                   isSelected
-                    ? "ring-2 ring-[#E07A5F] font-bold z-10 scale-105"
+                    ? "ring-2 ring-[#E78895] font-bold z-10 scale-105"
                     : "hover:bg-[#FAF8F5]"
                 } ${
                   dayPeriod
-                    ? "bg-[#FCECE8] text-[#E07A5F] font-semibold"
+                    ? "bg-[#FCEEF1] text-[#E78895] font-semibold"
                     : dayEstimated
-                    ? "border border-dashed border-[#E07A5F]/60 text-[#E07A5F]"
+                    ? "border border-dashed border-[#E78895]/60 text-[#E78895]"
                     : dayPms
                     ? "bg-[#F5EEF8] text-[#9B59B6] font-medium border border-[#9B59B6]/30"
                     : ""
@@ -228,11 +228,11 @@ export const CycleCalendar: React.FC<CycleCalendarProps> = ({
         {/* Legend */}
         <div className="mt-6 pt-4 border-t border-[#F2ECE4] flex flex-wrap items-center justify-center gap-4 text-xs text-[#79716B]">
           <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-full bg-[#FCECE8] border border-[#E07A5F]" />
+            <span className="w-3 h-3 rounded-full bg-[#FCEEF1] border border-[#E78895]" />
             <span>Menstruasi</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-full border border-dashed border-[#E07A5F]" />
+            <span className="w-3 h-3 rounded-full border border-dashed border-[#E78895]" />
             <span>Perkiraan Haid</span>
           </div>
           <div className="flex items-center gap-1.5">
@@ -250,7 +250,7 @@ export const CycleCalendar: React.FC<CycleCalendarProps> = ({
       <div className="card-soft p-5 flex flex-col justify-between">
         <div className="flex items-center justify-between pb-3 border-b border-[#F2ECE4]">
           <div className="flex items-center gap-2">
-            <Activity className="w-4 h-4 text-[#E07A5F]" />
+            <Activity className="w-4 h-4 text-[#E78895]" />
             <div>
               <h3 className="text-sm font-semibold text-[#2D2727] capitalize">
                 Catatan: {format(selectedDate, "EEEE, d MMMM yyyy", { locale: idLocale })}
@@ -259,7 +259,7 @@ export const CycleCalendar: React.FC<CycleCalendarProps> = ({
           </div>
           <button
             onClick={() => onOpenLogModal(selectedDateStr)}
-            className="text-xs font-semibold text-[#E07A5F] hover:text-[#d0694e] flex items-center gap-1 cursor-pointer transition-colors"
+            className="text-xs font-semibold text-[#E78895] hover:text-[#d66d7d] flex items-center gap-1 cursor-pointer transition-colors"
           >
             {hasLog ? (
               <>
@@ -280,7 +280,7 @@ export const CycleCalendar: React.FC<CycleCalendarProps> = ({
             <p>Belum ada catatan untuk tanggal ini.</p>
             <button
               onClick={() => onOpenLogModal(selectedDateStr)}
-              className="mt-2 text-xs font-semibold text-[#E07A5F] underline hover:no-underline cursor-pointer"
+              className="mt-2 text-xs font-semibold text-[#E78895] underline hover:no-underline cursor-pointer"
             >
               Tambahkan catatan harian
             </button>
@@ -289,7 +289,7 @@ export const CycleCalendar: React.FC<CycleCalendarProps> = ({
           <div className="py-3 space-y-3 text-xs">
             <div className="flex items-center justify-between">
               <span className="text-[#79716B] flex items-center gap-1.5">
-                <Droplet className="w-3.5 h-3.5 text-[#E07A5F]" />
+                <Droplet className="w-3.5 h-3.5 text-[#E78895]" />
                 Aliran Darah
               </span>
               <span

@@ -13,7 +13,7 @@ export const QuickStatsCard: React.FC<QuickStatsCardProps> = ({ stats }) => {
     <div className="grid grid-cols-2 gap-3 sm:gap-4">
       <div className="card-soft p-4 flex flex-col justify-between">
         <div className="flex items-center gap-1.5 text-xs text-[#79716B]">
-          <CalendarDays className="w-4 h-4 text-[#E07A5F]" />
+          <CalendarDays className="w-4 h-4 text-[#E78895]" />
           <span>Rata-rata Siklus</span>
         </div>
         <div className="mt-2">
