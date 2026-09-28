@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { CycleCalendar } from "@/components/calendar/CycleCalendar";
 import { DailyLogModal } from "@/components/log/DailyLogModal";
 import { MedicalDisclaimer } from "@/components/ui/MedicalDisclaimer";
@@ -25,12 +26,21 @@ export const CalendarClient: React.FC<CalendarClientProps> = ({
   estimatedNextPeriodDate,
   averagePeriodDuration,
 }) => {
+  const router = useRouter();
+  const [, startTransition] = useTransition();
+
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | undefined>(undefined);
 
   const handleOpenLogModal = (dateStr: string) => {
     setSelectedDate(dateStr);
     setIsLogModalOpen(true);
+  };
+
+  const handleSmoothRefresh = () => {
+    startTransition(() => {
+      router.refresh();
+    });
   };
 
   return (
@@ -49,7 +59,7 @@ export const CalendarClient: React.FC<CalendarClientProps> = ({
         isOpen={isLogModalOpen}
         onClose={() => setIsLogModalOpen(false)}
         initialDate={selectedDate}
-        onLogSaved={() => window.location.reload()}
+        onLogSaved={handleSmoothRefresh}
       />
     </div>
   );

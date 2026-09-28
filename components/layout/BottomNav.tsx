@@ -21,7 +21,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ onOpenQuickLog }) => {
 
   return (
     <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#FAF8F5]/95 backdrop-blur-lg border-t border-[#E8E0D5] pb-safe">
-      <div className="flex items-center justify-around px-2 py-2 max-w-md mx-auto relative">
+      <div className="flex items-center justify-around px-2 py-1.5 max-w-md mx-auto relative">
         {navItems.slice(0, 2).map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href;
@@ -29,12 +29,13 @@ export const BottomNav: React.FC<BottomNavProps> = ({ onOpenQuickLog }) => {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center justify-center w-14 py-1 transition-colors rounded-xl ${
-                isActive ? "text-[#E07A5F]" : "text-[#79716B] hover:text-[#2D2727]"
+              prefetch={true}
+              className={`flex flex-col items-center justify-center w-14 py-1.5 transition-all active:scale-90 rounded-xl ${
+                isActive ? "text-[#E07A5F] font-semibold" : "text-[#79716B] hover:text-[#2D2727]"
               }`}
             >
               <Icon className={`w-5 h-5 ${isActive ? "stroke-[2.5]" : "stroke-[1.75]"}`} />
-              <span className="text-[10px] font-medium mt-1">{item.label}</span>
+              <span className="text-[10px] font-medium mt-0.5">{item.label}</span>
             </Link>
           );
         })}
@@ -42,7 +43,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ onOpenQuickLog }) => {
         <div className="relative -top-3">
           <button
             onClick={onOpenQuickLog}
-            className="w-12 h-12 rounded-full bg-gradient-to-tr from-[#E07A5F] to-[#F4A261] text-white flex items-center justify-center shadow-lg shadow-[#E07A5F]/35 hover:scale-105 active:scale-95 transition-all cursor-pointer"
+            className="w-12 h-12 rounded-full bg-gradient-to-tr from-[#E07A5F] to-[#F4A261] text-white flex items-center justify-center shadow-lg shadow-[#E07A5F]/35 hover:scale-105 active:scale-90 transition-all cursor-pointer"
             aria-label="Catat Hari Ini"
           >
             <Plus className="w-6 h-6 stroke-[2.5]" />
@@ -56,12 +57,13 @@ export const BottomNav: React.FC<BottomNavProps> = ({ onOpenQuickLog }) => {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center justify-center w-14 py-1 transition-colors rounded-xl ${
-                isActive ? "text-[#E07A5F]" : "text-[#79716B] hover:text-[#2D2727]"
+              prefetch={true}
+              className={`flex flex-col items-center justify-center w-14 py-1.5 transition-all active:scale-90 rounded-xl ${
+                isActive ? "text-[#E07A5F] font-semibold" : "text-[#79716B] hover:text-[#2D2727]"
               }`}
             >
               <Icon className={`w-5 h-5 ${isActive ? "stroke-[2.5]" : "stroke-[1.75]"}`} />
-              <span className="text-[10px] font-medium mt-1">{item.label}</span>
+              <span className="text-[10px] font-medium mt-0.5">{item.label}</span>
             </Link>
           );
         })}

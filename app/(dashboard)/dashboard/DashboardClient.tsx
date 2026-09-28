@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { CycleSummaryStats, DailyLogData } from "@/lib/calculations/cycle";
 import { CycleCircle } from "@/components/dashboard/CycleCircle";
 import { DailySummaryCard } from "@/components/dashboard/DailySummaryCard";
@@ -32,9 +33,18 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({
   latestCycle,
   user,
 }) => {
+  const router = useRouter();
+  const [, startTransition] = useTransition();
+
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
   const [isCycleModalOpen, setIsCycleModalOpen] = useState(false);
   const [isEditCycleModalOpen, setIsEditCycleModalOpen] = useState(false);
+
+  const handleSmoothRefresh = () => {
+    startTransition(() => {
+      router.refresh();
+    });
+  };
 
   const isOngoingPeriod = latestCycle && !latestCycle.endDate;
 
@@ -52,7 +62,7 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({
 
         <button
           onClick={() => setIsCycleModalOpen(true)}
-          className="self-start sm:self-auto px-3.5 py-1.5 rounded-full border border-[#E8E0D5] bg-white hover:border-[#E07A5F] text-xs font-semibold text-[#2D2727] flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+          className="self-start sm:self-auto px-3.5 py-1.5 rounded-full border border-[#E8E0D5] bg-white hover:border-[#E07A5F] active:scale-95 text-xs font-semibold text-[#2D2727] flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
         >
           <PlusCircle className="w-3.5 h-3.5 text-[#E07A5F]" />
           Catat Siklus Baru
@@ -75,7 +85,7 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({
 
           <button
             onClick={() => setIsEditCycleModalOpen(true)}
-            className="self-start sm:self-auto px-3.5 py-1.5 rounded-xl bg-white hover:bg-[#FAF8F5] border border-[#E07A5F]/40 text-xs font-semibold text-[#E07A5F] flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
+            className="self-start sm:self-auto px-3.5 py-1.5 rounded-xl bg-white hover:bg-[#FAF8F5] active:scale-95 border border-[#E07A5F]/40 text-xs font-semibold text-[#E07A5F] flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer"
           >
             <CheckCircle2 className="w-3.5 h-3.5" />
             Selesaikan / Edit Haid
@@ -98,19 +108,19 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({
       <DailyLogModal
         isOpen={isLogModalOpen}
         onClose={() => setIsLogModalOpen(false)}
-        onLogSaved={() => window.location.reload()}
+        onLogSaved={handleSmoothRefresh}
       />
       <AddCycleModal
         isOpen={isCycleModalOpen}
         onClose={() => setIsCycleModalOpen(false)}
-        onCycleAdded={() => window.location.reload()}
+        onCycleAdded={handleSmoothRefresh}
       />
       {latestCycle && (
         <EditCycleModal
           isOpen={isEditCycleModalOpen}
           onClose={() => setIsEditCycleModalOpen(false)}
           cycle={latestCycle}
-          onCycleUpdated={() => window.location.reload()}
+          onCycleUpdated={handleSmoothRefresh}
         />
       )}
     </div>

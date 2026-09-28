@@ -9,23 +9,24 @@ export const dynamic = "force-dynamic";
 export default async function CalendarPage() {
   const session = await requireAuth();
 
-  const [settings] = await db
-    .select()
-    .from(userSettings)
-    .where(eq(userSettings.userId, session.userId))
-    .limit(1);
-
-  const userCycles = await db
-    .select()
-    .from(cycles)
-    .where(eq(cycles.userId, session.userId))
-    .orderBy(desc(cycles.startDate));
-
-  const userLogs = await db
-    .select()
-    .from(dailyLogs)
-    .where(eq(dailyLogs.userId, session.userId))
-    .orderBy(desc(dailyLogs.date));
+  // Parallel database fetching for calendar data
+  const [[settings], userCycles, userLogs] = await Promise.all([
+    db
+      .select()
+      .from(userSettings)
+      .where(eq(userSettings.userId, session.userId))
+      .limit(1),
+    db
+      .select()
+      .from(cycles)
+      .where(eq(cycles.userId, session.userId))
+      .orderBy(desc(cycles.startDate)),
+    db
+      .select()
+      .from(dailyLogs)
+      .where(eq(dailyLogs.userId, session.userId))
+      .orderBy(desc(dailyLogs.date)),
+  ]);
 
   const stats = calculateCycleStats(
     userCycles,

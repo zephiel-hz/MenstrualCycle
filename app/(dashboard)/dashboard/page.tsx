@@ -9,26 +9,26 @@ export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
   const session = await requireAuth();
-
-  const [settings] = await db
-    .select()
-    .from(userSettings)
-    .where(eq(userSettings.userId, session.userId))
-    .limit(1);
-
-  const userCycles = await db
-    .select()
-    .from(cycles)
-    .where(eq(cycles.userId, session.userId))
-    .orderBy(desc(cycles.startDate));
-
   const todayStr = formatISODateOnly(new Date());
 
-  const [todayLog] = await db
-    .select()
-    .from(dailyLogs)
-    .where(and(eq(dailyLogs.userId, session.userId), eq(dailyLogs.date, todayStr)))
-    .limit(1);
+  // Execute all 3 database queries concurrently in parallel to reduce server latency
+  const [[settings], userCycles, [todayLog]] = await Promise.all([
+    db
+      .select()
+      .from(userSettings)
+      .where(eq(userSettings.userId, session.userId))
+      .limit(1),
+    db
+      .select()
+      .from(cycles)
+      .where(eq(cycles.userId, session.userId))
+      .orderBy(desc(cycles.startDate)),
+    db
+      .select()
+      .from(dailyLogs)
+      .where(and(eq(dailyLogs.userId, session.userId), eq(dailyLogs.date, todayStr)))
+      .limit(1),
+  ]);
 
   const defaultCycleLength = settings?.cycleLengthDefault || 28;
   const defaultPeriodDuration = settings?.periodDurationDefault || 5;
