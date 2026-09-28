@@ -13,7 +13,8 @@ import {
   Bell,
   CheckCircle2,
   Info,
-  ExternalLink,
+  Smartphone,
+  Share,
 } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 
@@ -60,21 +61,50 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const [isTestingNotif, setIsTestingNotif] = useState(false);
   const [showToastPreview, setShowToastPreview] = useState(false);
 
+  const [isStandalone, setIsStandalone] = useState(false);
+  const [canPromptPwa, setCanPromptPwa] = useState(false);
+  const [isIosDevice, setIsIosDevice] = useState(false);
+
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deletePassword, setDeletePassword] = useState("");
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
-  const checkPermission = () => {
-    if (typeof window !== "undefined" && "Notification" in window) {
-      setNotifPermission(Notification.permission);
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      if ("Notification" in window) {
+        setNotifPermission(Notification.permission);
+      }
+      const standalone =
+        window.matchMedia("(display-mode: standalone)").matches ||
+        (window.navigator as unknown as { standalone?: boolean }).standalone === true;
+      setIsStandalone(standalone);
+
+      const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as unknown as { MSStream?: unknown }).MSStream;
+      setIsIosDevice(isIos);
+
+      if (window.__LUNARA_PWA_PROMPT__) {
+        setCanPromptPwa(true);
+      }
+
+      const onPromptAvailable = () => setCanPromptPwa(true);
+      window.addEventListener("lunara:pwa-prompt-available", onPromptAvailable);
+      return () => window.removeEventListener("lunara:pwa-prompt-available", onPromptAvailable);
+    }
+  }, []);
+
+  const handleInstallPwa = async () => {
+    const prompt = window.__LUNARA_PWA_PROMPT__;
+    if (prompt) {
+      prompt.prompt();
+      const choice = await prompt.userChoice;
+      if (choice.outcome === "accepted") {
+        setCanPromptPwa(false);
+        window.__LUNARA_PWA_PROMPT__ = null;
+      }
     }
   };
-
-  useEffect(() => {
-    checkPermission();
-  }, []);
 
   const handleTestNotification = async () => {
     try {
@@ -95,7 +125,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         try {
           perm = await Notification.requestPermission();
         } catch {
-          // Callback style fallback
           perm = await new Promise((resolve) => Notification.requestPermission(resolve));
         }
         setNotifPermission(perm);
@@ -256,8 +285,69 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           Pengaturan & Privasi
         </h1>
         <p className="text-xs text-[#79716B] mt-0.5">
-          Kelola profil, preferensi siklus, pengingat, dan data kesehatan pribadimu.
+          Kelola profil, preferensi siklus, pengingat, aplikasi PWA, dan data kesehatan pribadimu.
         </p>
+      </div>
+
+      {/* PWA Installation Card */}
+      <div className="card-soft p-5 sm:p-6 bg-gradient-to-br from-white via-white to-[#FAF8F5]">
+        <div className="flex items-center justify-between mb-3 pb-3 border-b border-[#F2ECE4]">
+          <div className="flex items-center gap-2">
+            <Smartphone className="w-4 h-4 text-[#E07A5F]" />
+            <h3 className="text-sm font-bold text-[#2D2727]">Aplikasi Lunara (PWA)</h3>
+          </div>
+          <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${
+            isStandalone
+              ? "bg-green-100 text-green-700"
+              : "bg-[#FCECE8] text-[#E07A5F]"
+          }`}>
+            {isStandalone ? "✓ Aplikasi Terpasang (Standalone)" : "Mode Browser Web"}
+          </span>
+        </div>
+
+        {isStandalone ? (
+          <p className="text-xs text-[#79716B]">
+            Lunara sudah berjalan sebagai aplikasi terpasang di layar utama perangkat Anda dengan akses offline dan tampilan layar penuh tanpa bilah browser.
+          </p>
+        ) : (
+          <div className="space-y-3 text-xs text-[#79716B]">
+            <p>
+              Anda dapat memasang Lunara ke Layar Utama (*Home Screen*) HP atau Laptop Anda kapan saja agar bisa dibuka langsung seperti aplikasi native:
+            </p>
+
+            {canPromptPwa && (
+              <div className="pt-1">
+                <button
+                  type="button"
+                  onClick={handleInstallPwa}
+                  className="px-4 py-2 rounded-xl bg-[#E07A5F] hover:bg-[#d0694e] text-white text-xs font-semibold shadow-sm transition-all cursor-pointer flex items-center gap-2 active:scale-95"
+                >
+                  <Download className="w-4 h-4" />
+                  Pasang Lunara Sekarang
+                </button>
+              </div>
+            )}
+
+            {isIosDevice ? (
+              <div className="p-3.5 rounded-xl bg-[#FAF8F5] border border-[#E8E0D5] space-y-1.5">
+                <div className="flex items-center gap-1.5 font-semibold text-[#2D2727]">
+                  <Share className="w-3.5 h-3.5 text-[#E07A5F]" />
+                  <span>Cara Pasang di iPhone / iPad (Safari):</span>
+                </div>
+                <ol className="list-decimal list-inside text-[11px] space-y-1 text-[#79716B]">
+                  <li>Buka website ini menggunakan <strong>Safari</strong>.</li>
+                  <li>Ketuk tombol <strong>Bagikan (Ikon Kotak Panah Atas ↑)</strong> di bilah bawah Safari.</li>
+                  <li>Pilih <strong>&quot;Tambah ke Layar Utama&quot; (Add to Home Screen)</strong>.</li>
+                </ol>
+              </div>
+            ) : !canPromptPwa && (
+              <div className="p-3.5 rounded-xl bg-[#FAF8F5] border border-[#E8E0D5] text-[11px] space-y-1">
+                <p className="font-semibold text-[#2D2727]">Cara Pasang Manual di Chrome / Edge / Android:</p>
+                <p>Ketuk menu <strong>titik tiga (⋮)</strong> di kanan atas browser $ightarrow$ Pilih <strong>&quot;Instal Aplikasi&quot;</strong> atau <strong>&quot;Tambahkan ke Layar Utama&quot;</strong>.</p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Profil Akun */}

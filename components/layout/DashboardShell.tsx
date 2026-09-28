@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Navbar } from "./Navbar";
 import { Sidebar } from "./Sidebar";
 import { BottomNav } from "./BottomNav";
@@ -16,6 +17,9 @@ interface DashboardShellProps {
 }
 
 export const DashboardShell: React.FC<DashboardShellProps> = ({ user, children }) => {
+  const router = useRouter();
+  const [, startTransition] = useTransition();
+
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
   const [selectedLogDate, setSelectedLogDate] = useState<string | undefined>(undefined);
 
@@ -27,6 +31,12 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({ user, children }
   const closeLogModal = () => {
     setIsLogModalOpen(false);
     setSelectedLogDate(undefined);
+  };
+
+  const handleSmoothRefresh = () => {
+    startTransition(() => {
+      router.refresh();
+    });
   };
 
   return (
@@ -44,9 +54,7 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({ user, children }
         isOpen={isLogModalOpen}
         onClose={closeLogModal}
         initialDate={selectedLogDate}
-        onLogSaved={() => {
-          window.location.reload();
-        }}
+        onLogSaved={handleSmoothRefresh}
       />
 
       <PwaInstaller />

@@ -8,29 +8,51 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 }
 
+declare global {
+  interface Window {
+    __LUNARA_PWA_PROMPT__?: BeforeInstallPromptEvent | null;
+  }
+}
+
 export const PwaInstaller: React.FC = () => {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showBanner, setShowBanner] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== "undefined" && "serviceWorker" in navigator) {
-      navigator.serviceWorker
-        .register("/sw.js")
-        .then((reg) => {
-          console.log("Service Worker registered with scope:", reg.scope);
-        })
-        .catch((err) => {
-          console.error("Service Worker registration failed:", err);
-        });
+    // Check if already running in standalone PWA mode
+    if (typeof window !== "undefined") {
+      const standalone =
+        window.matchMedia("(display-mode: standalone)").matches ||
+        (window.navigator as unknown as { standalone?: boolean }).standalone === true;
+      setIsStandalone(standalone);
+
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker
+          .register("/sw.js")
+          .catch((err) => {
+            console.warn("Service Worker registration error:", err);
+          });
+      }
     }
 
     const handler = (e: Event) => {
       e.preventDefault();
-      setDeferredPrompt(e as BeforeInstallPromptEvent);
-      const dismissed = localStorage.getItem("lunara_pwa_dismissed");
-      if (!dismissed) {
-        setShowBanner(true);
+      const promptEvent = e as BeforeInstallPromptEvent;
+      setDeferredPrompt(promptEvent);
+      window.__LUNARA_PWA_PROMPT__ = promptEvent;
+      window.dispatchEvent(new CustomEvent("lunara:pwa-prompt-available"));
+
+      // Check snooze (24 hours) instead of permanent dismissal
+      const dismissedAt = localStorage.getItem("lunara_pwa_dismissed_at");
+      if (dismissedAt) {
+        const timeDiff = Date.now() - parseInt(dismissedAt, 10);
+        if (timeDiff < 24 * 60 * 60 * 1000) {
+          return;
+        }
       }
+
+      setShowBanner(true);
     };
 
     window.addEventListener("beforeinstallprompt", handler);
@@ -41,26 +63,29 @@ export const PwaInstaller: React.FC = () => {
   }, []);
 
   const handleInstallClick = async () => {
-    if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    const choice = await deferredPrompt.userChoice;
+    const prompt = deferredPrompt || window.__LUNARA_PWA_PROMPT__;
+    if (!prompt) return;
+    prompt.prompt();
+    const choice = await prompt.userChoice;
     if (choice.outcome === "accepted") {
       setShowBanner(false);
+      window.__LUNARA_PWA_PROMPT__ = null;
     }
     setDeferredPrompt(null);
   };
 
   const handleDismiss = () => {
     setShowBanner(false);
-    localStorage.setItem("lunara_pwa_dismissed", "true");
+    // Snooze for 24 hours so it won't annoy, but won't be lost forever
+    localStorage.setItem("lunara_pwa_dismissed_at", Date.now().toString());
   };
 
-  if (!showBanner || !deferredPrompt) return null;
+  if (isStandalone || !showBanner || !deferredPrompt) return null;
 
   return (
     <aside
       aria-label="Pemasangan Aplikasi Lunara"
-      className="fixed bottom-20 md:bottom-6 left-4 right-4 md:left-auto md:right-6 md:w-96 bg-white border border-[#E8E0D5] p-4 rounded-2xl shadow-xl z-50 animate-in slide-in-from-bottom duration-300"
+      className="fixed bottom-20 md:bottom-6 left-4 right-4 md:left-auto md:right-6 md:w-96 bg-white/95 backdrop-blur-md border border-[#E8E0D5] p-4 rounded-2xl shadow-xl z-50 animate-in slide-in-from-bottom duration-300"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3">
@@ -68,15 +93,15 @@ export const PwaInstaller: React.FC = () => {
             <Download className="w-5 h-5" />
           </div>
           <div>
-            <h4 className="font-semibold text-sm text-[#2D2727]">Pasang Lunara App</h4>
+            <h4 className="font-bold text-sm text-[#2D2727]">Pasang Aplikasi Lunara</h4>
             <p className="text-xs text-[#79716B] mt-0.5">
-              Gunakan Lunara sebagai aplikasi mandiri di perangkatmu dengan akses cepat dan mulus.
+              Akses cepat tanpa browser bar, bekerja offline, dan lebih hemat baterai.
             </p>
           </div>
         </div>
         <button
           onClick={handleDismiss}
-          className="text-[#79716B] hover:text-[#2D2727] p-1 rounded-full cursor-pointer"
+          className="text-[#79716B] hover:text-[#2D2727] p-1 rounded-full cursor-pointer transition-colors"
           aria-label="Tutup saran pemasangan aplikasi"
         >
           <X className="w-4 h-4" />
@@ -85,13 +110,13 @@ export const PwaInstaller: React.FC = () => {
       <div className="mt-3 flex gap-2 justify-end">
         <button
           onClick={handleDismiss}
-          className="px-3 py-1.5 text-xs font-medium text-[#79716B] hover:bg-[#F2ECE4] rounded-lg transition-colors cursor-pointer"
+          className="px-3 py-1.5 text-xs font-medium text-[#79716B] hover:bg-[#F2ECE4] rounded-xl transition-colors cursor-pointer"
         >
           Nanti Saja
         </button>
         <button
           onClick={handleInstallClick}
-          className="px-4 py-1.5 text-xs font-semibold bg-[#E07A5F] hover:bg-[#d0694e] text-white rounded-lg shadow-sm transition-all cursor-pointer"
+          className="px-4 py-1.5 text-xs font-semibold bg-[#E07A5F] hover:bg-[#d0694e] text-white rounded-xl shadow-xs transition-all cursor-pointer active:scale-95"
         >
           Pasang Sekarang
         </button>
