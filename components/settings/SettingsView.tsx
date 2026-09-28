@@ -10,6 +10,7 @@ import {
   Sliders,
   FileJson,
   FileSpreadsheet,
+  Bell,
   CheckCircle2,
   Info,
   Smartphone,
@@ -58,6 +59,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const [settingsMsg, setSettingsMsg] = useState<string | null>(null);
 
   const [notifPermission, setNotifPermission] = useState<string>("default");
+  const [testNotifMsg, setTestNotifMsg] = useState<{ type: "success" | "error" | "info"; text: string } | null>(null);
+  const [isTestingNotif, setIsTestingNotif] = useState(false);
+  const [showToastPreview, setShowToastPreview] = useState(false);
 
   const [isStandalone, setIsStandalone] = useState(false);
   const [canPromptPwa, setCanPromptPwa] = useState(false);
@@ -101,6 +105,84 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         setCanPromptPwa(false);
         window.__LUNARA_PWA_PROMPT__ = null;
       }
+    }
+  };
+
+  const handleTestNotification = async () => {
+    try {
+      setIsTestingNotif(true);
+      setTestNotifMsg(null);
+      setShowToastPreview(false);
+
+      if (typeof window === "undefined" || !("Notification" in window)) {
+        setTestNotifMsg({
+          type: "error",
+          text: "Browser ini tidak mendukung Web Notification API. Silakan gunakan browser modern seperti Chrome, Edge, Safari, atau Firefox.",
+        });
+        return;
+      }
+
+      let perm = Notification.permission;
+      if (perm === "default") {
+        try {
+          perm = await Notification.requestPermission();
+        } catch {
+          perm = await new Promise((resolve) => Notification.requestPermission(resolve));
+        }
+        setNotifPermission(perm);
+      }
+
+      if (perm === "denied") {
+        setTestNotifMsg({
+          type: "error",
+          text: "Izin notifikasi diblokir browser. Untuk memunculkannya: Klik ikon gembok / slider di sebelah kiri URL pada address bar -> Ubah Notifikasi menjadi 'Izinkan' (Allow) -> Muat ulang (Refresh) halaman.",
+        });
+        return;
+      }
+
+      if (perm === "granted") {
+        setShowToastPreview(true);
+
+        const title = "🌸 Lunara - Pengingat Siklus";
+        const bodyText = "Halo! Ini adalah notifikasi uji coba dari Lunara. Pengingat siklus menstruasi dan catatan harian Anda aktif.";
+
+        let sentViaSw = false;
+        if ("serviceWorker" in navigator) {
+          try {
+            const reg = await navigator.serviceWorker.getRegistration();
+            if (reg && reg.showNotification) {
+              await reg.showNotification(title, {
+                body: bodyText,
+                tag: "lunara-test-notif-" + Date.now(),
+              });
+              sentViaSw = true;
+            }
+          } catch (swErr) {
+            console.warn("Service worker notification error:", swErr);
+          }
+        }
+
+        if (!sentViaSw) {
+          try {
+            new Notification(title, {
+              body: bodyText,
+              tag: "lunara-test-notif-" + Date.now(),
+            });
+          } catch (notifErr) {
+            console.warn("Direct notification error:", notifErr);
+          }
+        }
+
+        setTestNotifMsg({
+          type: "success",
+          text: "✅ Notifikasi berhasil dipicu! Jika banner pop-up OS tidak muncul, periksa Notification Center Windows / Fokus / Do Not Disturb perangkat Anda.",
+        });
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Gagal memunculkan notifikasi.";
+      setTestNotifMsg({ type: "error", text: msg });
+    } finally {
+      setIsTestingNotif(false);
     }
   };
 
@@ -164,7 +246,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   };
 
   const handleExport = (type: "json" | "csv") => {
-    window.location.href = `/api/export?type=${type}`;
+    window.location.href = `/api/export?format=${type}`;
   };
 
   const handleDeleteAccount = async (e: React.FormEvent) => {
@@ -461,6 +543,62 @@ ightarrow$ Pilih <strong>&quot;Instal Aplikasi&quot;</strong> atau <strong>&quot
               />
               <span className="text-xs text-[#2D2727]">Pengingat mencatat gejala fisik & mood</span>
             </label>
+
+            {/* Test Notification Button */}
+            <div className="p-3.5 rounded-xl bg-[#FAF8F5] border border-[#E8E0D5] flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-2">
+              <div>
+                <p className="text-xs font-semibold text-[#2D2727]">Uji Notifikasi Perangkat</p>
+                <p className="text-[11px] text-[#79716B]">Klik untuk meminta izin atau mengirim notifikasi langsung ke perangkat.</p>
+              </div>
+              <button
+                type="button"
+                onClick={handleTestNotification}
+                disabled={isTestingNotif}
+                className="px-3.5 py-1.5 rounded-xl bg-white hover:bg-[#FAF8F5] border border-[#E78895]/40 text-xs font-semibold text-[#E78895] flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer shrink-0 disabled:opacity-50"
+              >
+                <Bell className="w-3.5 h-3.5" />
+                {isTestingNotif ? "Memproses..." : "Kirim Notifikasi Uji Coba"}
+              </button>
+            </div>
+
+            {testNotifMsg && (
+              <div
+                className={`text-xs p-3 rounded-xl border flex items-start gap-2 ${
+                  testNotifMsg.type === "success"
+                    ? "bg-green-50 text-green-700 border-green-200"
+                    : testNotifMsg.type === "error"
+                    ? "bg-red-50 text-red-700 border-red-200"
+                    : "bg-blue-50 text-blue-700 border-blue-200"
+                }`}
+              >
+                {testNotifMsg.type === "success" ? (
+                  <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
+                ) : (
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                )}
+                <div className="space-y-1">
+                  <p>{testNotifMsg.text}</p>
+                </div>
+              </div>
+            )}
+
+            {/* In-app Toast Preview simulation */}
+            {showToastPreview && (
+              <div className="p-3 rounded-2xl bg-white border-2 border-[#E78895] shadow-lg flex items-start gap-3 animate-in fade-in-50 slide-in-from-top-2 duration-300">
+                <div className="w-8 h-8 rounded-full bg-[#FCEEF1] text-[#E78895] flex items-center justify-center shrink-0 font-bold text-sm">
+                  🌸
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-bold text-[#2D2727]">Lunara - Pengingat Siklus</p>
+                    <span className="text-[10px] text-[#79716B]">Baru saja</span>
+                  </div>
+                  <p className="text-[11px] text-[#79716B] mt-0.5">
+                    Halo! Ini adalah notifikasi uji coba dari Lunara. Pengingat siklus menstruasi dan catatan harian Anda aktif.
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
 
           {settingsMsg && (
@@ -504,7 +642,7 @@ ightarrow$ Pilih <strong>&quot;Instal Aplikasi&quot;</strong> atau <strong>&quot
             className="px-4 py-2 rounded-xl bg-white border border-[#E8E0D5] hover:border-[#81B29A] text-xs font-semibold text-[#2D2727] flex items-center gap-2 transition-colors cursor-pointer shadow-2xs"
           >
             <FileSpreadsheet className="w-4 h-4 text-[#81B29A]" />
-            Unduh CSV (Zip)
+            Unduh CSV (Spreadsheet)
           </button>
         </div>
       </div>

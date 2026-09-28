@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url);
-    const format = searchParams.get("format") || "json";
+    const format = (searchParams.get("format") || searchParams.get("type") || "json").toLowerCase();
 
     const [profile] = await db
       .select()
@@ -65,7 +65,7 @@ export async function GET(req: NextRequest) {
     };
 
     if (format === "csv") {
-      let csvContent = `=== DATA SIKLUS (CYCLES) ===\n`;
+      let csvContent = `\uFEFF=== DATA SIKLUS (CYCLES) ===\n`;
       csvContent += `"ID","Tanggal Mulai","Tanggal Selesai","Catatan"\n`;
       for (const c of userCycles) {
         const notesEscaped = (c.notes || "").replace(/"/g, '""');
