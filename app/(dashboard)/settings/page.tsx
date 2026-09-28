@@ -8,17 +8,19 @@ export const dynamic = "force-dynamic";
 export default async function SettingsPage() {
   const session = await requireAuth();
 
-  const [profile] = await db
-    .select()
-    .from(profiles)
-    .where(eq(profiles.userId, session.userId))
-    .limit(1);
-
-  const [settings] = await db
-    .select()
-    .from(userSettings)
-    .where(eq(userSettings.userId, session.userId))
-    .limit(1);
+  // Execute profile and settings queries in parallel
+  const [[profile], [settings]] = await Promise.all([
+    db
+      .select()
+      .from(profiles)
+      .where(eq(profiles.userId, session.userId))
+      .limit(1),
+    db
+      .select()
+      .from(userSettings)
+      .where(eq(userSettings.userId, session.userId))
+      .limit(1),
+  ]);
 
   const defaultSettings = settings || {
     reminderPeriod: true,

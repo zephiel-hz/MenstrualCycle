@@ -16,7 +16,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ onOpenQuickLog }) => {
     { label: "Beranda", href: "/dashboard", icon: Home },
     { label: "Kalender", href: "/calendar", icon: Calendar },
     { label: "Riwayat", href: "/history", icon: History },
-    { label: "Wawasan", href: "/insights", icon: BarChart3 },
+    { label: "Wawasan", href: "/statistics", icon: BarChart3 },
   ];
 
   return (
@@ -52,7 +52,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ onOpenQuickLog }) => {
 
         {navItems.slice(2).map((item) => {
           const Icon = item.icon;
-          const isActive = pathname === item.href;
+          const isActive = pathname === item.href || (item.href === "/statistics" && pathname === "/insights");
           return (
             <Link
               key={item.href}

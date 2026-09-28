@@ -9,24 +9,25 @@ export const dynamic = "force-dynamic";
 export default async function StatisticsPage() {
   const session = await requireAuth();
 
-  const [settings] = await db
-    .select()
-    .from(userSettings)
-    .where(eq(userSettings.userId, session.userId))
-    .limit(1);
-
-  const userCycles = await db
-    .select()
-    .from(cycles)
-    .where(eq(cycles.userId, session.userId))
-    .orderBy(desc(cycles.startDate));
-
-  const userLogs = await db
-    .select()
-    .from(dailyLogs)
-    .where(eq(dailyLogs.userId, session.userId))
-    .orderBy(desc(dailyLogs.date))
-    .limit(100);
+  // Execute all 3 queries in parallel to drastically speed up page loading
+  const [[settings], userCycles, userLogs] = await Promise.all([
+    db
+      .select()
+      .from(userSettings)
+      .where(eq(userSettings.userId, session.userId))
+      .limit(1),
+    db
+      .select()
+      .from(cycles)
+      .where(eq(cycles.userId, session.userId))
+      .orderBy(desc(cycles.startDate)),
+    db
+      .select()
+      .from(dailyLogs)
+      .where(eq(dailyLogs.userId, session.userId))
+      .orderBy(desc(dailyLogs.date))
+      .limit(100),
+  ]);
 
   const defaultCycleLength = settings?.cycleLengthDefault || 28;
   const defaultPeriodDuration = settings?.periodDurationDefault || 5;
@@ -58,18 +59,16 @@ export default async function StatisticsPage() {
       return {
         cycleNumber: i + 1,
         startDate: c.startDate,
-        duration: dur > 0 && dur <= 20 ? dur : defaultPeriodDuration,
+        duration: dur,
       };
     });
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <StatisticsView
-        stats={stats}
-        cycleTrends={cycleTrends}
-        periodTrends={periodTrends}
-        insights={insights}
-      />
-    </div>
+    <StatisticsView
+      stats={stats}
+      insights={insights}
+      cycleTrends={cycleTrends}
+      periodTrends={periodTrends}
+    />
   );
 }
