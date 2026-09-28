@@ -26,6 +26,7 @@ export default async function SettingsPage() {
     reminderPeriod: true,
     reminderLogging: true,
     reminderSymptoms: false,
+    reminderPms: true,
     cycleLengthDefault: 28,
     periodDurationDefault: 5,
   };
