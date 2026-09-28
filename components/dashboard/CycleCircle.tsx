@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Sparkles, HeartHandshake } from "lucide-react";
+import { Sparkles, HeartHandshake, Feather, Zap, Moon, Sun } from "lucide-react";
 import { CycleSummaryStats } from "@/lib/calculations/cycle";
 import { formatShortDate } from "@/lib/utils";
 
@@ -18,13 +18,42 @@ export const CycleCircle: React.FC<CycleCircleProps> = ({ stats, onLogClick }) =
   const percent = currentDay ? Math.min(Math.round((currentDay / avgCycle) * 100), 100) : 0;
   const strokeDashoffset = 440 - (440 * percent) / 100;
 
+  // Phase icon and color styling
+  const phaseStyles: Record<string, { badgeColor: string; icon: React.ReactNode }> = {
+    menstrual: {
+      badgeColor: "bg-[#FCECE8] text-[#E07A5F] border-[#E07A5F]/30",
+      icon: <Moon className="w-3.5 h-3.5 text-[#E07A5F]" />,
+    },
+    follicular: {
+      badgeColor: "bg-[#EBF4F0] text-[#81B29A] border-[#81B29A]/30",
+      icon: <Zap className="w-3.5 h-3.5 text-[#81B29A]" />,
+    },
+    ovulation: {
+      badgeColor: "bg-[#E8F3F1] text-[#2A9D8F] border-[#2A9D8F]/30",
+      icon: <Sun className="w-3.5 h-3.5 text-[#2A9D8F]" />,
+    },
+    luteal_pms: {
+      badgeColor: "bg-[#F5EEF8] text-[#9B59B6] border-[#9B59B6]/30",
+      icon: <Feather className="w-3.5 h-3.5 text-[#9B59B6]" />,
+    },
+    luteal: {
+      badgeColor: "bg-[#FDF2E9] text-[#E67E22] border-[#E67E22]/30",
+      icon: <Sparkles className="w-3.5 h-3.5 text-[#E67E22]" />,
+    },
+  };
+
+  const currentStyle = phaseStyles[stats.currentPhase] || phaseStyles.follicular;
+
   return (
     <div className="card-soft p-6 sm:p-8 flex flex-col items-center text-center relative overflow-hidden bg-gradient-to-b from-white via-white to-[#FAF8F5]">
       <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-64 h-64 bg-[#E07A5F]/10 rounded-full blur-3xl pointer-events-none" />
 
-      <p className="text-xs font-semibold uppercase tracking-widest text-[#E07A5F] mb-4">
-        Siklus Kamu
-      </p>
+      <div className="flex items-center gap-2 mb-4">
+        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${currentStyle.badgeColor}`}>
+          {currentStyle.icon}
+          {stats.currentPhaseTitle}
+        </span>
+      </div>
 
       <div className="relative w-52 h-52 sm:w-60 sm:h-60 flex items-center justify-center my-2">
         <svg className="w-full h-full -rotate-90 transform" viewBox="0 0 160 160">
@@ -75,7 +104,8 @@ export const CycleCircle: React.FC<CycleCircleProps> = ({ stats, onLogClick }) =
         </div>
       </div>
 
-      <div className="mt-4 text-sm text-[#79716B] max-w-xs">
+      {/* Cycle Forecast & PMS Guide */}
+      <div className="mt-4 text-sm text-[#79716B] max-w-sm">
         {stats.totalCyclesLogged === 0 ? (
           <p>Belum ada siklus aktif. Catat hari pertama menstruasi kamu untuk memulai pelacakan.</p>
         ) : daysUntilNext !== null ? (
@@ -100,18 +130,18 @@ export const CycleCircle: React.FC<CycleCircleProps> = ({ stats, onLogClick }) =
               .
             </p>
           )
-        ) : (
-          <p>Lanjutkan mencatat siklus harianmu secara berkala.</p>
+        ) : null}
+
+        {/* Phase Wisdom Box */}
+        {stats.currentPhaseTips && (
+          <div className="mt-4 p-3.5 rounded-2xl bg-[#FAF8F5] border border-[#E8E0D5] text-left text-xs leading-relaxed text-[#79716B]">
+            <span className="font-bold text-[#2D2727] block mb-1 flex items-center gap-1.5">
+              💡 Panduan Tubuh Saat Ini:
+            </span>
+            {stats.currentPhaseTips}
+          </div>
         )}
       </div>
-
-      <button
-        onClick={onLogClick}
-        className="mt-6 px-6 py-3 rounded-full bg-[#E07A5F] hover:bg-[#d0694e] text-white text-sm font-semibold shadow-md shadow-[#E07A5F]/25 hover:shadow-lg hover:shadow-[#E07A5F]/35 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer flex items-center gap-2"
-      >
-        <Sparkles className="w-4 h-4" />
-        + Catat Hari Ini
-      </button>
     </div>
   );
 };

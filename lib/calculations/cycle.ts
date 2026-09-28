@@ -16,6 +16,8 @@ export interface DailyLogData {
   notes?: string | null;
 }
 
+export type CyclePhaseType = "menstrual" | "follicular" | "ovulation" | "luteal_pms" | "luteal";
+
 export interface CycleSummaryStats {
   currentCycleDay: number | null;
   estimatedNextPeriodDate: string | null;
@@ -31,12 +33,20 @@ export interface CycleSummaryStats {
     start: string;
     end: string;
   } | null;
+  estimatedPmsWindow: {
+    start: string;
+    end: string;
+  } | null;
+  isPmsPhase: boolean;
+  currentPhase: CyclePhaseType;
+  currentPhaseTitle: string;
+  currentPhaseTips: string;
 }
 
 export interface CycleInsight {
   title: string;
   description: string;
-  type: "info" | "regularity" | "symptom" | "wellness";
+  type: "info" | "regularity" | "symptom" | "wellness" | "pms";
 }
 
 function parseLocalDate(dateStr: string): Date {
@@ -69,6 +79,11 @@ export function calculateCycleStats(
       isEstimateBasedOnDefaults: true,
       estimatedOvulationDate: null,
       estimatedFertileWindow: null,
+      estimatedPmsWindow: null,
+      isPmsPhase: false,
+      currentPhase: "follicular",
+      currentPhaseTitle: "Mulai Pelacakan",
+      currentPhaseTips: "Catat hari pertama menstruasi kamu untuk memulai analisis fase tubuh dan siklus hormonal.",
     };
   }
 
@@ -120,6 +135,41 @@ export function calculateCycleStats(
   const fertileStart = addDays(estimatedOvulation, -5);
   const fertileEnd = addDays(estimatedOvulation, 1);
 
+  // PMS Window is typically 7 to 1 days before the estimated next period
+  const pmsStart = addDays(predictedNextStart, -7);
+  const pmsEnd = addDays(predictedNextStart, -1);
+
+  const isPmsWindowActive = daysUntilNext !== null && daysUntilNext <= 7 && daysUntilNext > 0;
+
+  // Determine current active cycle phase
+  let currentPhase: CyclePhaseType = "follicular";
+  let currentPhaseTitle = "Fase Folikuler";
+  let currentPhaseTips = "Estrogen meningkat. Energi dan fokus sedang tinggi, waktu terbaik untuk produktivitas dan olahraga dinamis.";
+
+  const estimatedOvulationDay = avgCycleLength - 14;
+
+  if (latestCycle && !latestCycle.endDate && currentCycleDay <= avgPeriodDuration + 2) {
+    currentPhase = "menstrual";
+    currentPhaseTitle = "Fase Menstruasi";
+    currentPhaseTips = "Tubuh sedang melepaskan lapisan rahim. Luangkan waktu untuk istirahat hangat, cukupi zat besi, dan hidrasi yang baik.";
+  } else if (currentCycleDay <= avgPeriodDuration) {
+    currentPhase = "menstrual";
+    currentPhaseTitle = "Fase Menstruasi";
+    currentPhaseTips = "Tubuh sedang melepaskan lapisan rahim. Luangkan waktu untuk istirahat hangat, cukupi zat besi, dan hidrasi yang baik.";
+  } else if (currentCycleDay >= estimatedOvulationDay - 1 && currentCycleDay <= estimatedOvulationDay + 1) {
+    currentPhase = "ovulation";
+    currentPhaseTitle = "Fase Ovulasi (Masa Subur)";
+    currentPhaseTips = "Puncak pelepasan sel telur dan energi sosial. Peluang pembuahan paling optimal dalam siklus ini.";
+  } else if (isPmsWindowActive) {
+    currentPhase = "luteal_pms";
+    currentPhaseTitle = "Fase PMS (Pra-Menstruasi)";
+    currentPhaseTips = "Hormon estrogen & progesteron mulai menurun. Konsumsi makanan kaya magnesium (pisang/dark chocolate) dan kurangi kafein untuk meredakan kembung & mood swing.";
+  } else if (currentCycleDay > estimatedOvulationDay + 1) {
+    currentPhase = "luteal";
+    currentPhaseTitle = "Fase Luteal";
+    currentPhaseTips = "Progesteron dominan. Tubuh membutuhkan waktu relaksasi, nutrisi seimbang, dan tidur berkualitas.";
+  }
+
   const isEstimateBasedOnDefaults = cycleLengths.length === 0;
 
   return {
@@ -137,6 +187,14 @@ export function calculateCycleStats(
       start: format(fertileStart, "yyyy-MM-dd"),
       end: format(fertileEnd, "yyyy-MM-dd"),
     },
+    estimatedPmsWindow: {
+      start: format(pmsStart, "yyyy-MM-dd"),
+      end: format(pmsEnd, "yyyy-MM-dd"),
+    },
+    isPmsPhase: isPmsWindowActive,
+    currentPhase,
+    currentPhaseTitle,
+    currentPhaseTips,
   };
 }
 
@@ -179,6 +237,46 @@ export function generateCycleInsights(
     }
   }
 
+  // Symptom label mapping
+  const symptomLabels: Record<string, string> = {
+    kram: "Kram perut",
+    sakit_kepala: "Sakit kepala",
+    kembung: "Perut kembung",
+    jerawat: "Jerawat hormonal",
+    nyeri_punggung: "Nyeri punggung",
+    lelah: "Rasa lelah",
+    mual: "Mual",
+    payudara_sensitif: "Payudara sensitif",
+    insomnia: "Sulit tidur",
+    nafsu_makan_naik: "Nafsu makan bertambah",
+  };
+
+  // Analyze PMS-specific symptoms (logged within 7 days prior to any known period start)
+  const pmsSymptomCounts: Record<string, number> = {};
+  cycles.forEach((cycle) => {
+    const periodStart = parseLocalDate(cycle.startDate);
+    logs.forEach((log) => {
+      const logDate = parseLocalDate(log.date);
+      const diff = differenceInDays(periodStart, logDate);
+      if (diff >= 1 && diff <= 7 && Array.isArray(log.symptoms)) {
+        log.symptoms.forEach((s) => {
+          pmsSymptomCounts[s] = (pmsSymptomCounts[s] || 0) + 1;
+        });
+      }
+    });
+  });
+
+  const sortedPmsSymptoms = Object.entries(pmsSymptomCounts).sort((a, b) => b[1] - a[1]);
+  if (sortedPmsSymptoms.length > 0) {
+    const topPms = sortedPmsSymptoms[0];
+    const topLabel = symptomLabels[topPms[0]] || topPms[0];
+    insights.push({
+      title: `Pola Gejala PMS: ${topLabel}`,
+      description: `Pada hari-hari menjelang haid (fase PMS), tubuhmu paling sering merasakan "${topLabel}" (${topPms[1]} catatan). Mengetahui hal ini membantumu menyiapkan kenyamanan tubuh lebih dini.`,
+      type: "pms",
+    });
+  }
+
   const symptomCounts: Record<string, number> = {};
   logs.forEach((log) => {
     if (Array.isArray(log.symptoms)) {
@@ -191,23 +289,10 @@ export function generateCycleInsights(
   const sortedSymptoms = Object.entries(symptomCounts).sort((a, b) => b[1] - a[1]);
   if (sortedSymptoms.length > 0) {
     const topSymptom = sortedSymptoms[0];
-    const symptomLabels: Record<string, string> = {
-      kram: "Kram perut",
-      sakit_kepala: "Sakit kepala",
-      kembung: "Kembung",
-      jerawat: "Jerawat",
-      nyeri_punggung: "Nyeri punggung",
-      lelah: "Rasa lelah",
-      mual: "Mual",
-      payudara_sensitif: "Payudara sensitif",
-      insomnia: "Sulit tidur",
-      nafsu_makan_naik: "Nafsu makan bertambah",
-    };
-
     const label = symptomLabels[topSymptom[0]] || topSymptom[0];
     insights.push({
       title: `Gejala Paling Sering: ${label}`,
-      description: `Gejala "${label}" tercatat sebanyak ${topSymptom[1]} kali dalam catatan harianmu. Mengetahui pola ini membantu persiapan kenyamanan harian.`,
+      description: `Gejala "${label}" tercatat sebanyak ${topSymptom[1]} kali dalam catatan harianmu.`,
       type: "symptom",
     });
   }

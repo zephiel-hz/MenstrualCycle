@@ -107,6 +107,20 @@ export const CycleCalendar: React.FC<CycleCalendarProps> = ({
     return dayStr >= estimatedNextPeriodDate && dayStr <= estEndStr;
   };
 
+  const isPmsDay = (day: Date): boolean => {
+    if (!estimatedNextPeriodDate) return false;
+    const dayStr = format(day, "yyyy-MM-dd");
+    const estPeriod = parseISO(estimatedNextPeriodDate);
+    const pmsStart = new Date(estPeriod);
+    pmsStart.setDate(pmsStart.getDate() - 7);
+    const pmsEnd = new Date(estPeriod);
+    pmsEnd.setDate(pmsEnd.getDate() - 1);
+
+    const startStr = format(pmsStart, "yyyy-MM-dd");
+    const endStr = format(pmsEnd, "yyyy-MM-dd");
+    return dayStr >= startStr && dayStr <= endStr;
+  };
+
   const selectedDateStr = format(selectedDate, "yyyy-MM-dd");
   const selectedLog = logs.find((l) => l.date === selectedDateStr);
   const hasLog = Boolean(selectedLog);
@@ -173,6 +187,7 @@ export const CycleCalendar: React.FC<CycleCalendarProps> = ({
             const isTodayDate = isToday(day);
             const dayPeriod = isPeriodDay(day);
             const dayEstimated = isEstimatedPeriodDay(day);
+            const dayPms = isPmsDay(day);
             const dayStr = format(day, "yyyy-MM-dd");
             const dayHasLog = logs.some((l) => l.date === dayStr);
 
@@ -191,6 +206,8 @@ export const CycleCalendar: React.FC<CycleCalendarProps> = ({
                     ? "bg-[#FCECE8] text-[#E07A5F] font-semibold"
                     : dayEstimated
                     ? "border border-dashed border-[#E07A5F]/60 text-[#E07A5F]"
+                    : dayPms
+                    ? "bg-[#F5EEF8] text-[#9B59B6] font-medium border border-[#9B59B6]/30"
                     : ""
                 }`}
               >
@@ -208,6 +225,7 @@ export const CycleCalendar: React.FC<CycleCalendarProps> = ({
           })}
         </div>
 
+        {/* Legend */}
         <div className="mt-6 pt-4 border-t border-[#F2ECE4] flex flex-wrap items-center justify-center gap-4 text-xs text-[#79716B]">
           <div className="flex items-center gap-1.5">
             <span className="w-3 h-3 rounded-full bg-[#FCECE8] border border-[#E07A5F]" />
@@ -215,7 +233,11 @@ export const CycleCalendar: React.FC<CycleCalendarProps> = ({
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-3 h-3 rounded-full border border-dashed border-[#E07A5F]" />
-            <span>Perkiraan</span>
+            <span>Perkiraan Haid</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-3 h-3 rounded-full bg-[#F5EEF8] border border-[#9B59B6]" />
+            <span>Perkiraan PMS</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-[#81B29A]" />
@@ -224,7 +246,7 @@ export const CycleCalendar: React.FC<CycleCalendarProps> = ({
         </div>
       </div>
 
-      {/* Selected Date Summary Card - Matches Dashboard DailySummaryCard styling */}
+      {/* Selected Date Summary Card */}
       <div className="card-soft p-5 flex flex-col justify-between">
         <div className="flex items-center justify-between pb-3 border-b border-[#F2ECE4]">
           <div className="flex items-center gap-2">

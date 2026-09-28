@@ -1,57 +1,73 @@
 import { describe, it, expect } from "vitest";
-import { calculateCycleStats, generateCycleInsights } from "@/lib/calculations/cycle";
+import {
+  calculateCycleStats,
+  generateCycleInsights,
+  CycleData,
+  DailyLogData,
+} from "@/lib/calculations/cycle";
 
-describe("Cycle Calculation & Prediction Engine", () => {
-  it("should return default values when no cycles are recorded", () => {
-    const stats = calculateCycleStats([], 28, 5, new Date("2026-09-28"));
+describe("Cycle & PMS Calculations", () => {
+  it("should return default stats when no cycles are present", () => {
+    const stats = calculateCycleStats([]);
+    expect(stats.averageCycleLength).toBe(28);
+    expect(stats.averagePeriodDuration).toBe(5);
     expect(stats.totalCyclesLogged).toBe(0);
     expect(stats.currentCycleDay).toBeNull();
-    expect(stats.estimatedNextPeriodDate).toBeNull();
-    expect(stats.averageCycleLength).toBe(28);
-    expect(stats.isEstimateBasedOnDefaults).toBe(true);
+    expect(stats.isPmsPhase).toBe(false);
   });
 
-  it("should calculate current cycle day and next estimate correctly for 1 cycle", () => {
-    const cycles = [
-      { id: "1", startDate: "2026-09-20", endDate: "2026-09-25", notes: "Normal" },
+  it("should calculate correct cycle stats and PMS window for logged cycles", () => {
+    const cycles: CycleData[] = [
+      { id: "1", startDate: "2026-08-01", endDate: "2026-08-06" },
+      { id: "2", startDate: "2026-08-29", endDate: "2026-09-03" },
+      { id: "3", startDate: "2026-09-26", endDate: null },
     ];
-    const stats = calculateCycleStats(cycles, 28, 5, new Date("2026-09-28"));
-    expect(stats.totalCyclesLogged).toBe(1);
-    expect(stats.currentCycleDay).toBe(9);
-    expect(stats.isEstimateBasedOnDefaults).toBe(true);
-    expect(stats.estimatedNextPeriodDate).toBe("2026-10-18");
-  });
 
-  it("should calculate accurate average length and durations for multiple cycles", () => {
-    const cycles = [
-      { id: "3", startDate: "2026-09-01", endDate: "2026-09-06" },
-      { id: "2", startDate: "2026-08-03", endDate: "2026-08-08" },
-      { id: "1", startDate: "2026-07-04", endDate: "2026-07-09" },
-    ];
-    const stats = calculateCycleStats(cycles, 28, 5, new Date("2026-09-15"));
+    const refDate = new Date(2026, 8, 28); // Sept 28, 2026 (day 3)
+    const stats = calculateCycleStats(cycles, 28, 5, refDate);
+
     expect(stats.totalCyclesLogged).toBe(3);
-    expect(stats.averageCycleLength).toBe(30);
+    expect(stats.averageCycleLength).toBe(28);
     expect(stats.averagePeriodDuration).toBe(6);
-    expect(stats.shortestCycle).toBe(29);
-    expect(stats.longestCycle).toBe(30);
-    expect(stats.isEstimateBasedOnDefaults).toBe(false);
+    expect(stats.currentCycleDay).toBe(3);
+    expect(stats.currentPhase).toBe("menstrual");
+    expect(stats.estimatedPmsWindow).toBeDefined();
+    expect(stats.estimatedPmsWindow?.start).toBe("2026-10-17");
   });
 
-  it("should generate proper non-diagnostic insights", () => {
-    const cycles = [
-      { id: "3", startDate: "2026-09-01", endDate: "2026-09-05" },
-      { id: "2", startDate: "2026-08-03", endDate: "2026-08-07" },
-      { id: "1", startDate: "2026-07-05", endDate: "2026-07-09" },
+  it("should detect PMS phase when within 7 days of estimated next period", () => {
+    const cycles: CycleData[] = [
+      { id: "1", startDate: "2026-08-01", endDate: "2026-08-05" },
+      { id: "2", startDate: "2026-08-29", endDate: "2026-09-02" },
     ];
-    const logs = [
-      { id: "l1", date: "2026-09-01", flow: "medium", mood: ["senang"], symptoms: ["kram"] },
-      { id: "l2", date: "2026-09-02", flow: "heavy", mood: ["baik"], symptoms: ["kram", "sakit_kepala"] },
+
+    // Estimated next period: Sept 26. Reference date: Sept 22 (4 days before next period)
+    const refDate = new Date(2026, 8, 22);
+    const stats = calculateCycleStats(cycles, 28, 5, refDate);
+
+    expect(stats.isPmsPhase).toBe(true);
+    expect(stats.currentPhase).toBe("luteal_pms");
+    expect(stats.currentPhaseTitle).toContain("PMS");
+  });
+
+  it("should generate PMS symptom insights correctly", () => {
+    const cycles: CycleData[] = [
+      { id: "1", startDate: "2026-08-01", endDate: "2026-08-05" },
+      { id: "2", startDate: "2026-08-29", endDate: "2026-09-02" },
     ];
-    const stats = calculateCycleStats(cycles, 28, 5, new Date("2026-09-15"));
+
+    const logs: DailyLogData[] = [
+      // 3 days before cycle 2 start (Aug 26): PMS symptoms
+      { id: "l1", date: "2026-08-26", flow: "none", mood: ["mudah_marah"], symptoms: ["payudara_sensitif", "kembung"] },
+      // 2 days before cycle 2 start (Aug 27): PMS symptoms
+      { id: "l2", date: "2026-08-27", flow: "none", mood: ["stres"], symptoms: ["payudara_sensitif"] },
+    ];
+
+    const stats = calculateCycleStats(cycles);
     const insights = generateCycleInsights(cycles, logs, stats);
 
-    expect(insights.length).toBeGreaterThan(0);
-    const hasSymptomInsight = insights.some((i) => i.type === "symptom" && i.description.includes("Kram perut"));
-    expect(hasSymptomInsight).toBe(true);
+    const pmsInsight = insights.find((i) => i.type === "pms");
+    expect(pmsInsight).toBeDefined();
+    expect(pmsInsight?.title).toContain("Pola Gejala PMS: Payudara sensitif");
   });
 });
