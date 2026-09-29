@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Droplet, Smile, Activity, Edit3, Plus } from "lucide-react";
+import { Droplet, Smile, Activity, Edit3, Plus, Heart } from "lucide-react";
 import { DailyLogData } from "@/lib/calculations/cycle";
 
 interface DailySummaryCardProps {
@@ -9,35 +9,35 @@ interface DailySummaryCardProps {
   onEditClick: () => void;
 }
 
-const FLOW_LABELS: Record<string, { label: string; color: string }> = {
-  none: { label: "Tidak Ada", color: "bg-[#F2ECE4] text-[#79716B]" },
-  light: { label: "Ringan", color: "bg-[#FCEEF1] text-[#E78895]" },
-  medium: { label: "Sedang", color: "bg-[#FCEEF1] text-[#E78895] font-semibold" },
-  heavy: { label: "Berat", color: "bg-[#E78895] text-white font-semibold" },
+const FLOW_LABELS: Record<string, { label: string; badge: string }> = {
+  none: { label: "Tidak Ada", badge: "bg-[#F3ECE5] text-[#7D7277]" },
+  light: { label: "Ringan / Flek", badge: "bg-[#FAF0F2] text-[#D8647F] border border-[#D8647F]/20" },
+  medium: { label: "Sedang", badge: "bg-[#FAF0F2] text-[#D8647F] font-semibold border border-[#D8647F]/30" },
+  heavy: { label: "Banyak", badge: "bg-[#D8647F] text-white font-semibold" },
 };
 
-const MOOD_LABELS: Record<string, { label: string; emoji: string }> = {
-  senang: { label: "Senang", emoji: "😊" },
-  baik: { label: "Baik", emoji: "🙂" },
-  netral: { label: "Netral", emoji: "😐" },
-  sedih: { label: "Sedih", emoji: "😔" },
-  stres: { label: "Stres", emoji: "😫" },
-  mudah_marah: { label: "Sensitif", emoji: "😤" },
-  cemas: { label: "Cemas", emoji: "😰" },
-  berenergi: { label: "Berenergi", emoji: "✨" },
+const MOOD_NAMES: Record<string, string> = {
+  senang: "Senang & Nyaman",
+  baik: "Baik & Tenang",
+  netral: "Netral",
+  sedih: "Sensitif / Sedih",
+  stres: "Stres / Lelah",
+  mudah_marah: "Mudah Terpancing",
+  cemas: "Cemas",
+  berenergi: "Penuh Energi",
 };
 
 const SYMPTOM_LABELS: Record<string, string> = {
-  kram: "Kram",
+  kram: "Kram Perut",
   sakit_kepala: "Sakit Kepala",
   kembung: "Kembung",
-  jerawat: "Jerawat",
+  jerawat: "Jerawat Hormonal",
   nyeri_punggung: "Nyeri Punggung",
-  lelah: "Lelah",
+  lelah: "Kelelahan",
   mual: "Mual",
   payudara_sensitif: "Payudara Sensitif",
-  insomnia: "Insomnia",
-  nafsu_makan_naik: "Nafsu Makan",
+  insomnia: "Sulit Tidur",
+  nafsu_makan_naik: "Nafsu Makan Naik",
 };
 
 export const DailySummaryCard: React.FC<DailySummaryCardProps> = ({
@@ -47,59 +47,62 @@ export const DailySummaryCard: React.FC<DailySummaryCardProps> = ({
   const hasLog = todayLog !== null;
 
   return (
-    <div className="card-soft p-5 flex flex-col justify-between">
-      <div className="flex items-center justify-between pb-3 border-b border-[#F2ECE4]">
+    <div className="surface-card p-5 sm:p-6 flex flex-col justify-between">
+      <div className="flex items-center justify-between pb-3 border-b border-[#EFE9E2]">
         <div className="flex items-center gap-2">
-          <Activity className="w-4 h-4 text-[#E78895]" />
-          <h3 className="text-sm font-semibold text-[#2D2727]">Catatan Hari Ini</h3>
+          <div className="w-7 h-7 rounded-lg bg-[#FAF0F2] flex items-center justify-center text-[#D8647F]">
+            <Activity className="w-3.5 h-3.5" />
+          </div>
+          <h3 className="text-xs font-semibold text-[#221B1F]">Catatan Hari Ini</h3>
         </div>
         <button
           onClick={onEditClick}
-          className="text-xs font-semibold text-[#E78895] hover:text-[#d66d7d] flex items-center gap-1 cursor-pointer transition-colors"
+          className="text-xs font-semibold text-[#D8647F] hover:text-[#C5536D] flex items-center gap-1 cursor-pointer transition-colors px-2.5 py-1 rounded-full hover:bg-[#FAF0F2]"
         >
           {hasLog ? (
             <>
               <Edit3 className="w-3.5 h-3.5" />
-              Ubah
+              <span>Edit</span>
             </>
           ) : (
             <>
               <Plus className="w-3.5 h-3.5" />
-              Catat
+              <span>Catat</span>
             </>
           )}
         </button>
       </div>
 
       {!hasLog ? (
-        <div className="py-6 text-center text-xs text-[#79716B]">
-          <p>Belum ada catatan untuk hari ini.</p>
+        <div className="py-7 text-center text-xs text-[#7D7277] space-y-2">
+          <p className="leading-relaxed">Belum ada catatan fisik atau mood untuk hari ini.</p>
           <button
             onClick={onEditClick}
-            className="mt-2 text-xs font-semibold text-[#E78895] underline hover:no-underline cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FAF0F2] text-[#D8647F] text-xs font-semibold hover:bg-[#F6E2E7] transition-all cursor-pointer"
           >
-            Tambahkan catatan harian
+            <Plus className="w-3.5 h-3.5" />
+            Isi Jurnal Hari Ini
           </button>
         </div>
       ) : (
         <div className="py-3 space-y-3 text-xs">
           <div className="flex items-center justify-between">
-            <span className="text-[#79716B] flex items-center gap-1.5">
-              <Droplet className="w-3.5 h-3.5 text-[#E78895]" />
-              Aliran Darah
+            <span className="text-[#7D7277] flex items-center gap-1.5 text-xs">
+              <Droplet className="w-3.5 h-3.5 text-[#D8647F]" />
+              Aliran Menstruasi
             </span>
             <span
-              className={`px-2.5 py-1 rounded-full text-[11px] ${
-                FLOW_LABELS[todayLog.flow]?.color || "bg-[#F2ECE4] text-[#79716B]"
+              className={`px-2.5 py-0.5 rounded-full text-[11px] ${
+                FLOW_LABELS[todayLog.flow]?.badge || "bg-[#F3ECE5] text-[#7D7277]"
               }`}
             >
               {FLOW_LABELS[todayLog.flow]?.label || todayLog.flow}
             </span>
           </div>
 
-          <div className="flex items-center justify-between">
-            <span className="text-[#79716B] flex items-center gap-1.5">
-              <Smile className="w-3.5 h-3.5 text-[#81B29A]" />
+          <div className="flex items-start justify-between gap-2">
+            <span className="text-[#7D7277] flex items-center gap-1.5 text-xs pt-0.5">
+              <Smile className="w-3.5 h-3.5 text-[#588B76]" />
               Suasana Hati
             </span>
             <div className="flex flex-wrap gap-1 justify-end">
@@ -107,39 +110,41 @@ export const DailySummaryCard: React.FC<DailySummaryCardProps> = ({
                 todayLog.mood.map((m) => (
                   <span
                     key={m}
-                    className="px-2 py-0.5 rounded-md bg-[#EBF4F0] text-[#81B29A] font-medium text-[11px]"
+                    className="px-2 py-0.5 rounded-md bg-[#EBF4F0] text-[#588B76] font-medium text-[11px] border border-[#588B76]/15"
                   >
-                    {MOOD_LABELS[m]?.emoji} {MOOD_LABELS[m]?.label || m}
+                    {MOOD_NAMES[m] || m}
                   </span>
                 ))
               ) : (
-                <span className="text-[#79716B]">-</span>
+                <span className="text-[#7D7277] text-[11px]">-</span>
               )}
             </div>
           </div>
 
           <div>
-            <span className="text-[#79716B] block mb-1.5">Gejala:</span>
+            <span className="text-[#7D7277] block text-[11px] font-medium mb-1.5">
+              Gejala Tubuh:
+            </span>
             {todayLog.symptoms && todayLog.symptoms.length > 0 ? (
               <div className="flex flex-wrap gap-1.5">
                 {todayLog.symptoms.map((s) => (
                   <span
                     key={s}
-                    className="px-2 py-0.5 rounded-md bg-[#F1EFF7] text-[#9B8EB9] font-medium text-[11px]"
+                    className="px-2 py-0.5 rounded-md bg-[#F2EEF7] text-[#8E78A5] font-medium text-[11px] border border-[#8E78A5]/15"
                   >
                     {SYMPTOM_LABELS[s] || s}
                   </span>
                 ))}
               </div>
             ) : (
-              <span className="text-[#79716B] italic">Tidak ada gejala dicatat</span>
+              <span className="text-[#7D7277] italic text-[11px]">Tidak ada keluhan dicatat</span>
             )}
           </div>
 
           {todayLog.notes && (
-            <div className="pt-2 border-t border-[#F2ECE4]">
-              <p className="text-[#79716B] line-clamp-2 italic text-[11px]">
-                &quot;{todayLog.notes}&quot;
+            <div className="pt-2.5 border-t border-[#EFE9E2]">
+              <p className="text-[#5C5458] line-clamp-2 italic text-[11px] leading-relaxed bg-[#FAF6F3] p-2 rounded-xl border border-[#EFE9E2]">
+                &ldquo;{todayLog.notes}&rdquo;
               </p>
             </div>
           )}

@@ -10,10 +10,12 @@ import {
   Sliders,
   FileJson,
   FileSpreadsheet,
-  CheckCircle2,
   Info,
   Smartphone,
   Share,
+  ShieldCheck,
+  Bell,
+  Check,
 } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 
@@ -79,7 +81,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         (window.navigator as unknown as { standalone?: boolean }).standalone === true;
       setIsStandalone(standalone);
 
-      const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as unknown as { MSStream?: unknown }).MSStream;
+      const isIos =
+        /iPad|iPhone|iPod/.test(navigator.userAgent) &&
+        !(window as unknown as { MSStream?: unknown }).MSStream;
       setIsIosDevice(isIos);
 
       if (window.__LUNARA_PWA_PROMPT__) {
@@ -200,40 +204,48 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   };
 
   return (
-    <div className="space-y-6 max-w-3xl mx-auto pb-12">
+    <div className="space-y-6 max-w-3xl mx-auto pb-14">
+      {/* Header */}
       <div>
-        <h1 className="text-xl sm:text-2xl font-extrabold text-[#2D2727] tracking-tight">
-          Pengaturan & Privasi
+        <span className="text-[10px] font-bold tracking-widest text-[#D8647F] uppercase mb-1 block">
+          Preferensi & Keamanan
+        </span>
+        <h1 className="font-editorial text-2xl sm:text-3xl font-normal text-[#221B1F] tracking-tight">
+          Pengaturan Akun
         </h1>
-        <p className="text-xs text-[#79716B] mt-0.5">
-          Kelola profil, preferensi siklus, pengingat, aplikasi PWA, dan data kesehatan pribadimu.
+        <p className="text-xs text-[#7A6E75] mt-1">
+          Kelola profil pribadi, estimasi acuan siklus, notifikasi, dan hak privasi datamu.
         </p>
       </div>
 
       {/* PWA Installation Card */}
-      <div className="card-soft p-5 sm:p-6 bg-gradient-to-br from-white via-white to-[#FAF8F5]">
-        <div className="flex items-center justify-between mb-3 pb-3 border-b border-[#F2ECE4]">
+      <div className="surface-card p-5 sm:p-6 relative overflow-hidden">
+        <div className="flex items-center justify-between mb-3 pb-3 border-b border-[#F0EAE1]">
           <div className="flex items-center gap-2">
-            <Smartphone className="w-4 h-4 text-[#E78895]" />
-            <h3 className="text-sm font-bold text-[#2D2727]">Aplikasi Lunara (PWA)</h3>
+            <div className="w-6 h-6 rounded-full bg-[#FAF0F2] text-[#D8647F] flex items-center justify-center">
+              <Smartphone className="w-3.5 h-3.5" />
+            </div>
+            <h3 className="text-xs font-semibold text-[#221B1F]">Aplikasi Lunara (PWA)</h3>
           </div>
-          <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${
-            isStandalone
-              ? "bg-green-100 text-green-700"
-              : "bg-[#FCEEF1] text-[#E78895]"
-          }`}>
+          <span
+            className={`text-[10px] font-medium px-2.5 py-1 rounded-full ${
+              isStandalone
+                ? "bg-[#EBF4F0] text-[#588B76]"
+                : "bg-[#FAF0F2] text-[#D8647F]"
+            }`}
+          >
             {isStandalone ? "✓ Aplikasi Terpasang (Standalone)" : "Mode Browser Web"}
           </span>
         </div>
 
         {isStandalone ? (
-          <p className="text-xs text-[#79716B]">
-            Lunara sudah berjalan sebagai aplikasi terpasang di layar utama perangkat Anda dengan akses offline dan tampilan layar penuh tanpa bilah browser.
+          <p className="text-xs text-[#7A6E75] leading-relaxed">
+            Lunara telah berjalan sebagai aplikasi native di perangkat Anda dengan akses offline cepat, navigasi layar penuh tanpa bilah browser, dan responsivitas instan.
           </p>
         ) : (
-          <div className="space-y-3 text-xs text-[#79716B]">
-            <p>
-              Anda dapat memasang Lunara ke Layar Utama (*Home Screen*) HP atau Laptop Anda kapan saja agar bisa dibuka langsung seperti aplikasi native:
+          <div className="space-y-3 text-xs text-[#7A6E75]">
+            <p className="leading-relaxed">
+              Pasang Lunara ke Layar Utama (*Home Screen*) HP atau Laptop Anda untuk pengalaman bebas hambatan seperti aplikasi native:
             </p>
 
             {canPromptPwa && (
@@ -241,60 +253,67 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 <button
                   type="button"
                   onClick={handleInstallPwa}
-                  className="px-4 py-2 rounded-xl bg-[#E78895] hover:bg-[#d66d7d] text-white text-xs font-semibold shadow-sm transition-all cursor-pointer flex items-center gap-2 active:scale-95"
+                  className="px-4 py-2.5 rounded-full bg-[#D8647F] hover:bg-[#C5536D] text-white text-xs font-medium shadow-sm transition-all cursor-pointer flex items-center gap-2 active:scale-95"
                 >
-                  <Download className="w-4 h-4" />
-                  Pasang Lunara Sekarang
+                  <Download className="w-3.5 h-3.5" />
+                  Pasang Lunara ke Layar Utama
                 </button>
               </div>
             )}
 
             {isIosDevice ? (
-              <div className="p-3.5 rounded-xl bg-[#FAF8F5] border border-[#E8E0D5] space-y-1.5">
-                <div className="flex items-center gap-1.5 font-semibold text-[#2D2727]">
-                  <Share className="w-3.5 h-3.5 text-[#E78895]" />
+              <div className="p-3.5 rounded-2xl bg-[#FAF9F6] border border-[#EFE8DE] space-y-1.5">
+                <div className="flex items-center gap-1.5 font-medium text-[#221B1F]">
+                  <Share className="w-3.5 h-3.5 text-[#D8647F]" />
                   <span>Cara Pasang di iPhone / iPad (Safari):</span>
                 </div>
-                <ol className="list-decimal list-inside text-[11px] space-y-1 text-[#79716B]">
+                <ol className="list-decimal list-inside text-[11px] space-y-1 text-[#7A6E75]">
                   <li>Buka website ini menggunakan <strong>Safari</strong>.</li>
                   <li>Ketuk tombol <strong>Bagikan (Ikon Kotak Panah Atas ↑)</strong> di bilah bawah Safari.</li>
                   <li>Pilih <strong>&quot;Tambah ke Layar Utama&quot; (Add to Home Screen)</strong>.</li>
                 </ol>
               </div>
-            ) : !canPromptPwa && (
-              <div className="p-3.5 rounded-xl bg-[#FAF8F5] border border-[#E8E0D5] text-[11px] space-y-1">
-                <p className="font-semibold text-[#2D2727]">Cara Pasang Manual di Chrome / Edge / Android:</p>
-                <p>Ketuk menu <strong>titik tiga (⋮)</strong> di kanan atas browser $
-ightarrow$ Pilih <strong>&quot;Instal Aplikasi&quot;</strong> atau <strong>&quot;Tambahkan ke Layar Utama&quot;</strong>.</p>
-              </div>
+            ) : (
+              !canPromptPwa && (
+                <div className="p-3.5 rounded-2xl bg-[#FAF9F6] border border-[#EFE8DE] text-[11px] space-y-1">
+                  <p className="font-medium text-[#221B1F]">Cara Pasang Manual di Chrome / Edge / Android:</p>
+                  <p>
+                    Ketuk menu <strong>titik tiga (⋮)</strong> di kanan atas browser → Pilih{" "}
+                    <strong>&quot;Instal Aplikasi&quot;</strong> atau{" "}
+                    <strong>&quot;Tambahkan ke Layar Utama&quot;</strong>.
+                  </p>
+                </div>
+              )
             )}
           </div>
         )}
       </div>
 
-      {/* Profil Akun */}
-      <div className="card-soft p-5 sm:p-6">
-        <div className="flex items-center gap-2 mb-4 pb-3 border-b border-[#F2ECE4]">
-          <User className="w-4 h-4 text-[#E78895]" />
-          <h3 className="text-sm font-bold text-[#2D2727]">Profil Pengguna</h3>
+      {/* Profil Pengguna */}
+      <div className="surface-card p-5 sm:p-6">
+        <div className="flex items-center gap-2 mb-4 pb-3 border-b border-[#F0EAE1]">
+          <div className="w-6 h-6 rounded-full bg-[#FAF0F2] text-[#D8647F] flex items-center justify-center">
+            <User className="w-3.5 h-3.5" />
+          </div>
+          <h3 className="text-xs font-semibold text-[#221B1F]">Profil Pengguna</h3>
         </div>
 
         <form onSubmit={handleSaveProfile} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-[#2D2727] mb-1">
+            <label className="block text-xs font-medium text-[#221B1F] mb-1.5">
               Email Terdaftar
             </label>
             <input
               type="email"
               disabled
               value={user.email}
-              className="w-full px-3.5 py-2 rounded-xl bg-[#F2ECE4]/60 border border-[#E8E0D5] text-xs text-[#79716B] cursor-not-allowed"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[#F4EFEA]/70 border border-[#E8E0D5] text-xs text-[#7A6E75] cursor-not-allowed"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-[#2D2727] mb-1">
+              <label className="block text-xs font-medium text-[#221B1F] mb-1.5">
                 Nama Panggilan
               </label>
               <input
@@ -302,18 +321,18 @@ ightarrow$ Pilih <strong>&quot;Instal Aplikasi&quot;</strong> atau <strong>&quot
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
                 placeholder="Nama kamu"
-                className="w-full px-3.5 py-2 rounded-xl bg-[#FAF8F5] border border-[#E8E0D5] text-xs text-[#2D2727] focus:outline-none focus:ring-2 focus:ring-[#E78895]/40"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF9F6] border border-[#E8E0D5] text-xs text-[#221B1F] focus:outline-none focus:ring-2 focus:ring-[#D8647F]/30 focus:border-[#D8647F] transition-all"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[#2D2727] mb-1">
+              <label className="block text-xs font-medium text-[#221B1F] mb-1.5">
                 Zona Waktu
               </label>
               <select
                 value={timezone}
                 onChange={(e) => setTimezone(e.target.value)}
-                className="w-full px-3.5 py-2 rounded-xl bg-[#FAF8F5] border border-[#E8E0D5] text-xs text-[#2D2727] focus:outline-none focus:ring-2 focus:ring-[#E78895]/40"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF9F6] border border-[#E8E0D5] text-xs text-[#221B1F] focus:outline-none focus:ring-2 focus:ring-[#D8647F]/30 focus:border-[#D8647F] transition-all"
               >
                 <option value="Asia/Jakarta">WIB (Asia/Jakarta)</option>
                 <option value="Asia/Makassar">WITA (Asia/Makassar)</option>
@@ -324,8 +343,9 @@ ightarrow$ Pilih <strong>&quot;Instal Aplikasi&quot;</strong> atau <strong>&quot
           </div>
 
           {profileMsg && (
-            <div className="text-xs text-green-700 bg-green-50 p-2.5 rounded-xl border border-green-200">
-              {profileMsg}
+            <div className="text-xs text-[#588B76] bg-[#EBF4F0] p-2.5 rounded-xl border border-[#588B76]/20 flex items-center gap-1.5">
+              <Check className="w-3.5 h-3.5" />
+              <span>{profileMsg}</span>
             </div>
           )}
 
@@ -333,7 +353,7 @@ ightarrow$ Pilih <strong>&quot;Instal Aplikasi&quot;</strong> atau <strong>&quot
             <button
               type="submit"
               disabled={isSavingProfile}
-              className="px-4 py-2 text-xs font-semibold text-white bg-[#2D2727] hover:bg-black rounded-xl shadow-xs transition-all cursor-pointer disabled:opacity-50"
+              className="px-4 py-2 text-xs font-medium text-white bg-[#221B1F] hover:bg-black rounded-full shadow-xs transition-all cursor-pointer disabled:opacity-50"
             >
               {isSavingProfile ? "Menyimpan..." : "Simpan Profil"}
             </button>
@@ -342,16 +362,18 @@ ightarrow$ Pilih <strong>&quot;Instal Aplikasi&quot;</strong> atau <strong>&quot
       </div>
 
       {/* Preferensi & Pengingat */}
-      <div className="card-soft p-5 sm:p-6">
-        <div className="flex items-center gap-2 mb-4 pb-3 border-b border-[#F2ECE4]">
-          <Sliders className="w-4 h-4 text-[#81B29A]" />
-          <h3 className="text-sm font-bold text-[#2D2727]">Preferensi & Pengingat</h3>
+      <div className="surface-card p-5 sm:p-6">
+        <div className="flex items-center gap-2 mb-4 pb-3 border-b border-[#F0EAE1]">
+          <div className="w-6 h-6 rounded-full bg-[#EBF4F0] text-[#588B76] flex items-center justify-center">
+            <Sliders className="w-3.5 h-3.5" />
+          </div>
+          <h3 className="text-xs font-semibold text-[#221B1F]">Preferensi Siklus & Notifikasi</h3>
         </div>
 
         <form onSubmit={handleSaveSettings} className="space-y-5">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-[#2D2727] mb-1">
+              <label className="block text-xs font-medium text-[#221B1F] mb-1.5">
                 Panjang Siklus Acuan (Hari)
               </label>
               <input
@@ -360,15 +382,15 @@ ightarrow$ Pilih <strong>&quot;Instal Aplikasi&quot;</strong> atau <strong>&quot
                 max={60}
                 value={cycleLengthDefault}
                 onChange={(e) => setCycleLengthDefault(Number(e.target.value))}
-                className="w-full px-3.5 py-2 rounded-xl bg-[#FAF8F5] border border-[#E8E0D5] text-xs text-[#2D2727] focus:outline-none focus:ring-2 focus:ring-[#E78895]/40"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF9F6] border border-[#E8E0D5] text-xs text-[#221B1F] focus:outline-none focus:ring-2 focus:ring-[#D8647F]/30 focus:border-[#D8647F] transition-all"
               />
-              <span className="text-[10px] text-[#79716B] mt-0.5 block">
-                Digunakan sebagai acuan awal sebelum data historis terkumpul
+              <span className="text-[10px] text-[#A3969F] mt-1 block">
+                Acuan awal sebelum terkumpul 3 siklus historis
               </span>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[#2D2727] mb-1">
+              <label className="block text-xs font-medium text-[#221B1F] mb-1.5">
                 Durasi Haid Acuan (Hari)
               </label>
               <input
@@ -377,95 +399,106 @@ ightarrow$ Pilih <strong>&quot;Instal Aplikasi&quot;</strong> atau <strong>&quot
                 max={20}
                 value={periodDurationDefault}
                 onChange={(e) => setPeriodDurationDefault(Number(e.target.value))}
-                className="w-full px-3.5 py-2 rounded-xl bg-[#FAF8F5] border border-[#E8E0D5] text-xs text-[#2D2727] focus:outline-none focus:ring-2 focus:ring-[#E78895]/40"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF9F6] border border-[#E8E0D5] text-xs text-[#221B1F] focus:outline-none focus:ring-2 focus:ring-[#D8647F]/30 focus:border-[#D8647F] transition-all"
               />
-              <span className="text-[10px] text-[#79716B] mt-0.5 block">
-                Perkiraan durasi hari pendarahan
+              <span className="text-[10px] text-[#A3969F] mt-1 block">
+                Perkiraan durasi pendarahan normal
               </span>
             </div>
           </div>
 
-          <div className="pt-3 border-t border-[#F2ECE4] space-y-3">
+          <div className="pt-3 border-t border-[#F0EAE1] space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-[#2D2727] block">Pengingat (Web / PWA)</span>
-              <span className={`text-[10px] font-semibold px-2.5 py-1 rounded-full ${
-                notifPermission === "granted"
-                  ? "bg-green-100 text-green-700"
+              <div className="flex items-center gap-1.5">
+                <Bell className="w-3.5 h-3.5 text-[#D8647F]" />
+                <span className="text-xs font-semibold text-[#221B1F]">
+                  Pengingat Web & PWA
+                </span>
+              </div>
+              <span
+                className={`text-[10px] font-medium px-2.5 py-0.5 rounded-full ${
+                  notifPermission === "granted"
+                    ? "bg-[#EBF4F0] text-[#588B76]"
+                    : notifPermission === "denied"
+                    ? "bg-rose-50 text-rose-600"
+                    : "bg-[#F4EFEA] text-[#7A6E75]"
+                }`}
+              >
+                {notifPermission === "granted"
+                  ? "Diizinkan"
                   : notifPermission === "denied"
-                  ? "bg-red-100 text-red-700"
-                  : "bg-[#F2ECE4] text-[#79716B]"
-              }`}>
-                Status Izin: {notifPermission === "granted" ? "Diizinkan (Aktif)" : notifPermission === "denied" ? "Diblokir oleh Browser" : "Belum Diminta (Default)"}
+                  ? "Diblokir Browser"
+                  : "Belum Diminta"}
               </span>
             </div>
 
             {notifPermission === "denied" && (
-              <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-800 space-y-1.5">
+              <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200/60 text-xs text-amber-900 space-y-1.5">
                 <div className="flex items-center gap-1.5 font-semibold text-amber-900">
                   <Info className="w-4 h-4 text-amber-600 shrink-0" />
-                  <span>Mengapa popup izin tidak muncul?</span>
+                  <span>Izin notifikasi diblokir</span>
                 </div>
                 <p className="text-[11px] leading-relaxed text-amber-800">
-                  Browser Anda sebelumnya telah menyetel izin notifikasi ke status <strong>Diblokir</strong> (Block) untuk situs ini, sehingga browser secara otomatis tidak memunculkan popup permintaan izin lagi.
+                  Untuk mengaktifkan kembali, klik ikon gembok/setelan situs di samping URL browser Anda, ubah pilihan <strong>Notifikasi</strong> menjadi <strong>Izinkan</strong>, lalu muat ulang halaman.
                 </p>
-                <div className="pt-1 text-[11px] text-amber-900 font-medium">
-                  <strong>Cara Mengaktifkannya:</strong>
-                  <ol className="list-decimal list-inside mt-1 space-y-0.5 text-amber-800">
-                    <li>Lihat bilah alamat (URL) di bagian atas browser (sebelah kiri <code className="bg-amber-100 px-1 rounded">localhost:3000</code>).</li>
-                    <li>Klik ikon <strong>Setelan Situs / Ikon Gembok / Slider</strong>.</li>
-                    <li>Ubah pilihan <strong>Notifikasi</strong> menjadi <strong>Izinkan (Allow)</strong>.</li>
-                    <li>Muat ulang (Refresh) halaman ini.</li>
-                  </ol>
-                </div>
               </div>
             )}
 
-            <label className="flex items-center gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={reminderPeriod}
-                onChange={(e) => setReminderPeriod(e.target.checked)}
-                className="w-4 h-4 rounded text-[#E78895] focus:ring-[#E78895]"
-              />
-              <span className="text-xs text-[#2D2727]">Pengingat perkiraan menstruasi</span>
-            </label>
+            <div className="space-y-2.5 pt-1">
+              <label className="flex items-center gap-3 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={reminderPeriod}
+                  onChange={(e) => setReminderPeriod(e.target.checked)}
+                  className="w-4 h-4 rounded text-[#D8647F] focus:ring-[#D8647F] accent-[#D8647F]"
+                />
+                <span className="text-xs text-[#221B1F] group-hover:text-[#D8647F] transition-colors">
+                  Pengingat perkiraan menstruasi
+                </span>
+              </label>
 
-            <label className="flex items-center gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={reminderPms}
-                onChange={(e) => setReminderPms(e.target.checked)}
-                className="w-4 h-4 rounded text-[#E78895] focus:ring-[#E78895]"
-              />
-              <span className="text-xs text-[#2D2727]">
-                Pengingat saat memasuki fase PMS (Sindrom Pra-Menstruasi)
-              </span>
-            </label>
+              <label className="flex items-center gap-3 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={reminderPms}
+                  onChange={(e) => setReminderPms(e.target.checked)}
+                  className="w-4 h-4 rounded text-[#D8647F] focus:ring-[#D8647F] accent-[#D8647F]"
+                />
+                <span className="text-xs text-[#221B1F] group-hover:text-[#D8647F] transition-colors">
+                  Pengingat saat memasuki fase PMS (Sindrom Pra-Menstruasi)
+                </span>
+              </label>
 
-            <label className="flex items-center gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={reminderLogging}
-                onChange={(e) => setReminderLogging(e.target.checked)}
-                className="w-4 h-4 rounded text-[#E78895] focus:ring-[#E78895]"
-              />
-              <span className="text-xs text-[#2D2727]">Pengingat mencatat siklus harian</span>
-            </label>
+              <label className="flex items-center gap-3 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={reminderLogging}
+                  onChange={(e) => setReminderLogging(e.target.checked)}
+                  className="w-4 h-4 rounded text-[#D8647F] focus:ring-[#D8647F] accent-[#D8647F]"
+                />
+                <span className="text-xs text-[#221B1F] group-hover:text-[#D8647F] transition-colors">
+                  Pengingat mencatat siklus harian
+                </span>
+              </label>
 
-            <label className="flex items-center gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={reminderSymptoms}
-                onChange={(e) => setReminderSymptoms(e.target.checked)}
-                className="w-4 h-4 rounded text-[#E78895] focus:ring-[#E78895]"
-              />
-              <span className="text-xs text-[#2D2727]">Pengingat mencatat gejala fisik & mood</span>
-            </label>
+              <label className="flex items-center gap-3 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={reminderSymptoms}
+                  onChange={(e) => setReminderSymptoms(e.target.checked)}
+                  className="w-4 h-4 rounded text-[#D8647F] focus:ring-[#D8647F] accent-[#D8647F]"
+                />
+                <span className="text-xs text-[#221B1F] group-hover:text-[#D8647F] transition-colors">
+                  Pengingat mencatat gejala fisik & suasana hati
+                </span>
+              </label>
+            </div>
           </div>
 
           {settingsMsg && (
-            <div className="text-xs text-green-700 bg-green-50 p-2.5 rounded-xl border border-green-200">
-              {settingsMsg}
+            <div className="text-xs text-[#588B76] bg-[#EBF4F0] p-2.5 rounded-xl border border-[#588B76]/20 flex items-center gap-1.5">
+              <Check className="w-3.5 h-3.5" />
+              <span>{settingsMsg}</span>
             </div>
           )}
 
@@ -473,7 +506,7 @@ ightarrow$ Pilih <strong>&quot;Instal Aplikasi&quot;</strong> atau <strong>&quot
             <button
               type="submit"
               disabled={isSavingSettings}
-              className="px-4 py-2 text-xs font-semibold text-white bg-[#E78895] hover:bg-[#d66d7d] rounded-xl shadow-xs transition-all cursor-pointer disabled:opacity-50"
+              className="px-4 py-2 text-xs font-medium text-white bg-[#D8647F] hover:bg-[#C5536D] rounded-full shadow-xs transition-all cursor-pointer disabled:opacity-50"
             >
               {isSavingSettings ? "Menyimpan..." : "Simpan Pengaturan"}
             </button>
@@ -482,46 +515,48 @@ ightarrow$ Pilih <strong>&quot;Instal Aplikasi&quot;</strong> atau <strong>&quot
       </div>
 
       {/* Ekspor Data */}
-      <div className="card-soft p-5 sm:p-6">
-        <div className="flex items-center gap-2 mb-2 pb-3 border-b border-[#F2ECE4]">
-          <Download className="w-4 h-4 text-[#E78895]" />
-          <h3 className="text-sm font-bold text-[#2D2727]">Ekspor Data Mandiri</h3>
+      <div className="surface-card p-5 sm:p-6">
+        <div className="flex items-center gap-2 mb-2 pb-3 border-b border-[#F0EAE1]">
+          <div className="w-6 h-6 rounded-full bg-[#FAF0F2] text-[#D8647F] flex items-center justify-center">
+            <ShieldCheck className="w-3.5 h-3.5" />
+          </div>
+          <h3 className="text-xs font-semibold text-[#221B1F]">Kedaulatan & Ekspor Data</h3>
         </div>
-        <p className="text-xs text-[#79716B] mb-4">
-          Data kesehatan adalah hak milikmu sepenuhnya. Kamu dapat mengunduh salinan seluruh riwayat siklus, catatan harian, dan profil dalam format JSON atau CSV kapan saja.
+        <p className="text-xs text-[#7A6E75] mb-4 leading-relaxed">
+          Seluruh data siklus dan catatan kesehatanmu adalah milikmu. Unduh salinan data lengkap dalam format JSON atau CSV spreadsheet kapan saja.
         </p>
 
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-2.5">
           <button
             onClick={() => handleExport("json")}
-            className="px-4 py-2 rounded-xl bg-white border border-[#E8E0D5] hover:border-[#E78895] text-xs font-semibold text-[#2D2727] flex items-center gap-2 transition-colors cursor-pointer shadow-2xs"
+            className="px-4 py-2 rounded-full bg-white border border-[#E8E0D5] hover:border-[#D8647F] text-xs font-medium text-[#221B1F] flex items-center gap-2 transition-colors cursor-pointer shadow-2xs"
           >
-            <FileJson className="w-4 h-4 text-[#E78895]" />
-            Unduh JSON
+            <FileJson className="w-3.5 h-3.5 text-[#D8647F]" />
+            Unduh Format JSON
           </button>
           <button
             onClick={() => handleExport("csv")}
-            className="px-4 py-2 rounded-xl bg-white border border-[#E8E0D5] hover:border-[#81B29A] text-xs font-semibold text-[#2D2727] flex items-center gap-2 transition-colors cursor-pointer shadow-2xs"
+            className="px-4 py-2 rounded-full bg-white border border-[#E8E0D5] hover:border-[#588B76] text-xs font-medium text-[#221B1F] flex items-center gap-2 transition-colors cursor-pointer shadow-2xs"
           >
-            <FileSpreadsheet className="w-4 h-4 text-[#81B29A]" />
-            Unduh CSV (Spreadsheet)
+            <FileSpreadsheet className="w-3.5 h-3.5 text-[#588B76]" />
+            Unduh Format CSV (Excel)
           </button>
         </div>
       </div>
 
-      {/* Hapus Akun & Data (Danger Zone) */}
-      <div className="p-5 sm:p-6 rounded-2xl bg-red-50/50 border border-red-200">
+      {/* Danger Zone: Hapus Akun */}
+      <div className="p-5 sm:p-6 rounded-2xl bg-[#FCF4F6] border border-[#D8647F]/25">
         <div className="flex items-center gap-2 mb-2">
-          <Trash2 className="w-4 h-4 text-red-600" />
-          <h3 className="text-sm font-bold text-red-700">Zona Bahaya: Hapus Akun</h3>
+          <Trash2 className="w-4 h-4 text-[#D8647F]" />
+          <h3 className="text-xs font-semibold text-[#8B263E]">Zona Bahaya: Hapus Akun</h3>
         </div>
-        <p className="text-xs text-red-600/90 mb-4 leading-relaxed">
-          Tindakan ini permanen. Semua data akun, profil, riwayat menstruasi, catatan harian, dan preferensi akan dihapus secara permanen dari server dan tidak dapat dipulihkan.
+        <p className="text-xs text-[#8B263E]/80 mb-4 leading-relaxed">
+          Tindakan ini permanen. Semua data akun, riwayat menstruasi, catatan harian, dan preferensi akan dihapus seketika dari server dan tidak dapat dipulihkan.
         </p>
 
         <button
           onClick={() => setIsDeleteModalOpen(true)}
-          className="px-4 py-2 text-xs font-semibold text-white bg-red-600 hover:bg-red-700 rounded-xl shadow-xs transition-colors cursor-pointer"
+          className="px-4 py-2 text-xs font-medium text-white bg-[#8B263E] hover:bg-[#721F33] rounded-full shadow-xs transition-colors cursor-pointer"
         >
           Hapus Akun Saya
         </button>
@@ -548,7 +583,7 @@ ightarrow$ Pilih <strong>&quot;Instal Aplikasi&quot;</strong> atau <strong>&quot
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-[#2D2727] mb-1">
+            <label className="block text-xs font-medium text-[#221B1F] mb-1">
               Masukkan Kata Sandi Anda
             </label>
             <input
@@ -557,12 +592,12 @@ ightarrow$ Pilih <strong>&quot;Instal Aplikasi&quot;</strong> atau <strong>&quot
               value={deletePassword}
               onChange={(e) => setDeletePassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full px-3.5 py-2 rounded-xl bg-[#FAF8F5] border border-[#E8E0D5] text-xs text-[#2D2727] focus:outline-none focus:ring-2 focus:ring-red-400"
+              className="w-full px-3.5 py-2 rounded-xl bg-[#FAF9F6] border border-[#E8E0D5] text-xs text-[#221B1F] focus:outline-none focus:ring-2 focus:ring-red-400"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-[#2D2727] mb-1">
+            <label className="block text-xs font-medium text-[#221B1F] mb-1">
               Ketik <strong className="text-red-600 font-bold">HAPUS</strong> untuk mengonfirmasi
             </label>
             <input
@@ -571,7 +606,7 @@ ightarrow$ Pilih <strong>&quot;Instal Aplikasi&quot;</strong> atau <strong>&quot
               value={deleteConfirmText}
               onChange={(e) => setDeleteConfirmText(e.target.value)}
               placeholder="HAPUS"
-              className="w-full px-3.5 py-2 rounded-xl bg-[#FAF8F5] border border-[#E8E0D5] text-xs text-[#2D2727] focus:outline-none focus:ring-2 focus:ring-red-400"
+              className="w-full px-3.5 py-2 rounded-xl bg-[#FAF9F6] border border-[#E8E0D5] text-xs text-[#221B1F] focus:outline-none focus:ring-2 focus:ring-red-400"
             />
           </div>
 
@@ -581,18 +616,18 @@ ightarrow$ Pilih <strong>&quot;Instal Aplikasi&quot;</strong> atau <strong>&quot
             </div>
           )}
 
-          <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#F2ECE4]">
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#F0EAE1]">
             <button
               type="button"
               onClick={() => setIsDeleteModalOpen(false)}
-              className="px-4 py-2 text-xs font-semibold text-[#79716B] hover:bg-[#F2ECE4] rounded-xl transition-colors cursor-pointer"
+              className="px-4 py-2 text-xs font-medium text-[#7A6E75] hover:bg-[#F4EFEA] rounded-full transition-colors cursor-pointer"
             >
               Batal
             </button>
             <button
               type="submit"
               disabled={isDeletingAccount}
-              className="px-4 py-2 text-xs font-semibold text-white bg-red-600 hover:bg-red-700 rounded-xl transition-colors cursor-pointer disabled:opacity-50"
+              className="px-4 py-2 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded-full transition-colors cursor-pointer disabled:opacity-50"
             >
               {isDeletingAccount ? "Menghapus..." : "Ya, Hapus Akun Selamanya"}
             </button>

@@ -21,24 +21,24 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenQuickLog }) => {
   const pathname = usePathname();
 
   const navItems = [
-    { label: "Dashboard", href: "/dashboard", icon: Home },
-    { label: "Kalender", href: "/calendar", icon: Calendar },
-    { label: "Riwayat Siklus", href: "/history", icon: History },
+    { label: "Beranda", href: "/dashboard", icon: Home },
+    { label: "Kalender Siklus", href: "/calendar", icon: Calendar },
+    { label: "Riwayat Menstruasi", href: "/history", icon: History },
     { label: "Statistik & Wawasan", href: "/statistics", icon: BarChart3 },
-    { label: "Pengaturan & Privasi", href: "/settings", icon: Settings },
+    { label: "Pengaturan & Akun", href: "/settings", icon: Settings },
   ];
 
   return (
-    <aside className="hidden md:flex flex-col w-64 border-r border-[#E8E0D5] bg-[#FAF8F5] p-5 shrink-0 min-h-[calc(100vh-4rem)]">
+    <aside className="hidden md:flex flex-col w-64 border-r border-[#EFE9E2] bg-[#FBF9F6] p-5 shrink-0 min-h-[calc(100vh-4rem)]">
       <button
         onClick={onOpenQuickLog}
-        className="w-full mb-6 flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-gradient-to-r from-[#E78895] to-[#F3A6B4] text-white font-semibold text-sm shadow-md shadow-[#E78895]/20 hover:shadow-lg hover:shadow-[#E78895]/30 hover:scale-[1.01] active:scale-[0.99] transition-all cursor-pointer"
+        className="w-full mb-6 flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-gradient-to-r from-[#D8647F] via-[#E27D95] to-[#F3A6B4] text-white font-medium text-xs shadow-sm shadow-[#D8647F]/25 hover:shadow-md hover:shadow-[#D8647F]/30 hover:scale-[1.01] active:scale-[0.99] transition-all cursor-pointer"
       >
-        <Plus className="w-5 h-5 stroke-[2.5]" />
-        Catat Hari Ini
+        <Plus className="w-4 h-4 stroke-[2.5]" />
+        Catat Kondisi Hari Ini
       </button>
 
-      <nav className="space-y-1.5 flex-1">
+      <nav className="space-y-1 flex-1">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href;
@@ -47,23 +47,27 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenQuickLog }) => {
               key={item.href}
               href={item.href}
               replace={pathname !== "/dashboard" && item.href !== "/dashboard"}
-              className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+              className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium transition-all ${
                 isActive
-                  ? "bg-[#FCEEF1] text-[#E78895] font-semibold"
-                  : "text-[#79716B] hover:text-[#2D2727] hover:bg-[#F2ECE4]"
+                  ? "bg-[#FAF0F2] text-[#D8647F] font-semibold border border-[#D8647F]/15 shadow-2xs"
+                  : "text-[#7D7277] hover:text-[#221B1F] hover:bg-[#FAF6F3]"
               }`}
             >
-              <Icon className={`w-4 h-4 ${isActive ? "text-[#E78895]" : "text-[#79716B]"}`} />
+              <Icon
+                className={`w-4 h-4 ${
+                  isActive ? "text-[#D8647F] stroke-[2.2]" : "text-[#7D7277] stroke-[1.8]"
+                }`}
+              />
               {item.label}
             </Link>
           );
         })}
       </nav>
 
-      <div className="mt-auto pt-4 border-t border-[#E8E0D5]/60">
-        <div className="flex items-center gap-2 text-xs text-[#79716B]">
-          <ShieldCheck className="w-4 h-4 text-[#81B29A]" />
-          <span>Serverless & Privacy-First</span>
+      <div className="mt-auto pt-4 border-t border-[#EFE9E2]/80">
+        <div className="flex items-center gap-2 text-[11px] text-[#7D7277]">
+          <ShieldCheck className="w-3.5 h-3.5 text-[#588B76]" />
+          <span>Privacy-First & Terenkripsi</span>
         </div>
       </div>
     </aside>

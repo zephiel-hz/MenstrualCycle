@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
-import { Moon, Sparkles, Shield, Heart, Calendar, Lock, CheckCircle2 } from "lucide-react";
+import { Moon, Sparkles, Calendar, Lock, Activity, HeartHandshake } from "lucide-react";
 import { MedicalDisclaimer } from "@/components/ui/MedicalDisclaimer";
 
 export default async function HomePage() {
@@ -11,87 +11,96 @@ export default async function HomePage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FAF8F5]">
-      <header className="w-full max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
+    <div className="min-h-screen flex flex-col bg-[#FBF9F6] text-[#221B1F] relative overflow-hidden">
+      {/* Ambient background glows */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[350px] bg-[#FAF0F2] rounded-full blur-3xl opacity-60 pointer-events-none" />
+      <div className="absolute top-1/3 -right-32 w-80 h-80 rounded-full bg-[#F4EFF7] blur-3xl opacity-50 pointer-events-none" />
+
+      {/* Header */}
+      <header className="w-full max-w-6xl mx-auto px-6 h-20 flex items-center justify-between relative z-10">
         <div className="flex items-center gap-2.5">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#E78895] to-[#F3A6B4] flex items-center justify-center text-white shadow-md shadow-[#E78895]/20">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#D8647F] to-[#EAA1B2] flex items-center justify-center text-white shadow-md shadow-[#D8647F]/20">
             <Moon className="w-5 h-5 fill-white" />
           </div>
-          <span className="font-bold text-xl text-[#2D2727] tracking-tight">Lunara</span>
+          <span className="font-editorial text-2xl text-[#221B1F] tracking-tight font-normal">
+            Lunara
+          </span>
         </div>
         <div className="flex items-center gap-3">
           <Link
             href="/login"
-            className="px-4 py-2 text-xs font-semibold text-[#2D2727] hover:text-[#E78895] transition-colors"
+            className="px-4 py-2 text-xs font-semibold text-[#7A6E75] hover:text-[#221B1F] transition-colors"
           >
             Masuk
           </Link>
           <Link
             href="/register"
-            className="px-5 py-2.5 text-xs font-semibold text-white bg-[#E78895] hover:bg-[#d66d7d] rounded-full shadow-sm shadow-[#E78895]/20 transition-all"
+            className="px-5 py-2.5 text-xs font-semibold text-white bg-[#D8647F] hover:bg-[#C5536D] rounded-full shadow-sm shadow-[#D8647F]/20 transition-all hover:scale-105 active:scale-95"
           >
             Mulai Gratis
           </Link>
         </div>
       </header>
 
-      <main className="flex-1 max-w-4xl mx-auto px-6 py-12 sm:py-20 flex flex-col items-center text-center">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#FCEEF1] text-[#E78895] text-xs font-semibold mb-6">
+      {/* Hero Section */}
+      <main className="flex-1 max-w-4xl mx-auto px-6 py-12 sm:py-20 flex flex-col items-center text-center relative z-10">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#FAF0F2] border border-[#D8647F]/20 text-[#D8647F] text-xs font-semibold mb-6">
           <Sparkles className="w-3.5 h-3.5" />
-          <span>Your Personal Cycle Companion</span>
+          <span className="tracking-wide">Koleksi Jurnal & Kesehatan Siklus Pribadi</span>
         </div>
 
-        <h1 className="text-3xl sm:text-5xl font-extrabold text-[#2D2727] tracking-tight leading-tight max-w-2xl">
-          Pelacak Siklus Menstruasi yang Tenang, Pribadi, & Aman
+        <h1 className="font-editorial text-4xl sm:text-6xl font-normal text-[#221B1F] tracking-tight leading-[1.15] max-w-2xl">
+          Pelacak Siklus yang Tenang, Pribadi, & Berestetika
         </h1>
 
-        <p className="mt-4 text-sm sm:text-base text-[#79716B] max-w-lg leading-relaxed">
-          Catat fase siklus, suasana hati, dan gejala harianmu tanpa gangguan iklan dan tanpa kompromi privasi. Berjalan mulus di perangkat apa pun sebagai Progressive Web App.
+        <p className="mt-5 text-sm sm:text-base text-[#7A6E75] max-w-xl leading-relaxed">
+          Catat ritme fase biologis tubuh, variasi suasana hati, dan gejala harianmu dalam antarmuka editorial tanpa iklan, tanpa pelacak pihak ketiga, dan sepenuhnya privat.
         </p>
 
         <div className="mt-8 flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
           <Link
             href="/register"
-            className="px-8 py-3.5 rounded-full bg-[#E78895] hover:bg-[#d66d7d] text-white font-semibold text-sm shadow-lg shadow-[#E78895]/25 hover:shadow-xl hover:scale-105 active:scale-95 transition-all text-center"
+            className="px-8 py-3.5 rounded-full bg-[#D8647F] hover:bg-[#C5536D] text-white font-semibold text-sm shadow-lg shadow-[#D8647F]/25 hover:shadow-xl hover:scale-105 active:scale-95 transition-all text-center"
           >
             Mulai Catat Siklus
           </Link>
           <Link
             href="/login"
-            className="px-8 py-3.5 rounded-full bg-white hover:bg-[#FAF8F5] text-[#2D2727] border border-[#E8E0D5] font-semibold text-sm shadow-2xs hover:border-[#E78895]/40 transition-all text-center"
+            className="px-8 py-3.5 rounded-full bg-white hover:bg-[#F4EFEA] text-[#221B1F] border border-[#E8E0D5] font-semibold text-sm shadow-2xs hover:border-[#D8647F]/40 transition-all text-center"
           >
             Masuk ke Akun
           </Link>
         </div>
 
+        {/* Feature Highlights Grid */}
         <div className="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-4 text-left w-full">
-          <div className="card-soft p-5">
-            <div className="w-9 h-9 rounded-xl bg-[#FCEEF1] text-[#E78895] flex items-center justify-center mb-3">
-              <Calendar className="w-5 h-5" />
+          <div className="surface-card p-5 group hover:border-[#D8647F]/30 transition-colors">
+            <div className="w-9 h-9 rounded-xl bg-[#FAF0F2] text-[#D8647F] flex items-center justify-center mb-3">
+              <Calendar className="w-4 h-4" />
             </div>
-            <h2 className="text-sm font-bold text-[#2D2727]">Pelacakan Siklus Cerdas</h2>
-            <p className="text-xs text-[#79716B] mt-1 leading-relaxed">
-              Kalkulasi rata-rata panjang siklus, durasi menstruasi, dan estimasi periode berikutnya berdasarkan data historismu.
+            <h2 className="text-sm font-semibold text-[#221B1F]">Ritme Siklus Cerdas</h2>
+            <p className="text-xs text-[#7A6E75] mt-1.5 leading-relaxed">
+              Kalkulasi rata-rata panjang siklus, durasi menstruasi, fase subur, dan estimasi periode mendatang secara presisi.
             </p>
           </div>
 
-          <div className="card-soft p-5">
-            <div className="w-9 h-9 rounded-xl bg-[#EBF4F0] text-[#81B29A] flex items-center justify-center mb-3">
-              <Heart className="w-5 h-5" />
+          <div className="surface-card p-5 group hover:border-[#588B76]/30 transition-colors">
+            <div className="w-9 h-9 rounded-xl bg-[#EBF4F0] text-[#588B76] flex items-center justify-center mb-3">
+              <Activity className="w-4 h-4" />
             </div>
-            <h2 className="text-sm font-bold text-[#2D2727]">Jurnal Gejala & Mood</h2>
-            <p className="text-xs text-[#79716B] mt-1 leading-relaxed">
-              Catat aliran pendarahan, kram, sakit kepala, suasana hati, serta catatan harian dengan mudah.
+            <h2 className="text-sm font-semibold text-[#221B1F]">Jurnal Gejala & PMS</h2>
+            <p className="text-xs text-[#7A6E75] mt-1.5 leading-relaxed">
+              Catat intensitas aliran darah, gejala fisik, fluktuasi emosi, dan antisipasi fase PMS sebelum haid dimulai.
             </p>
           </div>
 
-          <div className="card-soft p-5">
-            <div className="w-9 h-9 rounded-xl bg-[#F1EFF7] text-[#9B8EB9] flex items-center justify-center mb-3">
-              <Lock className="w-5 h-5" />
+          <div className="surface-card p-5 group hover:border-[#8E78A5]/30 transition-colors">
+            <div className="w-9 h-9 rounded-xl bg-[#F4EFF7] text-[#8E78A5] flex items-center justify-center mb-3">
+              <Lock className="w-4 h-4" />
             </div>
-            <h2 className="text-sm font-bold text-[#2D2727]">Privacy by Design</h2>
-            <p className="text-xs text-[#79716B] mt-1 leading-relaxed">
-              Data terisolasi ketat di serverless database. Tanpa penjualan data, tanpa pelacak pihak ketiga, dan ekspor penuh kapan saja.
+            <h2 className="text-sm font-semibold text-[#221B1F]">Kedaulatan & Privasi Data</h2>
+            <p className="text-xs text-[#7A6E75] mt-1.5 leading-relaxed">
+              Data terisolasi ketat di database serverless pribadi. Tanpa iklan, tanpa pelacak, dan ekspor data mandiri kapan saja.
             </p>
           </div>
         </div>
@@ -101,8 +110,13 @@ export default async function HomePage() {
         </div>
       </main>
 
-      <footer className="w-full border-t border-[#E8E0D5] py-6 text-center text-xs text-[#79716B]">
-        <p>© {new Date().getFullYear()} Lunara. Dibuat dengan cinta & kepedulian untuk kesehatan wanita.</p>
+      {/* Footer */}
+      <footer className="w-full border-t border-[#F0EAE1] py-6 text-center text-xs text-[#A3969F] relative z-10">
+        <div className="flex items-center justify-center gap-1.5 mb-1">
+          <HeartHandshake className="w-3.5 h-3.5 text-[#D8647F]" />
+          <span>Lunara &bull; Dibuat untuk kenyamanan & kesehatan wanita</span>
+        </div>
+        <p>© {new Date().getFullYear()} Lunara. Seluruh hak cipta dilindungi.</p>
       </footer>
     </div>
   );

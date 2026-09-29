@@ -9,6 +9,8 @@ import {
   Heart,
   Calendar,
   Feather,
+  Flame,
+  Activity,
 } from "lucide-react";
 import { CycleSummaryStats, CycleInsight } from "@/lib/calculations/cycle";
 import { formatShortDate } from "@/lib/utils";
@@ -35,70 +37,117 @@ export const StatisticsView: React.FC<StatisticsViewProps> = ({
   periodTrends,
 }) => {
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
-      <div>
-        <h1 className="text-xl sm:text-2xl font-extrabold text-[#2D2727] tracking-tight">
-          Statistik & Wawasan Siklus
-        </h1>
-        <p className="text-xs text-[#79716B] mt-0.5">
-          Pola tubuh, keteraturan siklus, fase PMS, dan estimasi periode mendatang.
-        </p>
+    <div className="space-y-6 max-w-4xl mx-auto pb-10">
+      {/* Header Section */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+        <div>
+          <span className="text-[10px] font-bold tracking-widest text-[#D8647F] uppercase mb-1 block">
+            Analisis Siklus & Pola Tubuh
+          </span>
+          <h1 className="font-editorial text-2xl sm:text-3xl font-normal text-[#221B1F] tracking-tight">
+            Statistik & Wawasan
+          </h1>
+          <p className="text-xs text-[#7A6E75] mt-1">
+            Keteraturan ritme biologis, pola durasi, dan observasi fase PMS berdasarkan catatan historismu.
+          </p>
+        </div>
       </div>
 
-      {/* Ringkasan Utama */}
+      {/* Key Metric Tiles */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-        <div className="card-soft p-4">
-          <div className="w-8 h-8 rounded-xl bg-[#FCEEF1] text-[#E78895] flex items-center justify-center mb-2">
-            <Clock className="w-4 h-4" />
+        {/* Average Cycle Length */}
+        <div className="surface-card p-4 sm:p-5 flex flex-col justify-between relative overflow-hidden group hover:border-[#D8647F]/30 transition-colors">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-[11px] font-semibold text-[#7A6E75]">Rata-rata Siklus</span>
+            <div className="w-7 h-7 rounded-full bg-[#FAF0F2] text-[#D8647F] flex items-center justify-center">
+              <Clock className="w-3.5 h-3.5" />
+            </div>
           </div>
-          <span className="text-xl font-extrabold text-[#2D2727]">
-            {stats.averageCycleLength}
-          </span>
-          <span className="text-xs text-[#79716B] ml-1">hari</span>
-          <p className="text-[11px] text-[#79716B] mt-0.5">Rata-rata Siklus</p>
+          <div>
+            <div className="flex items-baseline gap-1">
+              <span className="font-editorial text-3xl sm:text-4xl text-[#221B1F] font-normal">
+                {stats.averageCycleLength}
+              </span>
+              <span className="text-xs font-medium text-[#7A6E75]">hari</span>
+            </div>
+            <p className="text-[10px] text-[#A3969F] mt-1">Acuan ritme ovulasi</p>
+          </div>
         </div>
 
-        <div className="card-soft p-4">
-          <div className="w-8 h-8 rounded-xl bg-[#EBF4F0] text-[#81B29A] flex items-center justify-center mb-2">
-            <TrendingUp className="w-4 h-4" />
+        {/* Average Period Duration */}
+        <div className="surface-card p-4 sm:p-5 flex flex-col justify-between relative overflow-hidden group hover:border-[#588B76]/30 transition-colors">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-[11px] font-semibold text-[#7A6E75]">Durasi Haid</span>
+            <div className="w-7 h-7 rounded-full bg-[#EBF4F0] text-[#588B76] flex items-center justify-center">
+              <TrendingUp className="w-3.5 h-3.5" />
+            </div>
           </div>
-          <span className="text-xl font-extrabold text-[#2D2727]">
-            {stats.averagePeriodDuration}
-          </span>
-          <span className="text-xs text-[#79716B] ml-1">hari</span>
-          <p className="text-[11px] text-[#79716B] mt-0.5">Rata-rata Durasi Haid</p>
+          <div>
+            <div className="flex items-baseline gap-1">
+              <span className="font-editorial text-3xl sm:text-4xl text-[#221B1F] font-normal">
+                {stats.averagePeriodDuration}
+              </span>
+              <span className="text-xs font-medium text-[#7A6E75]">hari</span>
+            </div>
+            <p className="text-[10px] text-[#A3969F] mt-1">Rata-rata pendarahan</p>
+          </div>
         </div>
 
-        <div className="card-soft p-4">
-          <div className="w-8 h-8 rounded-xl bg-[#F1EFF7] text-[#9B8EB9] flex items-center justify-center mb-2">
-            <Calendar className="w-4 h-4" />
+        {/* Cycle Range */}
+        <div className="surface-card p-4 sm:p-5 flex flex-col justify-between relative overflow-hidden group hover:border-[#8E78A5]/30 transition-colors">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-[11px] font-semibold text-[#7A6E75]">Rentang Variasi</span>
+            <div className="w-7 h-7 rounded-full bg-[#F4EFF7] text-[#8E78A5] flex items-center justify-center">
+              <Calendar className="w-3.5 h-3.5" />
+            </div>
           </div>
-          <span className="text-xl font-extrabold text-[#2D2727]">
-            {stats.shortestCycle && stats.longestCycle
-              ? `${stats.shortestCycle}–${stats.longestCycle}`
-              : "-"}
-          </span>
-          <span className="text-xs text-[#79716B] ml-1">hari</span>
-          <p className="text-[11px] text-[#79716B] mt-0.5">Rentang Terpendek–Terpanjang</p>
+          <div>
+            <div className="flex items-baseline gap-1">
+              <span className="font-editorial text-2xl sm:text-3xl text-[#221B1F] font-normal">
+                {stats.shortestCycle && stats.longestCycle
+                  ? `${stats.shortestCycle}–${stats.longestCycle}`
+                  : "—"}
+              </span>
+              <span className="text-xs font-medium text-[#7A6E75]">hari</span>
+            </div>
+            <p className="text-[10px] text-[#A3969F] mt-1">Terpendek vs terpanjang</p>
+          </div>
         </div>
 
-        <div className="card-soft p-4">
-          <div className="w-8 h-8 rounded-xl bg-[#FAF8F5] text-[#2D2727] border border-[#E8E0D5] flex items-center justify-center mb-2">
-            <Heart className="w-4 h-4 text-[#E78895]" />
+        {/* Total Cycles Logged */}
+        <div className="surface-card p-4 sm:p-5 flex flex-col justify-between relative overflow-hidden group hover:border-[#D8647F]/30 transition-colors">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-[11px] font-semibold text-[#7A6E75]">Total Siklus</span>
+            <div className="w-7 h-7 rounded-full bg-[#FAF0F2] text-[#D8647F] flex items-center justify-center">
+              <Heart className="w-3.5 h-3.5" />
+            </div>
           </div>
-          <span className="text-xl font-extrabold text-[#2D2727]">
-            {stats.totalCyclesLogged}
-          </span>
-          <span className="text-xs text-[#79716B] ml-1">siklus</span>
-          <p className="text-[11px] text-[#79716B] mt-0.5">Total Tercatat</p>
+          <div>
+            <div className="flex items-baseline gap-1">
+              <span className="font-editorial text-3xl sm:text-4xl text-[#221B1F] font-normal">
+                {stats.totalCyclesLogged}
+              </span>
+              <span className="text-xs font-medium text-[#7A6E75]">tercatat</span>
+            </div>
+            <p className="text-[10px] text-[#A3969F] mt-1">Data historis akun</p>
+          </div>
         </div>
       </div>
 
-      {/* Wawasan Pola & PMS */}
-      <div className="card-soft p-5 sm:p-6 space-y-4">
-        <div className="flex items-center gap-2 pb-3 border-b border-[#F2ECE4]">
-          <Sparkles className="w-4 h-4 text-[#E78895]" />
-          <h2 className="text-sm font-bold text-[#2D2727]">Wawasan Tubuh & Fase PMS</h2>
+      {/* Body & PMS Insights */}
+      <div className="surface-card p-5 sm:p-6 space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-[#F0EAE1]">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-full bg-[#FAF0F2] flex items-center justify-center text-[#D8647F]">
+              <Sparkles className="w-3.5 h-3.5" />
+            </div>
+            <h2 className="text-sm font-semibold text-[#221B1F] tracking-tight">
+              Wawasan Ritme & Observasi PMS
+            </h2>
+          </div>
+          <span className="text-[11px] font-medium text-[#7A6E75]">
+            {insights.length} Analisis
+          </span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -107,23 +156,31 @@ export const StatisticsView: React.FC<StatisticsViewProps> = ({
               key={i}
               className={`p-4 rounded-2xl border transition-all ${
                 ins.type === "pms"
-                  ? "bg-[#F5EEF8] border-[#9B59B6]/30 text-[#2D2727]"
+                  ? "bg-[#FAF5FB] border-[#8E78A5]/25"
                   : ins.type === "regularity"
-                  ? "bg-[#EBF4F0] border-[#81B29A]/30 text-[#2D2727]"
+                  ? "bg-[#F3F8F5] border-[#588B76]/25"
                   : ins.type === "symptom"
-                  ? "bg-[#FCEEF1] border-[#E78895]/30 text-[#2D2727]"
-                  : "bg-[#FAF8F5] border-[#E8E0D5] text-[#2D2727]"
+                  ? "bg-[#FCF4F6] border-[#D8647F]/25"
+                  : "bg-white border-[#EFE8DE]"
               }`}
             >
-              <div className="flex items-center gap-2 mb-1">
+              <div className="flex items-center gap-2 mb-1.5">
                 {ins.type === "pms" ? (
-                  <Feather className="w-3.5 h-3.5 text-[#9B59B6]" />
+                  <span className="w-6 h-6 rounded-full bg-[#F4EFF7] text-[#8E78A5] flex items-center justify-center">
+                    <Feather className="w-3 h-3" />
+                  </span>
+                ) : ins.type === "regularity" ? (
+                  <span className="w-6 h-6 rounded-full bg-[#EBF4F0] text-[#588B76] flex items-center justify-center">
+                    <Activity className="w-3 h-3" />
+                  </span>
                 ) : (
-                  <Sparkles className="w-3.5 h-3.5 text-[#E78895]" />
+                  <span className="w-6 h-6 rounded-full bg-[#FAF0F2] text-[#D8647F] flex items-center justify-center">
+                    <Flame className="w-3 h-3" />
+                  </span>
                 )}
-                <h3 className="font-bold text-xs text-[#2D2727]">{ins.title}</h3>
+                <h3 className="text-xs font-semibold text-[#221B1F]">{ins.title}</h3>
               </div>
-              <p className="text-xs text-[#79716B] leading-relaxed mt-1">
+              <p className="text-xs text-[#7A6E75] leading-relaxed pl-8">
                 {ins.description}
               </p>
             </div>
@@ -131,33 +188,44 @@ export const StatisticsView: React.FC<StatisticsViewProps> = ({
         </div>
       </div>
 
-      {/* Riwayat Variasi Panjang Siklus */}
+      {/* Cycle Length History */}
       {cycleTrends.length > 0 && (
-        <div className="card-soft p-5 sm:p-6">
-          <div className="flex items-center justify-between pb-3 mb-4 border-b border-[#F2ECE4]">
+        <div className="surface-card p-5 sm:p-6">
+          <div className="flex items-center justify-between pb-3 mb-4 border-b border-[#F0EAE1]">
             <div className="flex items-center gap-2">
-              <BarChart3 className="w-4 h-4 text-[#81B29A]" />
-              <h2 className="text-sm font-bold text-[#2D2727]">Riwayat Panjang Siklus</h2>
+              <div className="w-6 h-6 rounded-full bg-[#EBF4F0] flex items-center justify-center text-[#588B76]">
+                <BarChart3 className="w-3.5 h-3.5" />
+              </div>
+              <h2 className="text-sm font-semibold text-[#221B1F] tracking-tight">
+                Riwayat Panjang Siklus
+              </h2>
             </div>
-            <span className="text-xs text-[#79716B]">{cycleTrends.length} siklus terakhir</span>
+            <span className="text-[11px] font-medium text-[#7A6E75]">
+              {cycleTrends.length} siklus terakhir
+            </span>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-3.5">
             {cycleTrends.map((c) => {
               const maxScale = Math.max(...cycleTrends.map((t) => t.length), 40);
               const barWidthPercent = Math.min(Math.round((c.length / maxScale) * 100), 100);
 
               return (
-                <div key={c.cycleNumber} className="space-y-1">
-                  <div className="flex justify-between text-xs">
-                    <span className="font-medium text-[#2D2727]">
-                      Siklus #{c.cycleNumber} ({formatShortDate(c.startDate)})
+                <div key={c.cycleNumber} className="space-y-1.5">
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="font-medium text-[#221B1F]">
+                      Siklus #{c.cycleNumber}{" "}
+                      <span className="text-[#A3969F] font-normal">
+                        ({formatShortDate(c.startDate)})
+                      </span>
                     </span>
-                    <span className="font-bold text-[#2D2727]">{c.length} Hari</span>
+                    <span className="font-semibold text-[#588B76]">
+                      {c.length} Hari
+                    </span>
                   </div>
-                  <div className="w-full h-3 bg-[#FAF8F5] rounded-full overflow-hidden border border-[#E8E0D5]">
+                  <div className="w-full h-2.5 bg-[#F4EFEA] rounded-full overflow-hidden">
                     <div
-                      className="h-full rounded-full bg-gradient-to-r from-[#81B29A] to-[#A8D5BA] transition-all duration-500"
+                      className="h-full rounded-full bg-gradient-to-r from-[#588B76] to-[#7BB29D] transition-all duration-500"
                       style={{ width: `${barWidthPercent}%` }}
                     />
                   </div>
@@ -168,33 +236,44 @@ export const StatisticsView: React.FC<StatisticsViewProps> = ({
         </div>
       )}
 
-      {/* Riwayat Durasi Haid */}
+      {/* Period Duration History */}
       {periodTrends.length > 0 && (
-        <div className="card-soft p-5 sm:p-6">
-          <div className="flex items-center justify-between pb-3 mb-4 border-b border-[#F2ECE4]">
+        <div className="surface-card p-5 sm:p-6">
+          <div className="flex items-center justify-between pb-3 mb-4 border-b border-[#F0EAE1]">
             <div className="flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-[#E78895]" />
-              <h2 className="text-sm font-bold text-[#2D2727]">Riwayat Durasi Haid</h2>
+              <div className="w-6 h-6 rounded-full bg-[#FAF0F2] flex items-center justify-center text-[#D8647F]">
+                <TrendingUp className="w-3.5 h-3.5" />
+              </div>
+              <h2 className="text-sm font-semibold text-[#221B1F] tracking-tight">
+                Riwayat Durasi Haid
+              </h2>
             </div>
-            <span className="text-xs text-[#79716B]">{periodTrends.length} catatan</span>
+            <span className="text-[11px] font-medium text-[#7A6E75]">
+              {periodTrends.length} catatan
+            </span>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-3.5">
             {periodTrends.map((p) => {
               const maxScale = Math.max(...periodTrends.map((t) => t.duration), 10);
               const barWidthPercent = Math.min(Math.round((p.duration / maxScale) * 100), 100);
 
               return (
-                <div key={p.cycleNumber} className="space-y-1">
-                  <div className="flex justify-between text-xs">
-                    <span className="font-medium text-[#2D2727]">
-                      Haid #{p.cycleNumber} ({formatShortDate(p.startDate)})
+                <div key={p.cycleNumber} className="space-y-1.5">
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="font-medium text-[#221B1F]">
+                      Haid #{p.cycleNumber}{" "}
+                      <span className="text-[#A3969F] font-normal">
+                        ({formatShortDate(p.startDate)})
+                      </span>
                     </span>
-                    <span className="font-bold text-[#E78895]">{p.duration} Hari</span>
+                    <span className="font-semibold text-[#D8647F]">
+                      {p.duration} Hari
+                    </span>
                   </div>
-                  <div className="w-full h-3 bg-[#FAF8F5] rounded-full overflow-hidden border border-[#E8E0D5]">
+                  <div className="w-full h-2.5 bg-[#F4EFEA] rounded-full overflow-hidden">
                     <div
-                      className="h-full rounded-full bg-gradient-to-r from-[#E78895] to-[#F3A6B4] transition-all duration-500"
+                      className="h-full rounded-full bg-gradient-to-r from-[#D8647F] to-[#EAA1B2] transition-all duration-500"
                       style={{ width: `${barWidthPercent}%` }}
                     />
                   </div>

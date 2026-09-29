@@ -40,24 +40,34 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-[#FAF8F5]">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-[#FBF9F6] relative overflow-hidden">
+      {/* Subtle Background Glows */}
+      <div className="absolute -top-32 -left-32 w-80 h-80 rounded-full bg-[#FAF0F2] blur-3xl opacity-70 pointer-events-none" />
+      <div className="absolute -bottom-32 -right-32 w-80 h-80 rounded-full bg-[#F4EFF7] blur-3xl opacity-60 pointer-events-none" />
+
+      <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2.5 group">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#E78895] to-[#F3A6B4] flex items-center justify-center text-white shadow-md shadow-[#E78895]/20 group-hover:scale-105 transition-transform">
-              <Moon className="w-6 h-6 fill-white" />
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#D8647F] to-[#EAA1B2] flex items-center justify-center text-white shadow-md shadow-[#D8647F]/20 group-hover:scale-105 transition-transform">
+              <Moon className="w-5 h-5 fill-white" />
             </div>
-            <span className="font-bold text-2xl text-[#2D2727] tracking-tight">Lunara</span>
+            <span className="font-editorial text-2xl text-[#221B1F] tracking-tight font-normal">
+              Lunara
+            </span>
           </Link>
-          <h1 className="text-xl font-bold text-[#2D2727] mt-4">Selamat Datang Kembali</h1>
-          <p className="text-xs text-[#79716B] mt-1">Masuk untuk melihat dan mencatat siklusmu</p>
+          <h1 className="font-editorial text-2xl font-normal text-[#221B1F] mt-4">
+            Selamat Datang Kembali
+          </h1>
+          <p className="text-xs text-[#7A6E75] mt-1">
+            Masuk untuk mengakses jurnal siklus dan catatan kesehatanmu
+          </p>
         </div>
 
-        <div className="card-soft p-6 sm:p-8">
+        <div className="surface-card p-6 sm:p-8">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-[#2D2727] mb-1.5 flex items-center gap-1.5">
-                <Mail className="w-3.5 h-3.5 text-[#79716B]" />
+              <label className="block text-xs font-medium text-[#221B1F] mb-1.5 flex items-center gap-1.5">
+                <Mail className="w-3.5 h-3.5 text-[#7A6E75]" />
                 Email
               </label>
               <input
@@ -66,19 +76,19 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="nama@email.com"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF8F5] border border-[#E8E0D5] text-xs text-[#2D2727] placeholder:text-[#79716B]/60 focus:outline-none focus:ring-2 focus:ring-[#E78895]/40"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF9F6] border border-[#E8E0D5] text-xs text-[#221B1F] placeholder:text-[#A3969F] focus:outline-none focus:ring-2 focus:ring-[#D8647F]/30 focus:border-[#D8647F] transition-all"
               />
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-semibold text-[#2D2727] flex items-center gap-1.5">
-                  <Lock className="w-3.5 h-3.5 text-[#79716B]" />
+                <label className="text-xs font-medium text-[#221B1F] flex items-center gap-1.5">
+                  <Lock className="w-3.5 h-3.5 text-[#7A6E75]" />
                   Kata Sandi
                 </label>
                 <Link
                   href="/forgot-password"
-                  className="text-[11px] text-[#E78895] hover:underline"
+                  className="text-[11px] text-[#D8647F] hover:underline"
                 >
                   Lupa sandi?
                 </Link>
@@ -89,13 +99,13 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF8F5] border border-[#E8E0D5] text-xs text-[#2D2727] placeholder:text-[#79716B]/60 focus:outline-none focus:ring-2 focus:ring-[#E78895]/40"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF9F6] border border-[#E8E0D5] text-xs text-[#221B1F] placeholder:text-[#A3969F] focus:outline-none focus:ring-2 focus:ring-[#D8647F]/30 focus:border-[#D8647F] transition-all"
               />
             </div>
 
             {error && (
-              <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-xs text-red-600 flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 shrink-0" />
+              <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
                 <span>{error}</span>
               </div>
             )}
@@ -103,16 +113,16 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 rounded-full bg-[#E78895] hover:bg-[#d66d7d] text-white text-xs font-semibold shadow-md shadow-[#E78895]/20 hover:shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
+              className="w-full py-3 rounded-full bg-[#D8647F] hover:bg-[#C5536D] text-white text-xs font-semibold shadow-md shadow-[#D8647F]/20 hover:shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50 active:scale-[0.99]"
             >
               {isLoading ? "Memproses..." : "Masuk ke Akun"}
               <ArrowRight className="w-4 h-4" />
             </button>
           </form>
 
-          <div className="mt-6 pt-4 border-t border-[#F2ECE4] text-center text-xs text-[#79716B]">
+          <div className="mt-6 pt-4 border-t border-[#F0EAE1] text-center text-xs text-[#7A6E75]">
             Belum punya akun?{" "}
-            <Link href="/register" className="text-[#E78895] font-semibold hover:underline">
+            <Link href="/register" className="text-[#D8647F] font-semibold hover:underline">
               Daftar sekarang
             </Link>
           </div>

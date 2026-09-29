@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Modal } from "@/components/ui/Modal";
-import { Droplet, Calendar, Trash2, CheckCircle2, AlertCircle } from "lucide-react";
+import { Droplet, Calendar, Trash2, CheckCircle2, AlertCircle, Smile, Activity, Sparkles, Check } from "lucide-react";
 import { formatISODateOnly } from "@/lib/utils";
 
 interface DailyLogModalProps {
@@ -13,32 +13,32 @@ interface DailyLogModalProps {
 }
 
 const FLOWS = [
-  { id: "none", label: "Tidak Ada", desc: "Bersih / Kering" },
-  { id: "light", label: "Ringan", desc: "Flek / Sedikit" },
-  { id: "medium", label: "Sedang", desc: "Normal" },
-  { id: "heavy", label: "Berat", desc: "Banyak" },
+  { id: "none", label: "Tidak Ada", desc: "Bersih / Kering", drops: 0 },
+  { id: "light", label: "Ringan", desc: "Flek / Sedikit", drops: 1 },
+  { id: "medium", label: "Sedang", desc: "Aliran Normal", drops: 2 },
+  { id: "heavy", label: "Banyak", desc: "Aliran Deras", drops: 3 },
 ] as const;
 
 const MOODS = [
-  { id: "senang", label: "Senang", emoji: "😊" },
-  { id: "baik", label: "Baik", emoji: "🙂" },
-  { id: "netral", label: "Netral", emoji: "😐" },
-  { id: "sedih", label: "Sedih", emoji: "😔" },
-  { id: "stres", label: "Stres", emoji: "😫" },
-  { id: "mudah_marah", label: "Mudah Marah", emoji: "😤" },
-  { id: "cemas", label: "Cemas", emoji: "😰" },
-  { id: "berenergi", label: "Berenergi", emoji: "✨" },
+  { id: "senang", label: "Senang & Gembira" },
+  { id: "baik", label: "Tenang & Santai" },
+  { id: "netral", label: "Netral / Biasa" },
+  { id: "sedih", label: "Sensitif / Sedih" },
+  { id: "stres", label: "Stres / Lelah" },
+  { id: "mudah_marah", label: "Mudah Terpancing" },
+  { id: "cemas", label: "Khawatir / Cemas" },
+  { id: "berenergi", label: "Penuh Energi ✨" },
 ];
 
 const SYMPTOMS = [
-  { id: "kram", label: "Kram" },
+  { id: "kram", label: "Kram Perut" },
   { id: "sakit_kepala", label: "Sakit Kepala" },
-  { id: "kembung", label: "Kembung" },
-  { id: "jerawat", label: "Jerawat" },
+  { id: "kembung", label: "Perut Kembung" },
+  { id: "jerawat", label: "Jerawat Hormonal" },
   { id: "nyeri_punggung", label: "Nyeri Punggung" },
-  { id: "lelah", label: "Lelah" },
+  { id: "lelah", label: "Mudah Lelah" },
   { id: "mual", label: "Mual" },
-  { id: "payudara_sensitif", label: "Payudara Sensitif" },
+  { id: "payudara_sensitif", label: "Payudara Nyeri" },
   { id: "insomnia", label: "Sulit Tidur" },
   { id: "nafsu_makan_naik", label: "Nafsu Makan Naik" },
 ];
@@ -91,7 +91,7 @@ export const DailyLogModal: React.FC<DailyLogModalProps> = ({
         }
       }
     } catch {
-      setErrorMessage("Gagal memuat data log.");
+      setErrorMessage("Gagal memuat catatan harian.");
     } finally {
       setIsLoading(false);
     }
@@ -133,11 +133,11 @@ export const DailyLogModal: React.FC<DailyLogModalProps> = ({
         throw new Error(data.error || "Gagal menyimpan catatan.");
       }
 
-      setSuccessMessage("Catatan berhasil disimpan!");
+      setSuccessMessage("Catatan harian berhasil disimpan!");
       setTimeout(() => {
         onLogSaved?.();
         onClose();
-      }, 500);
+      }, 400);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Gagal menyimpan catatan.";
       setErrorMessage(message);
@@ -169,12 +169,13 @@ export const DailyLogModal: React.FC<DailyLogModalProps> = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Catat Harian" maxWidth="md">
+    <Modal isOpen={isOpen} onClose={onClose} title="Jurnal & Kondisi Harian" maxWidth="md">
       <form onSubmit={handleSave} className="space-y-5">
+        {/* Date Selector */}
         <div>
-          <label className="block text-xs font-semibold text-[#2D2727] mb-1.5 flex items-center gap-1.5">
-            <Calendar className="w-3.5 h-3.5 text-[#E78895]" />
-            Tanggal
+          <label className="block text-xs font-semibold text-[#221B1F] mb-1.5 flex items-center gap-1.5">
+            <Calendar className="w-3.5 h-3.5 text-[#D8647F]" />
+            Tanggal Pencatatan
           </label>
           <input
             type="date"
@@ -183,18 +184,22 @@ export const DailyLogModal: React.FC<DailyLogModalProps> = ({
               setDate(e.target.value);
               fetchLogForDate(e.target.value);
             }}
-            className="w-full px-3.5 py-2 rounded-xl bg-[#FAF8F5] border border-[#E8E0D5] text-sm text-[#2D2727] focus:outline-none focus:ring-2 focus:ring-[#E78895]/40"
+            className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF6F3] border border-[#EFE9E2] text-xs text-[#221B1F] font-medium focus:outline-none focus:ring-2 focus:ring-[#D8647F]/40 transition-all"
           />
         </div>
 
         {isLoading ? (
-          <div className="py-8 text-center text-xs text-[#79716B]">Memuat catatan...</div>
+          <div className="py-12 text-center text-xs text-[#7D7277]">
+            <div className="w-6 h-6 border-2 border-[#D8647F]/30 border-t-[#D8647F] rounded-full animate-spin mx-auto mb-2" />
+            Memuat data tanggal terpilih...
+          </div>
         ) : (
           <>
+            {/* Flow Intensity Cards */}
             <div>
-              <label className="block text-xs font-semibold text-[#2D2727] mb-2 flex items-center gap-1.5">
-                <Droplet className="w-3.5 h-3.5 text-[#E78895]" />
-                Aliran Darah (Menstruasi)
+              <label className="block text-xs font-semibold text-[#221B1F] mb-2 flex items-center gap-1.5">
+                <Droplet className="w-3.5 h-3.5 text-[#D8647F]" />
+                Intensitas Aliran Darah
               </label>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {FLOWS.map((item) => {
@@ -204,23 +209,41 @@ export const DailyLogModal: React.FC<DailyLogModalProps> = ({
                       type="button"
                       key={item.id}
                       onClick={() => setFlow(item.id)}
-                      className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer ${
+                      className={`p-3 rounded-2xl border text-center transition-all cursor-pointer ${
                         isSelected
-                          ? "bg-[#FCEEF1] border-[#E78895] text-[#E78895] font-semibold ring-1 ring-[#E78895]"
-                          : "bg-white border-[#E8E0D5] text-[#2D2727] hover:bg-[#FAF8F5]"
+                          ? "bg-[#FAF0F2] border-[#D8647F] text-[#D8647F] font-semibold ring-1 ring-[#D8647F] shadow-xs"
+                          : "bg-white border-[#EFE9E2] text-[#221B1F] hover:bg-[#FAF6F3]"
                       }`}
                     >
+                      <div className="flex justify-center gap-0.5 mb-1.5">
+                        {item.drops === 0 ? (
+                          <span className="text-xs text-[#7D7277]">•</span>
+                        ) : (
+                          Array.from({ length: item.drops }).map((_, i) => (
+                            <Droplet
+                              key={i}
+                              className={`w-3 h-3 ${
+                                isSelected
+                                  ? "text-[#D8647F] fill-[#D8647F]"
+                                  : "text-[#7D7277] fill-transparent"
+                              }`}
+                            />
+                          ))
+                        )}
+                      </div>
                       <span className="block text-xs">{item.label}</span>
-                      <span className="block text-[10px] text-[#79716B] mt-0.5">{item.desc}</span>
+                      <span className="block text-[10px] text-[#7D7277] mt-0.5">{item.desc}</span>
                     </button>
                   );
                 })}
               </div>
             </div>
 
+            {/* Mood Chips */}
             <div>
-              <label className="block text-xs font-semibold text-[#2D2727] mb-2">
-                Suasana Hati (Mood)
+              <label className="block text-xs font-semibold text-[#221B1F] mb-2 flex items-center gap-1.5">
+                <Smile className="w-3.5 h-3.5 text-[#588B76]" />
+                Suasana Hati & Emosi
               </label>
               <div className="flex flex-wrap gap-2">
                 {MOODS.map((m) => {
@@ -230,22 +253,25 @@ export const DailyLogModal: React.FC<DailyLogModalProps> = ({
                       type="button"
                       key={m.id}
                       onClick={() => toggleMood(m.id)}
-                      className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all cursor-pointer ${
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all cursor-pointer flex items-center gap-1.5 ${
                         isSelected
-                          ? "bg-[#EBF4F0] border-[#81B29A] text-[#81B29A] ring-1 ring-[#81B29A]"
-                          : "bg-white border-[#E8E0D5] text-[#79716B] hover:bg-[#FAF8F5]"
+                          ? "bg-[#EBF4F0] border-[#588B76] text-[#588B76] font-semibold ring-1 ring-[#588B76] shadow-2xs"
+                          : "bg-white border-[#EFE9E2] text-[#7D7277] hover:bg-[#FAF6F3]"
                       }`}
                     >
-                      {m.emoji} {m.label}
+                      {isSelected && <Check className="w-3 h-3" />}
+                      <span>{m.label}</span>
                     </button>
                   );
                 })}
               </div>
             </div>
 
+            {/* Physical Symptoms */}
             <div>
-              <label className="block text-xs font-semibold text-[#2D2727] mb-2">
-                Gejala Fisik
+              <label className="block text-xs font-semibold text-[#221B1F] mb-2 flex items-center gap-1.5">
+                <Activity className="w-3.5 h-3.5 text-[#8E78A5]" />
+                Respons Tubuh & Gejala
               </label>
               <div className="flex flex-wrap gap-2">
                 {SYMPTOMS.map((s) => {
@@ -255,29 +281,31 @@ export const DailyLogModal: React.FC<DailyLogModalProps> = ({
                       type="button"
                       key={s.id}
                       onClick={() => toggleSymptom(s.id)}
-                      className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all cursor-pointer ${
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all cursor-pointer flex items-center gap-1.5 ${
                         isSelected
-                          ? "bg-[#F1EFF7] border-[#9B8EB9] text-[#9B8EB9] ring-1 ring-[#9B8EB9]"
-                          : "bg-white border-[#E8E0D5] text-[#79716B] hover:bg-[#FAF8F5]"
+                          ? "bg-[#F2EEF7] border-[#8E78A5] text-[#8E78A5] font-semibold ring-1 ring-[#8E78A5] shadow-2xs"
+                          : "bg-white border-[#EFE9E2] text-[#7D7277] hover:bg-[#FAF6F3]"
                       }`}
                     >
-                      {s.label}
+                      {isSelected && <Check className="w-3 h-3" />}
+                      <span>{s.label}</span>
                     </button>
                   );
                 })}
               </div>
             </div>
 
+            {/* Diary Notes */}
             <div>
-              <label className="block text-xs font-semibold text-[#2D2727] mb-1.5">
-                Catatan Pribadi (Opsional)
+              <label className="block text-xs font-semibold text-[#221B1F] mb-1.5">
+                Catatan Diary Pribadi
               </label>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="Bagaimana perasaan atau aktivitasmu hari ini?"
+                placeholder="Tuliskan pengalaman, energi tubuh, atau pola makanmu hari ini..."
                 rows={3}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF8F5] border border-[#E8E0D5] text-xs text-[#2D2727] placeholder:text-[#79716B]/60 focus:outline-none focus:ring-2 focus:ring-[#E78895]/40 resize-none"
+                className="w-full px-3.5 py-2.5 rounded-2xl bg-[#FAF6F3] border border-[#EFE9E2] text-xs text-[#221B1F] placeholder:text-[#7D7277]/60 focus:outline-none focus:ring-2 focus:ring-[#D8647F]/40 resize-none transition-all leading-relaxed"
               />
             </div>
           </>
@@ -297,16 +325,17 @@ export const DailyLogModal: React.FC<DailyLogModalProps> = ({
           </div>
         )}
 
-        <div className="flex items-center justify-between pt-3 border-t border-[#F2ECE4]">
+        {/* Modal Actions */}
+        <div className="flex items-center justify-between pt-3 border-t border-[#EFE9E2]">
           {existingLogId ? (
             <button
               type="button"
               onClick={handleDelete}
               disabled={isDeleting || isSaving}
-              className="px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 rounded-xl transition-colors cursor-pointer flex items-center gap-1.5"
+              className="px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 rounded-xl transition-colors cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
             >
               <Trash2 className="w-3.5 h-3.5" />
-              {isDeleting ? "Menghapus..." : "Hapus"}
+              <span>{isDeleting ? "Menghapus..." : "Hapus"}</span>
             </button>
           ) : (
             <div />
@@ -316,14 +345,14 @@ export const DailyLogModal: React.FC<DailyLogModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs font-semibold text-[#79716B] hover:bg-[#F2ECE4] rounded-xl transition-colors cursor-pointer"
+              className="px-4 py-2 text-xs font-semibold text-[#7D7277] hover:bg-[#FAF6F3] rounded-xl transition-colors cursor-pointer"
             >
               Batal
             </button>
             <button
               type="submit"
               disabled={isSaving || isDeleting}
-              className="px-5 py-2 text-xs font-semibold text-white bg-[#E78895] hover:bg-[#d66d7d] rounded-xl shadow-sm transition-all cursor-pointer disabled:opacity-50"
+              className="px-5 py-2 text-xs font-semibold text-white bg-[#D8647F] hover:bg-[#C5536D] active:scale-95 rounded-xl shadow-xs transition-all cursor-pointer disabled:opacity-50"
             >
               {isSaving ? "Menyimpan..." : "Simpan Catatan"}
             </button>
