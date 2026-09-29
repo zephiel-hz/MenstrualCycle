@@ -102,6 +102,26 @@ export const passwordResetTokens = pgTable(
   ]
 );
 
+export const emailVerificationCodes = pgTable(
+  "email_verification_codes",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    email: text("email").notNull(),
+    codeHash: text("code_hash").notNull(),
+    type: text("type").notNull(), // 'register' | 'forgot_password'
+    metadata: jsonb("metadata").$type<{
+      displayName?: string;
+      passwordHash?: string;
+      timezone?: string;
+    }>(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index("email_verif_email_type_idx").on(table.email, table.type),
+  ]
+);
+
 export const usersRelations = relations(users, ({ one, many }) => ({
   profile: one(profiles, {
     fields: [users.id],

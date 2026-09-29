@@ -19,6 +19,33 @@ export const registerSchema = z.object({
   timezone: z.string().optional().default("Asia/Jakarta"),
 });
 
+export const sendOtpSchema = z.object({
+  email: z
+    .string({ required_error: "Email wajib diisi" })
+    .trim()
+    .toLowerCase()
+    .email({ message: "Format email tidak valid" })
+    .max(255, { message: "Email maksimal 255 karakter" }),
+  type: z.enum(["register", "forgot_password"], {
+    required_error: "Tipe OTP wajib ditentukan",
+  }),
+  displayName: z.string().trim().optional(),
+  password: z.string().min(8).optional(),
+});
+
+export const verifyRegisterSchema = z.object({
+  email: z
+    .string({ required_error: "Email wajib diisi" })
+    .trim()
+    .toLowerCase()
+    .email({ message: "Format email tidak valid" }),
+  otp: z
+    .string({ required_error: "Kode verifikasi 6 digit wajib diisi" })
+    .trim()
+    .length(6, { message: "Kode verifikasi harus 6 digit angka" })
+    .regex(/^\d{6}$/, { message: "Kode verifikasi harus berupa 6 digit angka" }),
+});
+
 export const loginSchema = z.object({
   email: z
     .string({ required_error: "Email wajib diisi" })
@@ -39,7 +66,16 @@ export const forgotPasswordSchema = z.object({
 });
 
 export const resetPasswordSchema = z.object({
-  token: z.string({ required_error: "Token wajib disertakan" }).min(1),
+  email: z
+    .string({ required_error: "Email wajib diisi" })
+    .trim()
+    .toLowerCase()
+    .email({ message: "Format email tidak valid" }),
+  otp: z
+    .string({ required_error: "Kode OTP wajib diisi" })
+    .trim()
+    .length(6, { message: "Kode verifikasi harus 6 digit angka" })
+    .regex(/^\d{6}$/, { message: "Kode verifikasi harus berupa 6 digit angka" }),
   newPassword: z
     .string({ required_error: "Kata sandi baru wajib diisi" })
     .min(8, { message: "Kata sandi minimal 8 karakter" })

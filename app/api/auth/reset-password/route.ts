@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { resetPasswordSchema } from "@/lib/validation/auth";
-import { db, users, passwordResetTokens } from "@/lib/db";
+import { db, users, emailVerificationCodes } from "@/lib/db";
 import { hashPassword } from "@/lib/auth/password";
+import { hashOtp } from "@/lib/email/service";
 import { eq, and, gt } from "drizzle-orm";
-import crypto from "crypto";
 
 export async function POST(req: NextRequest) {
   try {
@@ -17,24 +17,41 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { token, newPassword } = result.data;
-    const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+    const { email, otp, newPassword } = result.data;
+    const codeHash = hashOtp(otp);
 
+    // Verify OTP
     const [tokenRecord] = await db
       .select()
-      .from(passwordResetTokens)
+      .from(emailVerificationCodes)
       .where(
         and(
-          eq(passwordResetTokens.tokenHash, tokenHash),
-          gt(passwordResetTokens.expiresAt, new Date())
+          eq(emailVerificationCodes.email, email),
+          eq(emailVerificationCodes.type, "forgot_password"),
+          eq(emailVerificationCodes.codeHash, codeHash),
+          gt(emailVerificationCodes.expiresAt, new Date())
         )
       )
       .limit(1);
 
     if (!tokenRecord) {
       return NextResponse.json(
-        { error: "Token reset tidak valid atau telah kedaluwarsa." },
+        { error: "Kode verifikasi salah atau telah kedaluwarsa." },
         { status: 400 }
+      );
+    }
+
+    // Find user
+    const [user] = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(eq(users.email, email))
+      .limit(1);
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "Pengguna dengan email ini tidak ditemukan." },
+        { status: 404 }
       );
     }
 
@@ -43,14 +60,14 @@ export async function POST(req: NextRequest) {
     await db
       .update(users)
       .set({ passwordHash: newHash, updatedAt: new Date() })
-      .where(eq(users.id, tokenRecord.userId));
+      .where(eq(users.id, user.id));
 
     await db
-      .delete(passwordResetTokens)
-      .where(eq(passwordResetTokens.id, tokenRecord.id));
+      .delete(emailVerificationCodes)
+      .where(eq(emailVerificationCodes.id, tokenRecord.id));
 
     return NextResponse.json({
-      message: "Kata sandi berhasil diperbarui. Silakan login dengan kata sandi baru.",
+      message: "Kata sandi berhasil diperbarui. Silakan masuk menggunakan kata sandi baru Anda.",
     });
   } catch (error) {
     console.error("Reset password error:", error instanceof Error ? error.message : "Unknown error");
