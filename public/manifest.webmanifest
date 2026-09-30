@@ -4,8 +4,8 @@
   "description": "Aplikasi pelacak siklus menstruasi modern, mobile-first, dan privacy-first.",
   "start_url": "/dashboard",
   "display": "standalone",
-  "background_color": "#FAF8F5",
-  "theme_color": "#E78895",
+  "background_color": "#FBF9F6",
+  "theme_color": "#D8647F",
   "orientation": "portrait",
   "icons": [
     {

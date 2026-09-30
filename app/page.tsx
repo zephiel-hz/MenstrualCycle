@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
-import { Moon, Sparkles, Calendar, Lock, Activity, HeartHandshake } from "lucide-react";
+import { Sparkles, Calendar, Lock, Activity, HeartHandshake } from "lucide-react";
 import { MedicalDisclaimer } from "@/components/ui/MedicalDisclaimer";
+import { BrandLogo } from "@/components/ui/BrandLogo";
 
 export default async function HomePage() {
   const session = await getSession();
@@ -18,14 +19,7 @@ export default async function HomePage() {
 
       {/* Header */}
       <header className="w-full max-w-6xl mx-auto px-6 h-20 flex items-center justify-between relative z-10">
-        <div className="flex items-center gap-2.5">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#D8647F] to-[#EAA1B2] flex items-center justify-center text-white shadow-md shadow-[#D8647F]/20">
-            <Moon className="w-5 h-5 fill-white" />
-          </div>
-          <span className="font-editorial text-2xl text-[#221B1F] tracking-tight font-normal">
-            Lunara
-          </span>
-        </div>
+        <BrandLogo size="lg" withText />
         <div className="flex items-center gap-3">
           <Link
             href="/login"

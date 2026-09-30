@@ -3,7 +3,8 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { Moon, LogOut, Settings, Sparkles } from "lucide-react";
+import { LogOut, Settings } from "lucide-react";
+import { BrandLogo } from "@/components/ui/BrandLogo";
 
 interface NavbarProps {
   user?: {
@@ -32,20 +33,8 @@ export const Navbar: React.FC<NavbarProps> = ({ user }) => {
   return (
     <header className="sticky top-0 z-30 w-full bg-[#FBF9F6]/85 backdrop-blur-xl border-b border-[#EFE9E2]">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-        <Link href="/dashboard" className="flex items-center gap-3 group">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#D8647F] via-[#E27D95] to-[#F3A6B4] flex items-center justify-center text-white shadow-sm shadow-[#D8647F]/25 group-hover:scale-105 transition-all duration-200">
-            <Moon className="w-4 h-4 fill-white" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-semibold text-lg text-[#221B1F] tracking-tight font-editorial">
-                Lunara
-              </span>
-              <span className="text-[10px] font-semibold tracking-wider px-2 py-0.5 rounded-full bg-[#FAF0F2] text-[#D8647F] border border-[#D8647F]/15">
-                WELLNESS
-              </span>
-            </div>
-          </div>
+        <Link href="/dashboard" className="flex items-center group">
+          <BrandLogo size="md" withText badge="WELLNESS" />
         </Link>
 
         <div className="flex items-center gap-3">

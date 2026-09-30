@@ -21,10 +21,18 @@ export function hashOtp(otp: string): string {
 
 function getEmailHtml(code: string, type: "register" | "forgot_password", displayName?: string): string {
   const isRegister = type === "register";
-  const title = isRegister ? "Verifikasi Akun Lunara" : "Pemulihan Kata Sandi";
-  const subtitle = isRegister
-    ? "Gunakan kode verifikasi berikut untuk menyelesaikan pendaftaran akun Lunara Anda."
-    : "Gunakan kode verifikasi berikut untuk mengatur ulang kata sandi akun Lunara Anda.";
+
+  const badgeText = isRegister ? "✦ VERIFIKASI PENDAFTARAN" : "🔒 PEMULIHAN KATA SANDI";
+  const badgeBg = isRegister ? "#FAF0F2" : "#FAF0F2";
+  const badgeColor = "#D8647F";
+
+  const headline = isRegister
+    ? "Satu langkah lagi menuju jurnal siklus pribadimu."
+    : "Atur ulang kata sandi akun Lunara Anda.";
+
+  const message = isRegister
+    ? "Terima kasih telah bergabung dengan <strong>Lunara</strong>. Gunakan 6-digit kode verifikasi di bawah ini pada aplikasi untuk mengaktifkan akun pribadimu:"
+    : "Kami menerima permintaan pengaturan ulang kata sandi untuk akun Lunara Anda. Masukkan 6-digit kode verifikasi di bawah ini untuk membuat kata sandi baru:";
 
   return `
 <!DOCTYPE html>
@@ -32,64 +40,133 @@ function getEmailHtml(code: string, type: "register" | "forgot_password", displa
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${title}</title>
+  <title>${isRegister ? "Verifikasi Pendaftaran Lunara" : "Pemulihan Kata Sandi Lunara"}</title>
+  <!--[if mso]>
+  <noscript>
+    <xml>
+      <o:OfficeDocumentSettings>
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+    </xml>
+  </noscript>
+  <![endif]-->
 </head>
-<body style="margin: 0; padding: 0; background-color: #FBF9F6; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #221B1F;">
-  <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #FBF9F6; padding: 40px 16px;">
+<body style="margin: 0; padding: 0; background-color: #FBF9F6; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; color: #221B1F;">
+  <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #FBF9F6; padding: 48px 16px 64px 16px;">
     <tr>
       <td align="center">
-        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 480px; background-color: #FFFFFF; border-radius: 24px; border: 1px solid #EFE8DE; padding: 36px 28px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);">
-          <!-- Logo & Brand Header -->
+        <!-- Main Container Card -->
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 500px; background-color: #FFFFFF; border-radius: 28px; border: 1px solid #EFE8DE; box-shadow: 0 10px 30px rgba(216, 100, 127, 0.06); overflow: hidden;">
+          
+          <!-- Top Accent Bar -->
           <tr>
-            <td align="center" style="padding-bottom: 24px;">
-              <div style="width: 48px; height: 48px; background-color: #D8647F; border-radius: 16px; margin: 0 auto 12px auto; text-align: center; line-height: 48px; color: #FFFFFF; font-size: 22px; font-weight: bold;">
-                🌙
-              </div>
-              <h1 style="margin: 0; font-size: 24px; font-weight: 600; color: #221B1F; letter-spacing: -0.5px; font-family: 'Playfair Display', Georgia, serif;">Lunara</h1>
-              <p style="margin: 4px 0 0 0; font-size: 11px; color: #A3969F; text-transform: uppercase; letter-spacing: 2px;">Wellness & Cycle Journal</p>
-            </td>
+            <td height="5" style="background: linear-gradient(90deg, #F292A7, #E2748F, #D35773); font-size: 1px; line-height: 1px;">&nbsp;</td>
           </tr>
 
-          <!-- Divider -->
+          <!-- Inner Content Padding -->
           <tr>
-            <td style="border-top: 1px solid #F0EAE1; padding-top: 24px;">
-              <p style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: #221B1F;">
-                Halo${displayName ? ` ${displayName}` : ""},
-              </p>
-              <p style="margin: 0 0 24px 0; font-size: 13px; line-height: 1.6; color: #7A6E75;">
-                ${subtitle}
-              </p>
-            </td>
-          </tr>
+            <td style="padding: 38px 32px 36px 32px;">
+              
+              <!-- Brand Logo & Title (Consistent Squircle Logo) -->
+              <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td align="center" style="padding-bottom: 24px;">
+                    <!-- Embedded SVG Squircle Logo matching exact brand icon -->
+                    <div style="display: inline-block; margin-bottom: 12px;">
+                      <svg width="52" height="52" viewBox="0 0 192 192" xmlns="http://www.w3.org/2000/svg" style="display: block;">
+                        <defs>
+                          <linearGradient id="emailLogoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#F292A7" />
+                            <stop offset="50%" stop-color="#E2748F" />
+                            <stop offset="100%" stop-color="#D35773" />
+                          </linearGradient>
+                        </defs>
+                        <rect width="192" height="192" rx="48" fill="url(#emailLogoGrad)" />
+                        <g transform="translate(54, 54) scale(3.5)">
+                          <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" />
+                        </g>
+                      </svg>
+                    </div>
+                    <div style="font-family: 'Playfair Display', Georgia, serif; font-size: 26px; font-weight: 600; color: #221B1F; letter-spacing: -0.5px; line-height: 1;">
+                      Lunara
+                    </div>
+                    <div style="font-size: 10px; font-weight: 700; color: #D8647F; letter-spacing: 2.5px; text-transform: uppercase; margin-top: 6px;">
+                      WELLNESS & CYCLE JOURNAL
+                    </div>
+                  </td>
+                </tr>
+              </table>
 
-          <!-- OTP Code Box -->
-          <tr>
-            <td align="center" style="padding: 12px 0 28px 0;">
-              <div style="background-color: #FAF0F2; border: 1px solid #F0D5DC; border-radius: 18px; padding: 20px 24px; display: inline-block;">
-                <span style="font-size: 34px; font-weight: 700; letter-spacing: 8px; color: #D8647F; font-family: 'Courier New', Courier, monospace; display: block; margin-left: 8px;">
-                  ${code}
-                </span>
-              </div>
-              <p style="margin: 12px 0 0 0; font-size: 11px; color: #A3969F;">
-                ⏱️ Kode berlaku selama <strong>15 menit</strong>.
-              </p>
-            </td>
-          </tr>
+              <!-- Purpose Pill Badge -->
+              <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td align="center" style="padding-bottom: 20px;">
+                    <span style="display: inline-block; background-color: ${badgeBg}; color: ${badgeColor}; font-size: 10px; font-weight: 700; letter-spacing: 1px; padding: 6px 14px; border-radius: 9999px; border: 1px solid rgba(216, 100, 127, 0.2);">
+                      ${badgeText}
+                    </span>
+                  </td>
+                </tr>
+              </table>
 
-          <!-- Security Note -->
-          <tr>
-            <td style="background-color: #FAF9F6; border-radius: 14px; padding: 14px 16px; border: 1px solid #EFE8DE;">
-              <p style="margin: 0; font-size: 11px; line-height: 1.5; color: #7A6E75;">
-                🔒 <strong>Penting:</strong> Jangan berikan kode ini kepada siapa pun. Tim Lunara tidak akan pernah meminta kode verifikasi Anda. Jika Anda tidak merasa meminta kode ini, abaikan email ini.
-              </p>
+              <!-- Greeting & Headline -->
+              <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td style="border-top: 1px solid #F0EAE1; padding-top: 24px; padding-bottom: 20px;">
+                    <p style="margin: 0 0 6px 0; font-size: 14px; font-weight: 600; color: #221B1F;">
+                      Halo${displayName ? ` ${displayName}` : ""},
+                    </p>
+                    <h2 style="margin: 0 0 10px 0; font-family: 'Playfair Display', Georgia, serif; font-size: 19px; font-weight: 600; color: #221B1F; line-height: 1.35;">
+                      ${headline}
+                    </h2>
+                    <p style="margin: 0; font-size: 13px; line-height: 1.6; color: #7A6E75;">
+                      ${message}
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Hero OTP Code Box -->
+              <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin: 10px 0 24px 0;">
+                <tr>
+                  <td align="center">
+                    <table border="0" cellspacing="0" cellpadding="0" style="background-color: #FAF0F2; border: 1.5px solid #F0D5DC; border-radius: 20px; box-shadow: 0 4px 12px rgba(216, 100, 127, 0.08);">
+                      <tr>
+                        <td align="center" style="padding: 18px 28px;">
+                          <div style="font-family: 'Courier New', Courier, monospace; font-size: 36px; font-weight: 700; letter-spacing: 12px; color: #D8647F; line-height: 1; padding-left: 12px;">
+                            ${code}
+                          </div>
+                        </td>
+                      </tr>
+                    </table>
+                    <div style="margin-top: 12px; font-size: 11px; font-weight: 500; color: #A3969F;">
+                      ⏱️ Kode ini hanya berlaku selama <strong style="color: #221B1F;">15 menit</strong>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Security Card Note -->
+              <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #FAF9F6; border: 1px solid #EFE8DE; border-radius: 16px; margin-bottom: 8px;">
+                <tr>
+                  <td style="padding: 16px 18px;">
+                    <p style="margin: 0; font-size: 11px; line-height: 1.6; color: #7A6E75;">
+                      🔒 <strong style="color: #221B1F;">Perlindungan Privasi:</strong> Jangan pernah membagikan kode ini kepada siapa pun. Pihak Lunara tidak akan pernah meminta kode ini melalui pesan atau media apa pun. Jika Anda tidak melakukan permintaan ini, abaikan email ini dan akun Anda tetap aman.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
             </td>
           </tr>
 
           <!-- Footer -->
           <tr>
-            <td align="center" style="padding-top: 32px; border-top: 1px solid #F0EAE1; margin-top: 28px;">
-              <p style="margin: 0; font-size: 11px; color: #A3969F;">
-                © ${new Date().getFullYear()} Lunara. Jurnal Siklus & Kesehatan Mandiri.
+            <td align="center" style="background-color: #FAF9F6; border-top: 1px solid #F0EAE1; padding: 22px 28px;">
+              <p style="margin: 0 0 6px 0; font-size: 11px; color: #7A6E75;">
+                Aplikasi Pelacak Siklus Menstruasi Pribadi &amp; Ramah Privasi
+              </p>
+              <p style="margin: 0; font-size: 10px; color: #A3969F;">
+                © ${new Date().getFullYear()} Lunara. Seluruh hak cipta dilindungi.
               </p>
             </td>
           </tr>

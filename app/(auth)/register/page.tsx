@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Moon, ArrowRight, AlertCircle, Lock, Mail, User, KeyRound, RefreshCw, ArrowLeft, CheckCircle2 } from "lucide-react";
+import { ArrowRight, AlertCircle, Lock, Mail, User, KeyRound, RefreshCw, ArrowLeft, CheckCircle2 } from "lucide-react";
+import { BrandLogo } from "@/components/ui/BrandLogo";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -145,13 +146,8 @@ export default function RegisterPage() {
 
       <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2.5 group">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#D8647F] to-[#EAA1B2] flex items-center justify-center text-white shadow-md shadow-[#D8647F]/20 group-hover:scale-105 transition-transform">
-              <Moon className="w-5 h-5 fill-white" />
-            </div>
-            <span className="font-editorial text-2xl text-[#221B1F] tracking-tight font-normal">
-              Lunara
-            </span>
+          <Link href="/" className="inline-flex items-center group">
+            <BrandLogo size="lg" withText />
           </Link>
           <h1 className="font-editorial text-2xl font-normal text-[#221B1F] mt-4">
             {step === 1 ? "Buat Akun Pribadi" : "Verifikasi Email"}
