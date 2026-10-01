@@ -1,4 +1,4 @@
-const CACHE_NAME = "lunara-pwa-v1";
+const CACHE_NAME = "ricils-pwa-v1";
 const STATIC_ASSETS = [
   "/",
   "/manifest.webmanifest",

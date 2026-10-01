@@ -19,7 +19,7 @@ export const MedicalDisclaimer: React.FC<MedicalDisclaimerProps> = ({ compact = 
     <div className="flex items-start gap-3 p-4 rounded-2xl bg-[#FAF9F6] border border-[#EFE8DE] text-xs text-[#7A6E75] leading-relaxed">
       <Info className="w-4 h-4 text-[#D8647F] shrink-0 mt-0.5" />
       <p>
-        <strong className="text-[#221B1F]">Catatan Privasi & Kesehatan:</strong> Lunara dibuat untuk membantu mencatat dan memahami pola siklus berdasarkan data yang kamu masukkan. Informasi dan perkiraan dalam aplikasi bukan diagnosis medis dan tidak menggantikan konsultasi dengan tenaga medis profesional.
+        <strong className="text-[#221B1F]">Catatan Privasi & Kesehatan:</strong> Ricil&apos;s dibuat untuk membantu mencatat dan memahami pola siklus berdasarkan data yang kamu masukkan. Informasi dan perkiraan dalam aplikasi bukan diagnosis medis dan tidak menggantikan konsultasi dengan tenaga medis profesional.
       </p>
     </div>
   );

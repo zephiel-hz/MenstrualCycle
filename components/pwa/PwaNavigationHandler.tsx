@@ -17,8 +17,8 @@ export const PwaNavigationHandler: React.FC = () => {
     // When on dashboard, ensure a history trap is active so back gesture stays on dashboard
     if (pathname === "/dashboard") {
       try {
-        if (!window.history.state?.lunaraGuard) {
-          window.history.pushState({ lunaraGuard: true }, "", "/dashboard");
+        if (!window.history.state?.ricilsGuard) {
+          window.history.pushState({ ricilsGuard: true }, "", "/dashboard");
         }
       } catch {}
     }
@@ -39,7 +39,7 @@ export const PwaNavigationHandler: React.FC = () => {
           // First back press on dashboard -> stay on dashboard, do NOT navigate anywhere
           lastBackPressRef.current = now;
           try {
-            window.history.pushState({ lunaraGuard: true }, "", "/dashboard");
+            window.history.pushState({ ricilsGuard: true }, "", "/dashboard");
           } catch {}
 
           setShowExitToast(true);
@@ -72,10 +72,11 @@ export const PwaNavigationHandler: React.FC = () => {
     <div
       role="status"
       aria-live="polite"
-      className="fixed bottom-24 md:bottom-8 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-full bg-[#2D2727]/90 text-white backdrop-blur-md shadow-xl flex items-center gap-2 text-xs font-medium animate-in fade-in-50 zoom-in-95 duration-200 pointer-events-none"
+      className="fixed bottom-24 md:bottom-8 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-full bg-[#221B1F]/90 text-white backdrop-blur-md shadow-xl flex items-center gap-2 text-xs font-medium animate-in fade-in-50 zoom-in-95 duration-200 pointer-events-none"
     >
-      <LogOut className="w-3.5 h-3.5 text-[#E78895]" />
+      <LogOut className="w-3.5 h-3.5 text-[#D8647F]" />
       <span>Tekan sekali lagi untuk keluar</span>
     </div>
   );
 };
+

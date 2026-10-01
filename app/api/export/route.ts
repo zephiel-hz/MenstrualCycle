@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
 
     const exportData = {
       exportedAt: new Date().toISOString(),
-      app: "Lunara - Personal Cycle Companion",
+      app: "Ricil's - Personal Cycle Companion",
       user: {
         email: session.email,
         displayName: profile?.displayName || session.displayName,
@@ -84,7 +84,7 @@ export async function GET(req: NextRequest) {
       return new NextResponse(csvContent, {
         headers: {
           "Content-Type": "text/csv; charset=utf-8",
-          "Content-Disposition": `attachment; filename="lunara-data-${session.userId.slice(0, 8)}.csv"`,
+          "Content-Disposition": `attachment; filename="ricils-data-${session.userId.slice(0, 8)}.csv"`,
         },
       });
     }
@@ -92,7 +92,7 @@ export async function GET(req: NextRequest) {
     return new NextResponse(JSON.stringify(exportData, null, 2), {
       headers: {
         "Content-Type": "application/json; charset=utf-8",
-        "Content-Disposition": `attachment; filename="lunara-data-${session.userId.slice(0, 8)}.json"`,
+        "Content-Disposition": `attachment; filename="ricils-data-${session.userId.slice(0, 8)}.json"`,
       },
     });
   } catch (error) {

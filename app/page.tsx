@@ -108,9 +108,9 @@ export default async function HomePage() {
       <footer className="w-full border-t border-[#F0EAE1] py-6 text-center text-xs text-[#A3969F] relative z-10">
         <div className="flex items-center justify-center gap-1.5 mb-1">
           <HeartHandshake className="w-3.5 h-3.5 text-[#D8647F]" />
-          <span>Lunara &bull; Dibuat untuk kenyamanan & kesehatan wanita</span>
+          <span>Ricil&apos;s &bull; Dibuat untuk kenyamanan & kesehatan wanita</span>
         </div>
-        <p>© {new Date().getFullYear()} Lunara. Seluruh hak cipta dilindungi.</p>
+        <p>© {new Date().getFullYear()} Ricil&apos;s. Seluruh hak cipta dilindungi.</p>
       </footer>
     </div>
   );

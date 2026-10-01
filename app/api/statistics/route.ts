@@ -63,7 +63,7 @@ export async function GET() {
       stats,
       cycleTrends,
       periodTrends,
-      disclaimer: "Berdasarkan data yang kamu catat. Lunara bukan diagnosis medis.",
+      disclaimer: "Berdasarkan data yang kamu catat. Ricil's bukan diagnosis medis.",
     });
   } catch (error) {
     console.error("Get statistics error:", error instanceof Error ? error.message : "Unknown error");

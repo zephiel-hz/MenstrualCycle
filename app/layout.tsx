@@ -2,13 +2,13 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Lunara - Your Personal Cycle Companion",
+  title: "Ricil's - Your Personal Cycle Companion",
   description: "Aplikasi pelacakan siklus menstruasi modern, mobile-first, dan privacy-first.",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Lunara",
+    title: "Ricil's",
   },
   icons: {
     icon: "/icons/icon-192.svg",

@@ -40,7 +40,7 @@ export const NotificationPermissionPrompt: React.FC = () => {
       }
 
       // If still default, check snooze and show interactive banner prompt
-      const dismissedAt = localStorage.getItem("lunara_notif_prompt_dismissed_at");
+      const dismissedAt = localStorage.getItem("ricils_notif_prompt_dismissed_at");
       if (dismissedAt) {
         const timeDiff = Date.now() - parseInt(dismissedAt, 10);
         if (timeDiff < 24 * 60 * 60 * 1000) {
@@ -57,7 +57,7 @@ export const NotificationPermissionPrompt: React.FC = () => {
   }, []);
 
   const sendWelcomeNotification = () => {
-    const title = "🌸 Notifikasi Lunara Aktif";
+    const title = "🌸 Notifikasi Ricil's Aktif";
     const body = "Pengingat siklus menstruasi dan fase PMS Anda siap memberi tahu tepat waktu!";
 
     if ("serviceWorker" in navigator) {
@@ -66,7 +66,7 @@ export const NotificationPermissionPrompt: React.FC = () => {
           reg.showNotification(title, {
             body,
             icon: "/icons/icon-192.svg",
-            tag: "lunara-welcome-notif",
+            tag: "ricils-welcome-notif",
           });
         } else {
           new Notification(title, { body, icon: "/icons/icon-192.svg" });
@@ -109,14 +109,14 @@ export const NotificationPermissionPrompt: React.FC = () => {
 
   const handleDismiss = () => {
     setShowPrompt(false);
-    localStorage.setItem("lunara_notif_prompt_dismissed_at", Date.now().toString());
+    localStorage.setItem("ricils_notif_prompt_dismissed_at", Date.now().toString());
   };
 
   if (!showPrompt) return null;
 
   return (
     <aside
-      aria-label="Permintaan Izin Notifikasi Lunara"
+      aria-label="Permintaan Izin Notifikasi Ricil's"
       className="fixed bottom-24 md:bottom-6 left-4 right-4 md:left-auto md:right-6 md:w-96 bg-white/95 backdrop-blur-md border border-[#E8E0D5] p-4 rounded-2xl shadow-xl z-50 animate-in slide-in-from-bottom duration-300"
     >
       {justGranted ? (

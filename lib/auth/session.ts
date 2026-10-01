@@ -2,8 +2,8 @@ import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
-const COOKIE_NAME = "lunara_session";
-const AUTH_SECRET = process.env.AUTH_SECRET || "lunara_default_super_secret_session_key_32_chars_min";
+const COOKIE_NAME = "ricils_session";
+const AUTH_SECRET = process.env.AUTH_SECRET || "ricils_default_super_secret_session_key_32_chars_min";
 const key = new TextEncoder().encode(AUTH_SECRET);
 
 export interface SessionPayload {

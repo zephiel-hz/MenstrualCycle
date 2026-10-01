@@ -61,7 +61,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
       {withText && (
         <div className="flex items-center gap-2">
           <span className={`font-editorial font-normal ${sizeMap.text} text-[#221B1F] tracking-tight leading-none`}>
-            Lunara
+            Ricil&apos;s
           </span>
           {badge && (
             <span

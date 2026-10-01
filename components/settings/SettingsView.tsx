@@ -86,24 +86,26 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         !(window as unknown as { MSStream?: unknown }).MSStream;
       setIsIosDevice(isIos);
 
-      if (window.__LUNARA_PWA_PROMPT__) {
+      if (window.__RICILS_PWA_PROMPT__) {
         setCanPromptPwa(true);
       }
 
       const onPromptAvailable = () => setCanPromptPwa(true);
-      window.addEventListener("lunara:pwa-prompt-available", onPromptAvailable);
-      return () => window.removeEventListener("lunara:pwa-prompt-available", onPromptAvailable);
+      window.addEventListener("ricils:pwa-prompt-available", onPromptAvailable);
+      return () => {
+        window.removeEventListener("ricils:pwa-prompt-available", onPromptAvailable);
+      };
     }
   }, []);
 
   const handleInstallPwa = async () => {
-    const prompt = window.__LUNARA_PWA_PROMPT__;
+    const prompt = window.__RICILS_PWA_PROMPT__;
     if (prompt) {
       prompt.prompt();
       const choice = await prompt.userChoice;
       if (choice.outcome === "accepted") {
         setCanPromptPwa(false);
-        window.__LUNARA_PWA_PROMPT__ = null;
+        window.__RICILS_PWA_PROMPT__ = null;
       }
     }
   };
@@ -225,7 +227,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             <div className="w-6 h-6 rounded-full bg-[#FAF0F2] text-[#D8647F] flex items-center justify-center">
               <Smartphone className="w-3.5 h-3.5" />
             </div>
-            <h3 className="text-xs font-semibold text-[#221B1F]">Aplikasi Lunara (PWA)</h3>
+            <h3 className="text-xs font-semibold text-[#221B1F]">Aplikasi Ricil&apos;s (PWA)</h3>
           </div>
           <span
             className={`text-[10px] font-medium px-2.5 py-1 rounded-full ${
@@ -240,12 +242,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
         {isStandalone ? (
           <p className="text-xs text-[#7A6E75] leading-relaxed">
-            Lunara telah berjalan sebagai aplikasi native di perangkat Anda dengan akses offline cepat, navigasi layar penuh tanpa bilah browser, dan responsivitas instan.
+            Ricil&apos;s telah berjalan sebagai aplikasi native di perangkat Anda dengan akses offline cepat, navigasi layar penuh tanpa bilah browser, dan responsivitas instan.
           </p>
         ) : (
           <div className="space-y-3 text-xs text-[#7A6E75]">
             <p className="leading-relaxed">
-              Pasang Lunara ke Layar Utama (*Home Screen*) HP atau Laptop Anda untuk pengalaman bebas hambatan seperti aplikasi native:
+              Pasang Ricil&apos;s ke Layar Utama (*Home Screen*) HP atau Laptop Anda untuk pengalaman bebas hambatan seperti aplikasi native:
             </p>
 
             {canPromptPwa && (
@@ -256,7 +258,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   className="px-4 py-2.5 rounded-full bg-[#D8647F] hover:bg-[#C5536D] text-white text-xs font-medium shadow-sm transition-all cursor-pointer flex items-center gap-2 active:scale-95"
                 >
                   <Download className="w-3.5 h-3.5" />
-                  Pasang Lunara ke Layar Utama
+                  Pasang Ricil&apos;s ke Layar Utama
                 </button>
               </div>
             )}

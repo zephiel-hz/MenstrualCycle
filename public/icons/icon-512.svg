@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
-    <linearGradient id="lunaraGradient512" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient id="ricilsGradient512" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#F292A7" />
       <stop offset="50%" stop-color="#E2748F" />
       <stop offset="100%" stop-color="#D35773" />
@@ -10,7 +10,7 @@
     </filter>
   </defs>
   <!-- Squircle rounded background -->
-  <rect x="24" y="24" width="464" height="464" rx="122" fill="url(#lunaraGradient512)" filter="url(#softGlow512)" />
+  <rect x="24" y="24" width="464" height="464" rx="122" fill="url(#ricilsGradient512)" filter="url(#softGlow512)" />
   
   <!-- Centered Chubby Crescent Moon matching brand identity -->
   <g transform="translate(144, 144) scale(9.33)">

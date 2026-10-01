@@ -268,7 +268,7 @@ export default function RegisterPage() {
                 disabled={isLoading || otp.length !== 6}
                 className="w-full py-3 rounded-full bg-[#D8647F] hover:bg-[#C5536D] text-white text-xs font-semibold shadow-md shadow-[#D8647F]/20 hover:shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50 active:scale-[0.99]"
               >
-                {isLoading ? "Memverifikasi..." : "Verifikasi & Masuk ke Lunara"}
+                {isLoading ? "Memverifikasi..." : "Verifikasi & Masuk ke Ricil's"}
                 <ArrowRight className="w-4 h-4" />
               </button>
 

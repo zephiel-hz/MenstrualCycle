@@ -28,11 +28,11 @@ function getEmailHtml(code: string, type: "register" | "forgot_password", displa
 
   const headline = isRegister
     ? "Satu langkah lagi menuju jurnal siklus pribadimu."
-    : "Atur ulang kata sandi akun Lunara Anda.";
+    : "Atur ulang kata sandi akun Ricil's Anda.";
 
   const message = isRegister
-    ? "Terima kasih telah bergabung dengan <strong>Lunara</strong>. Gunakan 6-digit kode verifikasi di bawah ini pada aplikasi untuk mengaktifkan akun pribadimu:"
-    : "Kami menerima permintaan pengaturan ulang kata sandi untuk akun Lunara Anda. Masukkan 6-digit kode verifikasi di bawah ini untuk membuat kata sandi baru:";
+    ? "Terima kasih telah bergabung dengan <strong>Ricil's</strong>. Gunakan 6-digit kode verifikasi di bawah ini pada aplikasi untuk mengaktifkan akun pribadimu:"
+    : "Kami menerima permintaan pengaturan ulang kata sandi untuk akun Ricil's Anda. Masukkan 6-digit kode verifikasi di bawah ini untuk membuat kata sandi baru:";
 
   return `
 <!DOCTYPE html>
@@ -40,7 +40,7 @@ function getEmailHtml(code: string, type: "register" | "forgot_password", displa
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${isRegister ? "Verifikasi Pendaftaran Lunara" : "Pemulihan Kata Sandi Lunara"}</title>
+  <title>${isRegister ? "Verifikasi Pendaftaran Ricil's" : "Pemulihan Kata Sandi Ricil's"}</title>
   <!--[if mso]>
   <noscript>
     <xml>
@@ -88,7 +88,7 @@ function getEmailHtml(code: string, type: "register" | "forgot_password", displa
                       </svg>
                     </div>
                     <div style="font-family: 'Playfair Display', Georgia, serif; font-size: 26px; font-weight: 600; color: #221B1F; letter-spacing: -0.5px; line-height: 1;">
-                      Lunara
+                      Ricil's
                     </div>
                     <div style="font-size: 10px; font-weight: 700; color: #D8647F; letter-spacing: 2.5px; text-transform: uppercase; margin-top: 6px;">
                       WELLNESS & CYCLE JOURNAL
@@ -150,7 +150,7 @@ function getEmailHtml(code: string, type: "register" | "forgot_password", displa
                 <tr>
                   <td style="padding: 16px 18px;">
                     <p style="margin: 0; font-size: 11px; line-height: 1.6; color: #7A6E75;">
-                      🔒 <strong style="color: #221B1F;">Perlindungan Privasi:</strong> Jangan pernah membagikan kode ini kepada siapa pun. Pihak Lunara tidak akan pernah meminta kode ini melalui pesan atau media apa pun. Jika Anda tidak melakukan permintaan ini, abaikan email ini dan akun Anda tetap aman.
+                      🔒 <strong style="color: #221B1F;">Perlindungan Privasi:</strong> Jangan pernah membagikan kode ini kepada siapa pun. Pihak Ricil's tidak akan pernah meminta kode ini melalui pesan atau media apa pun. Jika Anda tidak melakukan permintaan ini, abaikan email ini dan akun Anda tetap aman.
                     </p>
                   </td>
                 </tr>
@@ -166,7 +166,7 @@ function getEmailHtml(code: string, type: "register" | "forgot_password", displa
                 Aplikasi Pelacak Siklus Menstruasi Pribadi &amp; Ramah Privasi
               </p>
               <p style="margin: 0; font-size: 10px; color: #A3969F;">
-                © ${new Date().getFullYear()} Lunara. Seluruh hak cipta dilindungi.
+                © ${new Date().getFullYear()} Ricil's. Seluruh hak cipta dilindungi.
               </p>
             </td>
           </tr>
@@ -187,15 +187,15 @@ export async function sendVerificationEmail({
 }: SendVerificationEmailOptions): Promise<{ success: boolean; method: string }> {
   const subject =
     type === "register"
-      ? `Kode Verifikasi Pendaftaran Lunara: ${code}`
-      : `Kode Pemulihan Kata Sandi Lunara: ${code}`;
+      ? `Kode Verifikasi Pendaftaran Ricil's: ${code}`
+      : `Kode Pemulihan Kata Sandi Ricil's: ${code}`;
   const html = getEmailHtml(code, type, displayName);
 
   // 1. Check Resend API
   if (process.env.RESEND_API_KEY) {
     try {
       const resend = new Resend(process.env.RESEND_API_KEY);
-      const fromEmail = process.env.EMAIL_FROM || "Lunara <onboarding@resend.dev>";
+      const fromEmail = process.env.EMAIL_FROM || "Ricil's <onboarding@resend.dev>";
 
       await resend.emails.send({
         from: fromEmail,
@@ -232,7 +232,7 @@ export async function sendVerificationEmail({
       });
 
       await transporter.sendMail({
-        from: process.env.EMAIL_FROM || `"Lunara" <${process.env.SMTP_USER}>`,
+        from: process.env.EMAIL_FROM || `"Ricil's" <${process.env.SMTP_USER}>`,
         to: email,
         subject,
         html,
@@ -247,7 +247,7 @@ export async function sendVerificationEmail({
 
   // 3. Dev / Fallback Console Logging
   console.log("==================================================");
-  console.log(`[Lunara Dev Email Dispatch]`);
+  console.log(`[Ricil's Dev Email Dispatch]`);
   console.log(`To: ${email}`);
   console.log(`Type: ${type}`);
   console.log(`Verification Code (OTP): ${code}`);
@@ -256,3 +256,4 @@ export async function sendVerificationEmail({
 
   return { success: true, method: "dev_console" };
 }
+

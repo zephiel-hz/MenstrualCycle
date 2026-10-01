@@ -8,7 +8,7 @@ if (!connectionString && process.env.NODE_ENV === "production") {
   throw new Error("DATABASE_URL environment variable is missing.");
 }
 
-const sql = neon(connectionString || "postgresql://placeholder:placeholder@localhost:5432/lunara");
+const sql = neon(connectionString || "postgresql://placeholder:placeholder@localhost:5432/ricils");
 
 export const db = drizzle(sql, { schema });
 export * from "./schema";

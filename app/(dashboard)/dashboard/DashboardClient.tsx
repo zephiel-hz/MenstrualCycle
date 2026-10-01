@@ -47,11 +47,11 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({
     if (!stats.isPmsPhase || !stats.estimatedNextPeriodDate) return;
 
     if ("Notification" in window && Notification.permission === "granted") {
-      const storageKey = `lunara_pms_notified_${stats.estimatedNextPeriodDate}`;
+      const storageKey = `ricils_pms_notified_${stats.estimatedNextPeriodDate}`;
       const alreadyNotified = localStorage.getItem(storageKey);
       if (!alreadyNotified) {
         const daysLeft = stats.daysUntilNextPeriod ?? 0;
-        const title = "🌸 Lunara - Fase PMS";
+        const title = "🌸 Ricil's - Fase PMS";
         const body = `Kamu diperkirakan telah memasuki fase PMS (${daysLeft} hari lagi menuju haid). Tetap terhidrasi, istirahat cukup, dan jaga kenyamanan tubuhmu hari ini! ✨`;
 
         let sentViaSw = false;
@@ -61,7 +61,7 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({
               reg.showNotification(title, {
                 body,
                 icon: "/icons/icon-192.svg",
-                tag: `lunara-pms-${stats.estimatedNextPeriodDate}`,
+                tag: `ricils-pms-${stats.estimatedNextPeriodDate}`,
               });
               sentViaSw = true;
             }
@@ -73,7 +73,7 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({
             new Notification(title, {
               body,
               icon: "/icons/icon-192.svg",
-              tag: `lunara-pms-${stats.estimatedNextPeriodDate}`,
+              tag: `ricils-pms-${stats.estimatedNextPeriodDate}`,
             });
           } catch (e) {
             console.warn("Direct PMS notification error:", e);
