@@ -107,8 +107,87 @@ export async function setCachedProfile(profile: LocalProfile): Promise<void> {
 }
 
 /* ==========================================================================
-   NON-DESTRUCTIVE CACHE HYDRATION
+   AUTHORITATIVE CACHE RECONCILIATION & HYDRATION
    ========================================================================== */
+
+export async function reconcileCyclesWithServer(
+  serverCycles: LocalCycle[] = []
+): Promise<void> {
+  const existing = await getCachedCycles();
+  const queue = await getSyncQueue();
+
+  const pendingDeleteIds = new Set(
+    queue
+      .filter((q) => q.type === "DELETE_CYCLE")
+      .map((q) => q.endpoint.replace("/api/cycles/", ""))
+  );
+
+  const resultMap = new Map<string, LocalCycle>();
+
+  // 1. Authoritative server cycles (excluding those marked for pending deletion)
+  for (const sc of serverCycles) {
+    if (!pendingDeleteIds.has(sc.id)) {
+      resultMap.set(sc.id, { ...sc, isLocalOnly: false });
+    }
+  }
+
+  // 2. Preserve local-only cycles created offline that have not synced yet
+  for (const ec of existing) {
+    if (ec.isLocalOnly || ec.id.startsWith("temp_cycle_")) {
+      if (!pendingDeleteIds.has(ec.id)) {
+        resultMap.set(ec.id, ec);
+      }
+    }
+  }
+
+  const merged = Array.from(resultMap.values()).sort(
+    (a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
+  );
+  await setCachedCycles(merged);
+}
+
+export async function reconcileLogsWithServer(
+  serverLogs: LocalLog[] = []
+): Promise<void> {
+  const existing = await getCachedLogs();
+  const queue = await getSyncQueue();
+
+  const pendingSaveDates = new Set(
+    queue.filter((q) => q.type === "SAVE_LOG").map((q) => q.payload?.date)
+  );
+  const pendingDeleteIds = new Set(
+    queue
+      .filter((q) => q.type === "DELETE_LOG")
+      .map((q) => q.endpoint.replace("/api/logs/", ""))
+  );
+
+  const resultMap = new Map<string, LocalLog>();
+
+  // 1. Authoritative server logs (excluding those marked for pending deletion)
+  for (const sl of serverLogs) {
+    if (!pendingDeleteIds.has(sl.id || "")) {
+      resultMap.set(sl.date, { ...sl, isLocalOnly: false });
+    }
+  }
+
+  // 2. Preserve local-only logs created offline
+  for (const el of existing) {
+    if (
+      el.isLocalOnly ||
+      el.id?.startsWith("temp_log_") ||
+      pendingSaveDates.has(el.date)
+    ) {
+      if (!pendingDeleteIds.has(el.id || "")) {
+        resultMap.set(el.date, el);
+      }
+    }
+  }
+
+  const merged = Array.from(resultMap.values()).sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+  await setCachedLogs(merged);
+}
 
 export async function hydrateLocalCache(data: {
   cycles?: LocalCycle[];
@@ -116,42 +195,12 @@ export async function hydrateLocalCache(data: {
   settings?: LocalSettings;
   profile?: LocalProfile;
 }): Promise<void> {
-  // 1. Non-destructive cycle merge by ID
-  if (data.cycles && data.cycles.length > 0) {
-    const existing = await getCachedCycles();
-    const map = new Map<string, LocalCycle>();
-
-    for (const c of existing) {
-      map.set(c.id, c);
-    }
-    for (const c of data.cycles) {
-      const isLocal = existing.find((e) => e.id === c.id)?.isLocalOnly ?? false;
-      map.set(c.id, { ...c, isLocalOnly: isLocal });
-    }
-
-    const merged = Array.from(map.values()).sort(
-      (a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
-    );
-    await setCachedCycles(merged);
+  if (data.cycles !== undefined) {
+    await reconcileCyclesWithServer(data.cycles);
   }
 
-  // 2. Non-destructive daily log merge by date (YYYY-MM-DD)
-  if (data.logs && data.logs.length > 0) {
-    const existing = await getCachedLogs();
-    const map = new Map<string, LocalLog>();
-
-    for (const l of existing) {
-      map.set(l.date, l);
-    }
-    for (const l of data.logs) {
-      const isLocal = existing.find((e) => e.date === l.date)?.isLocalOnly ?? false;
-      map.set(l.date, { ...l, isLocalOnly: isLocal });
-    }
-
-    const merged = Array.from(map.values()).sort(
-      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-    );
-    await setCachedLogs(merged);
+  if (data.logs !== undefined) {
+    await reconcileLogsWithServer(data.logs);
   }
 
   if (data.settings) {
@@ -185,7 +234,7 @@ export async function syncAllDataFromServer(): Promise<void> {
     if (cyclesRes.status === "fulfilled" && cyclesRes.value.ok) {
       const cyclesData = await cyclesRes.value.json();
       if (Array.isArray(cyclesData.cycles)) {
-        await hydrateLocalCache({ cycles: cyclesData.cycles });
+        await reconcileCyclesWithServer(cyclesData.cycles);
         dataChanged = true;
       }
     }
@@ -193,7 +242,7 @@ export async function syncAllDataFromServer(): Promise<void> {
     if (logsRes.status === "fulfilled" && logsRes.value.ok) {
       const logsData = await logsRes.value.json();
       if (Array.isArray(logsData.logs)) {
-        await hydrateLocalCache({ logs: logsData.logs });
+        await reconcileLogsWithServer(logsData.logs);
         dataChanged = true;
       }
     }

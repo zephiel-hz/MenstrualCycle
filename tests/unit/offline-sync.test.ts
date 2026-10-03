@@ -9,15 +9,19 @@ import {
 } from "@/lib/offline/db";
 import {
   offlineSaveDailyLog,
+  offlineDeleteDailyLog,
   offlineAddCycle,
+  offlineDeleteCycle,
   getCachedCycles,
   getCachedLogs,
   setCachedCycles,
   setCachedLogs,
   hydrateLocalCache,
   getCachedLogByDate,
+  reconcileCyclesWithServer,
+  reconcileLogsWithServer,
 } from "@/lib/offline/syncManager";
-import { calculateCycleStats, CycleData } from "@/lib/calculations/cycle";
+import { calculateCycleStats, CycleData, generateCycleInsights } from "@/lib/calculations/cycle";
 
 // Mock localStorage for node test environment
 const mockStorage: Record<string, string> = {};
@@ -131,36 +135,87 @@ describe("Offline DB & Sync Queue", () => {
     expect(stats.averageCycleLength).toBe(28);
   });
 
-  it("should non-destructively merge incoming partial logs and cycles without wiping existing cache", async () => {
-    // 1. Initial cached history with 3 cycles and 2 logs
+  it("should delete daily log offline, update local cache, and purge pending sync item", async () => {
+    await clearSyncQueue();
+    await offlineSaveDailyLog({
+      date: "2026-10-04",
+      flow: "medium",
+      notes: "Log to delete",
+    });
+
+    let logs = await getCachedLogs();
+    expect(logs.find((l) => l.date === "2026-10-04")).toBeDefined();
+
+    const delResult = await offlineDeleteDailyLog("temp_log_test", "2026-10-04");
+    expect(delResult.success).toBe(true);
+
+    logs = await getCachedLogs();
+    expect(logs.find((l) => l.date === "2026-10-04")).toBeUndefined();
+
+    const queue = await getSyncQueue();
+    const savePending = queue.find(
+      (q) => q.type === "SAVE_LOG" && q.payload?.date === "2026-10-04"
+    );
+    expect(savePending).toBeUndefined();
+  });
+
+  it("should delete cycle offline, update local cache, and purge pending sync item", async () => {
+    await clearSyncQueue();
+    const addResult = await offlineAddCycle({
+      startDate: "2026-10-05",
+      endDate: "2026-10-09",
+    });
+
+    const cycleId = addResult.cycle.id;
+    let cycles = await getCachedCycles();
+    expect(cycles.find((c) => c.id === cycleId)).toBeDefined();
+
+    const delResult = await offlineDeleteCycle(cycleId);
+    expect(delResult.success).toBe(true);
+
+    cycles = await getCachedCycles();
+    expect(cycles.find((c) => c.id === cycleId)).toBeUndefined();
+  });
+
+  it("should reconcile cycles with server and prune deleted cycles without resurrection", async () => {
+    await clearSyncQueue();
+
+    // 1. Initial cached cycles with c1 and c2
     await setCachedCycles([
       { id: "c1", startDate: "2026-07-01", endDate: "2026-07-05" },
       { id: "c2", startDate: "2026-08-01", endDate: "2026-08-05" },
     ]);
-    await setCachedLogs([
-      { id: "l1", date: "2026-07-02", flow: "medium", mood: ["baik"], symptoms: [] },
-      { id: "l2", date: "2026-08-02", flow: "heavy", mood: ["stres"], symptoms: ["kram"] },
+
+    // 2. Add an offline cycle c_offline
+    await setCachedCycles([
+      { id: "c1", startDate: "2026-07-01", endDate: "2026-07-05" },
+      { id: "c2", startDate: "2026-08-01", endDate: "2026-08-05" },
+      { id: "temp_cycle_123", startDate: "2026-09-01", endDate: "2026-09-05", isLocalOnly: true },
     ]);
 
-    // 2. Hydrate with only today's log and 1 new cycle
-    await hydrateLocalCache({
-      cycles: [{ id: "c3", startDate: "2026-09-01", endDate: "2026-09-05" }],
-      logs: [{ id: "l3", date: "2026-09-02", flow: "light", mood: ["senang"], symptoms: [] }],
-    });
+    // 3. Server reports c1 was deleted, only c2 exists
+    await reconcileCyclesWithServer([
+      { id: "c2", startDate: "2026-08-01", endDate: "2026-08-05" },
+    ]);
 
-    const cachedCycles = await getCachedCycles();
-    const cachedLogs = await getCachedLogs();
+    const reconciled = await getCachedCycles();
+    // c1 must be pruned (deleted on server)!
+    expect(reconciled.find((c) => c.id === "c1")).toBeUndefined();
+    // c2 must be present
+    expect(reconciled.find((c) => c.id === "c2")).toBeDefined();
+    // temp_cycle_123 must be preserved
+    expect(reconciled.find((c) => c.id === "temp_cycle_123")).toBeDefined();
+    expect(reconciled.length).toBe(2);
+  });
 
-    // Must have all 3 cycles preserved!
-    expect(cachedCycles.length).toBe(3);
-    expect(cachedCycles.map((c) => c.id)).toContain("c1");
-    expect(cachedCycles.map((c) => c.id)).toContain("c2");
-    expect(cachedCycles.map((c) => c.id)).toContain("c3");
+  it("should correctly recompute statistics and insights when all cycles are deleted", async () => {
+    const stats = calculateCycleStats([], 28, 5);
+    expect(stats.totalCyclesLogged).toBe(0);
+    expect(stats.currentCycleDay).toBeNull();
+    expect(stats.estimatedNextPeriodDate).toBeNull();
 
-    // Must have all 3 logs preserved!
-    expect(cachedLogs.length).toBe(3);
-    expect(await getCachedLogByDate("2026-07-02")).toBeDefined();
-    expect(await getCachedLogByDate("2026-08-02")).toBeDefined();
-    expect(await getCachedLogByDate("2026-09-02")).toBeDefined();
+    const insights = generateCycleInsights([], [], stats);
+    expect(Array.isArray(insights)).toBe(true);
   });
 });
+

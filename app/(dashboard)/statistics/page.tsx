@@ -69,6 +69,8 @@ export default async function StatisticsPage() {
       insights={insights}
       cycleTrends={cycleTrends}
       periodTrends={periodTrends}
+      allCycles={userCycles}
+      allLogs={userLogs}
     />
   );
 }

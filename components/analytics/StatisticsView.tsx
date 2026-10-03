@@ -117,43 +117,41 @@ export const StatisticsView: React.FC<StatisticsViewProps> = ({
         getCachedSettings(),
       ]);
 
-      if (localCycles && localCycles.length > 0) {
-        const cycleDataList: CycleData[] = localCycles.map((c) => ({
-          id: c.id,
-          startDate: c.startDate,
-          endDate: c.endDate,
-          notes: c.notes,
-        }));
+      const cycleDataList: CycleData[] = (localCycles || []).map((c) => ({
+        id: c.id,
+        startDate: c.startDate,
+        endDate: c.endDate,
+        notes: c.notes,
+      }));
 
-        const logDataList: DailyLogData[] = (localLogs || []).map((l) => ({
-          id: l.id || `log_${l.date}`,
-          date: l.date,
-          flow: l.flow || "none",
-          mood: l.mood || [],
-          symptoms: l.symptoms || [],
-          notes: l.notes || null,
-        }));
+      const logDataList: DailyLogData[] = (localLogs || []).map((l) => ({
+        id: l.id || `log_${l.date}`,
+        date: l.date,
+        flow: l.flow || "none",
+        mood: l.mood || [],
+        symptoms: l.symptoms || [],
+        notes: l.notes || null,
+      }));
 
-        const defaultCycleLength = localSettings?.cycleLengthDefault || 28;
-        const defaultPeriodDuration = localSettings?.periodDurationDefault || 5;
+      const defaultCycleLength = localSettings?.cycleLengthDefault || 28;
+      const defaultPeriodDuration = localSettings?.periodDurationDefault || 5;
 
-        const computedStats = calculateCycleStats(
-          cycleDataList,
-          defaultCycleLength,
-          defaultPeriodDuration
-        );
-        const computedInsights = generateCycleInsights(
-          cycleDataList,
-          logDataList,
-          computedStats
-        );
-        const { cycleTrends: cTrends, periodTrends: pTrends } = computeTrends(cycleDataList);
+      const computedStats = calculateCycleStats(
+        cycleDataList,
+        defaultCycleLength,
+        defaultPeriodDuration
+      );
+      const computedInsights = generateCycleInsights(
+        cycleDataList,
+        logDataList,
+        computedStats
+      );
+      const { cycleTrends: cTrends, periodTrends: pTrends } = computeTrends(cycleDataList);
 
-        setStats(computedStats);
-        setInsights(computedInsights);
-        setCycleTrends(cTrends);
-        setPeriodTrends(pTrends);
-      }
+      setStats(computedStats);
+      setInsights(computedInsights);
+      setCycleTrends(cTrends);
+      setPeriodTrends(pTrends);
     } catch (err) {
       console.warn("Failed to recompute statistics from local IndexedDB:", err);
     }
@@ -161,7 +159,7 @@ export const StatisticsView: React.FC<StatisticsViewProps> = ({
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      if ((allCycles && allCycles.length > 0) || (allLogs && allLogs.length > 0)) {
+      if (isOnline() && (allCycles !== undefined || allLogs !== undefined)) {
         hydrateLocalCache({
           cycles: allCycles,
           logs: allLogs,
