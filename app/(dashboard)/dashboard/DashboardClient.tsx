@@ -167,11 +167,6 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({
       // 3. Listen for sync/mutation events
       const handleDataUpdated = () => {
         recomputeFromLocal();
-        if (isOnline()) {
-          startTransition(() => {
-            router.refresh();
-          });
-        }
       };
 
       window.addEventListener(SYNC_EVENTS.DATA_UPDATED, handleDataUpdated);
@@ -182,7 +177,7 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({
         window.removeEventListener(SYNC_EVENTS.SYNC_COMPLETED, handleDataUpdated);
       };
     }
-  }, [allCycles, initialLatestCycle, initialTodayLog, initialSettings, recomputeFromLocal, router]);
+  }, [allCycles, initialLatestCycle, initialTodayLog, initialSettings, recomputeFromLocal]);
 
   // PMS notification trigger
   useEffect(() => {

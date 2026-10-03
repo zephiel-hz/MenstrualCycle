@@ -170,11 +170,6 @@ export const StatisticsView: React.FC<StatisticsViewProps> = ({
 
       const handleDataUpdated = () => {
         recomputeFromLocal();
-        if (isOnline()) {
-          startTransition(() => {
-            router.refresh();
-          });
-        }
       };
 
       window.addEventListener(SYNC_EVENTS.DATA_UPDATED, handleDataUpdated);
@@ -185,7 +180,7 @@ export const StatisticsView: React.FC<StatisticsViewProps> = ({
         window.removeEventListener(SYNC_EVENTS.SYNC_COMPLETED, handleDataUpdated);
       };
     }
-  }, [allCycles, allLogs, recomputeFromLocal, router]);
+  }, [allCycles, allLogs, recomputeFromLocal]);
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto pb-10">

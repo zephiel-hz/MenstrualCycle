@@ -110,11 +110,6 @@ export const CalendarClient: React.FC<CalendarClientProps> = ({
 
       const handleDataUpdated = () => {
         recomputeFromLocal();
-        if (isOnline()) {
-          startTransition(() => {
-            router.refresh();
-          });
-        }
       };
 
       window.addEventListener(SYNC_EVENTS.DATA_UPDATED, handleDataUpdated);
@@ -125,7 +120,7 @@ export const CalendarClient: React.FC<CalendarClientProps> = ({
         window.removeEventListener(SYNC_EVENTS.SYNC_COMPLETED, handleDataUpdated);
       };
     }
-  }, [initialCycles, initialLogs, recomputeFromLocal, router]);
+  }, [initialCycles, initialLogs, recomputeFromLocal]);
 
   const handleOpenLogModal = (dateStr: string) => {
     setSelectedDate(dateStr);
