@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState, useTransition } from "react";
+import React, { useState, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { CycleCalendar } from "@/components/calendar/CycleCalendar";
 import { DailyLogModal } from "@/components/log/DailyLogModal";
 import { MedicalDisclaimer } from "@/components/ui/MedicalDisclaimer";
+import { hydrateLocalCache, SYNC_EVENTS } from "@/lib/offline/syncManager";
 
 interface CalendarClientProps {
   cycles: Array<{ id: string; startDate: string; endDate?: string | null }>;
@@ -31,6 +32,29 @@ export const CalendarClient: React.FC<CalendarClientProps> = ({
 
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      hydrateLocalCache({
+        cycles,
+        logs,
+      });
+
+      const handleDataUpdated = () => {
+        startTransition(() => {
+          router.refresh();
+        });
+      };
+
+      window.addEventListener(SYNC_EVENTS.DATA_UPDATED, handleDataUpdated);
+      window.addEventListener(SYNC_EVENTS.SYNC_COMPLETED, handleDataUpdated);
+
+      return () => {
+        window.removeEventListener(SYNC_EVENTS.DATA_UPDATED, handleDataUpdated);
+        window.removeEventListener(SYNC_EVENTS.SYNC_COMPLETED, handleDataUpdated);
+      };
+    }
+  }, [cycles, logs, router]);
 
   const handleOpenLogModal = (dateStr: string) => {
     setSelectedDate(dateStr);

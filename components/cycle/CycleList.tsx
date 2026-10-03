@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Calendar, Trash2, Plus, Pencil } from "lucide-react";
 import { formatShortDate, formatMonthYear } from "@/lib/utils";
 import { EditCycleModal } from "./EditCycleModal";
+import { offlineDeleteCycle } from "@/lib/offline/syncManager";
 
 interface CycleItem {
   id: string;
@@ -30,10 +31,8 @@ export const CycleList: React.FC<CycleListProps> = ({
     if (!confirm("Hapus catatan siklus ini?")) return;
     try {
       setDeletingId(id);
-      const res = await fetch(`/api/cycles/${id}`, { method: "DELETE", headers: { "bypass-tunnel-reminder": "true" } });
-      if (res.ok) {
-        onRefresh();
-      }
+      await offlineDeleteCycle(id);
+      onRefresh();
     } catch {
       alert("Gagal menghapus siklus.");
     } finally {

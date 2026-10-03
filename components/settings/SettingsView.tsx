@@ -18,6 +18,11 @@ import {
   Check,
 } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
+import {
+  offlineUpdateProfile,
+  offlineUpdateSettings,
+  hydrateLocalCache,
+} from "@/lib/offline/syncManager";
 
 interface SettingsViewProps {
   user: {
@@ -73,6 +78,14 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
   useEffect(() => {
     if (typeof window !== "undefined") {
+      hydrateLocalCache({
+        settings: initialSettings,
+        profile: {
+          displayName: user.displayName,
+          timezone: user.timezone,
+        },
+      });
+
       if ("Notification" in window) {
         setNotifPermission(Notification.permission);
       }
@@ -96,7 +109,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         window.removeEventListener("ricils:pwa-prompt-available", onPromptAvailable);
       };
     }
-  }, []);
+  }, [initialSettings, user.displayName, user.timezone]);
 
   const handleInstallPwa = async () => {
     const prompt = window.__RICILS_PWA_PROMPT__;
@@ -115,12 +128,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     try {
       setIsSavingProfile(true);
       setProfileMsg(null);
-      const res = await fetch("/api/profile", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", "bypass-tunnel-reminder": "true" },
-        body: JSON.stringify({ displayName, timezone }),
-      });
-      if (!res.ok) throw new Error("Gagal memperbarui profil");
+      await offlineUpdateProfile({ displayName, timezone });
       setProfileMsg("Profil berhasil diperbarui.");
       setTimeout(() => setProfileMsg(null), 3000);
     } catch {
@@ -146,20 +154,15 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         setNotifPermission(perm);
       }
 
-      const res = await fetch("/api/settings", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", "bypass-tunnel-reminder": "true" },
-        body: JSON.stringify({
-          reminderPeriod,
-          reminderLogging,
-          reminderSymptoms,
-          reminderPms,
-          cycleLengthDefault,
-          periodDurationDefault,
-        }),
+      await offlineUpdateSettings({
+        reminderPeriod,
+        reminderLogging,
+        reminderSymptoms,
+        reminderPms,
+        cycleLengthDefault,
+        periodDurationDefault,
       });
 
-      if (!res.ok) throw new Error("Gagal menyimpan preferensi");
       setSettingsMsg("Pengaturan berhasil disimpan.");
       setTimeout(() => setSettingsMsg(null), 3000);
     } catch {

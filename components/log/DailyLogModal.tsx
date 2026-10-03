@@ -2,8 +2,14 @@
 
 import React, { useState, useEffect } from "react";
 import { Modal } from "@/components/ui/Modal";
-import { Droplet, Calendar, Trash2, CheckCircle2, AlertCircle, Smile, Activity, Sparkles, Check } from "lucide-react";
+import { Droplet, Calendar, Trash2, CheckCircle2, AlertCircle, Smile, Activity, Sparkles, Check, WifiOff } from "lucide-react";
 import { formatISODateOnly } from "@/lib/utils";
+import {
+  getCachedLogByDate,
+  offlineSaveDailyLog,
+  offlineDeleteDailyLog,
+  isOnline,
+} from "@/lib/offline/syncManager";
 
 interface DailyLogModalProps {
   isOpen: boolean;
@@ -73,22 +79,48 @@ export const DailyLogModal: React.FC<DailyLogModalProps> = ({
     try {
       setIsLoading(true);
       setErrorMessage(null);
-      const res = await fetch(`/api/logs?date=${targetDate}`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data.log) {
-          setExistingLogId(data.log.id);
-          setFlow(data.log.flow || "none");
-          setSelectedMoods(Array.isArray(data.log.mood) ? data.log.mood : []);
-          setSelectedSymptoms(Array.isArray(data.log.symptoms) ? data.log.symptoms : []);
-          setNotes(data.log.notes || "");
-        } else {
-          setExistingLogId(null);
-          setFlow("none");
-          setSelectedMoods([]);
-          setSelectedSymptoms([]);
-          setNotes("");
+
+      // 1. Check local IndexedDB cache first
+      const localCached = await getCachedLogByDate(targetDate);
+      if (localCached) {
+        setExistingLogId(localCached.id || null);
+        setFlow(localCached.flow || "none");
+        setSelectedMoods(Array.isArray(localCached.mood) ? localCached.mood : []);
+        setSelectedSymptoms(Array.isArray(localCached.symptoms) ? localCached.symptoms : []);
+        setNotes(localCached.notes || "");
+      }
+
+      // 2. If online, fetch latest from server
+      if (isOnline()) {
+        try {
+          const res = await fetch(`/api/logs?date=${targetDate}`, {
+            headers: { "bypass-tunnel-reminder": "true" },
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.log) {
+              setExistingLogId(data.log.id);
+              setFlow(data.log.flow || "none");
+              setSelectedMoods(Array.isArray(data.log.mood) ? data.log.mood : []);
+              setSelectedSymptoms(Array.isArray(data.log.symptoms) ? data.log.symptoms : []);
+              setNotes(data.log.notes || "");
+            } else if (!localCached) {
+              setExistingLogId(null);
+              setFlow("none");
+              setSelectedMoods([]);
+              setSelectedSymptoms([]);
+              setNotes("");
+            }
+          }
+        } catch {
+          // If network fetch fails, stay with localCached
         }
+      } else if (!localCached) {
+        setExistingLogId(null);
+        setFlow("none");
+        setSelectedMoods([]);
+        setSelectedSymptoms([]);
+        setNotes("");
       }
     } catch {
       setErrorMessage("Gagal memuat catatan harian.");
@@ -116,28 +148,29 @@ export const DailyLogModal: React.FC<DailyLogModalProps> = ({
       setErrorMessage(null);
       setSuccessMessage(null);
 
-      const res = await fetch("/api/logs", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "bypass-tunnel-reminder": "true" },
-        body: JSON.stringify({
-          date,
-          flow,
-          mood: selectedMoods,
-          symptoms: selectedSymptoms,
-          notes: notes.trim() || null,
-        }),
+      const result = await offlineSaveDailyLog({
+        id: existingLogId,
+        date,
+        flow,
+        mood: selectedMoods,
+        symptoms: selectedSymptoms,
+        notes: notes.trim() || null,
       });
 
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Gagal menyimpan catatan.");
+      if (!result.success) {
+        throw new Error("Gagal menyimpan catatan.");
       }
 
-      setSuccessMessage("Catatan harian berhasil disimpan!");
+      if (result.isOffline) {
+        setSuccessMessage("Catatan tersimpan di perangkat (Mode Offline) & akan disinkronkan saat online.");
+      } else {
+        setSuccessMessage("Catatan harian berhasil disimpan!");
+      }
+
       setTimeout(() => {
         onLogSaved?.();
         onClose();
-      }, 400);
+      }, 600);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Gagal menyimpan catatan.";
       setErrorMessage(message);
@@ -147,16 +180,13 @@ export const DailyLogModal: React.FC<DailyLogModalProps> = ({
   };
 
   const handleDelete = async () => {
-    if (!existingLogId) return;
+    if (!existingLogId && !date) return;
     if (!confirm("Hapus catatan harian untuk tanggal ini?")) return;
 
     try {
       setIsDeleting(true);
       setErrorMessage(null);
-      const res = await fetch(`/api/logs/${existingLogId}`, {
-        method: "DELETE",
-      });
-      if (!res.ok) throw new Error("Gagal menghapus catatan.");
+      await offlineDeleteDailyLog(existingLogId, date);
 
       onLogSaved?.();
       onClose();

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Modal } from "@/components/ui/Modal";
 import { AlertCircle } from "lucide-react";
+import { offlineUpdateCycle } from "@/lib/offline/syncManager";
 
 interface CycleItem {
   id: string;
@@ -47,19 +48,14 @@ export const EditCycleModal: React.FC<EditCycleModalProps> = ({
       setIsSaving(true);
       setErrorMessage(null);
 
-      const res = await fetch(`/api/cycles/${cycle.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", "bypass-tunnel-reminder": "true" },
-        body: JSON.stringify({
-          startDate,
-          endDate: endDate || null,
-          notes: notes.trim() || null,
-        }),
+      const result = await offlineUpdateCycle(cycle.id, {
+        startDate,
+        endDate: endDate || null,
+        notes: notes.trim() || null,
       });
 
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Gagal memperbarui data siklus.");
+      if (!result.success) {
+        throw new Error("Gagal memperbarui data siklus.");
       }
 
       onCycleUpdated?.();

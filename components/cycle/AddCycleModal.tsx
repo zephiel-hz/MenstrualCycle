@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Modal } from "@/components/ui/Modal";
 import { AlertCircle } from "lucide-react";
 import { formatISODateOnly } from "@/lib/utils";
+import { offlineAddCycle } from "@/lib/offline/syncManager";
 
 interface AddCycleModalProps {
   isOpen: boolean;
@@ -28,19 +29,14 @@ export const AddCycleModal: React.FC<AddCycleModalProps> = ({
       setIsSaving(true);
       setErrorMessage(null);
 
-      const res = await fetch("/api/cycles", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "bypass-tunnel-reminder": "true" },
-        body: JSON.stringify({
-          startDate,
-          endDate: endDate || null,
-          notes: notes.trim() || null,
-        }),
+      const result = await offlineAddCycle({
+        startDate,
+        endDate: endDate || null,
+        notes: notes.trim() || null,
       });
 
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Gagal menyimpan siklus.");
+      if (!result.success) {
+        throw new Error("Gagal menyimpan siklus.");
       }
 
       onCycleAdded?.();

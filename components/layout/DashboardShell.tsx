@@ -9,6 +9,7 @@ import { DailyLogModal } from "@/components/log/DailyLogModal";
 import { PwaInstaller } from "@/components/pwa/PwaInstaller";
 import { NotificationPermissionPrompt } from "@/components/notifications/NotificationPermissionPrompt";
 import { PwaNavigationHandler } from "@/components/pwa/PwaNavigationHandler";
+import { OfflineSyncBanner } from "@/components/offline/OfflineSyncBanner";
 
 interface DashboardShellProps {
   user: {
@@ -59,6 +60,7 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({ user, children }
         onLogSaved={handleSmoothRefresh}
       />
 
+      <OfflineSyncBanner />
       <PwaInstaller />
       <NotificationPermissionPrompt />
       <PwaNavigationHandler />
