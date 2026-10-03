@@ -112,7 +112,7 @@ export async function setCachedProfile(profile: LocalProfile): Promise<void> {
 
 export async function reconcileCyclesWithServer(
   serverCycles: LocalCycle[] = []
-): Promise<void> {
+): Promise<boolean> {
   const existing = await getCachedCycles();
   const queue = await getSyncQueue();
 
@@ -143,12 +143,17 @@ export async function reconcileCyclesWithServer(
   const merged = Array.from(resultMap.values()).sort(
     (a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
   );
-  await setCachedCycles(merged);
+
+  const isDifferent = JSON.stringify(existing) !== JSON.stringify(merged);
+  if (isDifferent) {
+    await setCachedCycles(merged);
+  }
+  return isDifferent;
 }
 
 export async function reconcileLogsWithServer(
   serverLogs: LocalLog[] = []
-): Promise<void> {
+): Promise<boolean> {
   const existing = await getCachedLogs();
   const queue = await getSyncQueue();
 
@@ -186,7 +191,12 @@ export async function reconcileLogsWithServer(
   const merged = Array.from(resultMap.values()).sort(
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
   );
-  await setCachedLogs(merged);
+
+  const isDifferent = JSON.stringify(existing) !== JSON.stringify(merged);
+  if (isDifferent) {
+    await setCachedLogs(merged);
+  }
+  return isDifferent;
 }
 
 export async function hydrateLocalCache(data: {
@@ -234,32 +244,38 @@ export async function syncAllDataFromServer(): Promise<void> {
     if (cyclesRes.status === "fulfilled" && cyclesRes.value.ok) {
       const cyclesData = await cyclesRes.value.json();
       if (Array.isArray(cyclesData.cycles)) {
-        await reconcileCyclesWithServer(cyclesData.cycles);
-        dataChanged = true;
+        const changed = await reconcileCyclesWithServer(cyclesData.cycles);
+        if (changed) dataChanged = true;
       }
     }
 
     if (logsRes.status === "fulfilled" && logsRes.value.ok) {
       const logsData = await logsRes.value.json();
       if (Array.isArray(logsData.logs)) {
-        await reconcileLogsWithServer(logsData.logs);
-        dataChanged = true;
+        const changed = await reconcileLogsWithServer(logsData.logs);
+        if (changed) dataChanged = true;
       }
     }
 
     if (settingsRes.status === "fulfilled" && settingsRes.value.ok) {
       const settingsData = await settingsRes.value.json();
       if (settingsData.settings) {
-        await setCachedSettings(settingsData.settings);
-        dataChanged = true;
+        const cur = await getCachedSettings();
+        if (JSON.stringify(cur) !== JSON.stringify(settingsData.settings)) {
+          await setCachedSettings(settingsData.settings);
+          dataChanged = true;
+        }
       }
     }
 
     if (profileRes.status === "fulfilled" && profileRes.value.ok) {
       const profileData = await profileRes.value.json();
       if (profileData.profile) {
-        await setCachedProfile(profileData.profile);
-        dataChanged = true;
+        const cur = await getCachedProfile();
+        if (JSON.stringify(cur) !== JSON.stringify(profileData.profile)) {
+          await setCachedProfile(profileData.profile);
+          dataChanged = true;
+        }
       }
     }
 
