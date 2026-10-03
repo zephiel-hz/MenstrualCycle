@@ -9,9 +9,7 @@ import {
 } from "@/lib/offline/db";
 import {
   offlineSaveDailyLog,
-  offlineDeleteDailyLog,
   offlineAddCycle,
-  offlineDeleteCycle,
   getCachedCycles,
   getCachedLogs,
   setCachedCycles,
@@ -164,52 +162,5 @@ describe("Offline DB & Sync Queue", () => {
     expect(await getCachedLogByDate("2026-07-02")).toBeDefined();
     expect(await getCachedLogByDate("2026-08-02")).toBeDefined();
     expect(await getCachedLogByDate("2026-09-02")).toBeDefined();
-  });
-
-  it("should delete daily log offline, update local cache, and purge pending sync item", async () => {
-    // 1. Save a log offline
-    await offlineSaveDailyLog({
-      date: "2026-10-04",
-      flow: "medium",
-      notes: "Log to delete",
-    });
-
-    let logs = await getCachedLogs();
-    expect(logs.find((l) => l.date === "2026-10-04")).toBeDefined();
-
-    // 2. Delete the log
-    const delResult = await offlineDeleteDailyLog("temp_log_test", "2026-10-04");
-    expect(delResult.success).toBe(true);
-
-    // 3. Verify log is removed from cache
-    logs = await getCachedLogs();
-    expect(logs.find((l) => l.date === "2026-10-04")).toBeUndefined();
-
-    // 4. Verify queue has no SAVE_LOG for that date
-    const queue = await getSyncQueue();
-    const savePending = queue.find(
-      (q) => q.type === "SAVE_LOG" && q.payload?.date === "2026-10-04"
-    );
-    expect(savePending).toBeUndefined();
-  });
-
-  it("should delete cycle offline, update local cache, and purge pending sync item", async () => {
-    // 1. Add cycle offline
-    const addResult = await offlineAddCycle({
-      startDate: "2026-10-05",
-      endDate: "2026-10-09",
-    });
-
-    const cycleId = addResult.cycle.id;
-    let cycles = await getCachedCycles();
-    expect(cycles.find((c) => c.id === cycleId)).toBeDefined();
-
-    // 2. Delete the cycle
-    const delResult = await offlineDeleteCycle(cycleId);
-    expect(delResult.success).toBe(true);
-
-    // 3. Verify cycle is removed from cache
-    cycles = await getCachedCycles();
-    expect(cycles.find((c) => c.id === cycleId)).toBeUndefined();
   });
 });

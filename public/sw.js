@@ -1,6 +1,7 @@
-const STATIC_CACHE_NAME = "ricils-pwa-static-v4";
-const RUNTIME_CACHE_NAME = "ricils-pwa-runtime-v4";
-const API_CACHE_NAME = "ricils-pwa-api-v4";
+const STATIC_CACHE_NAME = "ricils-pwa-static-v5";
+const RUNTIME_CACHE_NAME = "ricils-pwa-runtime-v5";
+const RSC_CACHE_NAME = "ricils-pwa-rsc-v5";
+const API_CACHE_NAME = "ricils-pwa-api-v5";
 
 const PRECACHE_ASSETS = [
   "/",
@@ -38,7 +39,12 @@ self.addEventListener("install", (event) => {
 
 // Activate: clean up outdated cache buckets
 self.addEventListener("activate", (event) => {
-  const currentCaches = [STATIC_CACHE_NAME, RUNTIME_CACHE_NAME, API_CACHE_NAME];
+  const currentCaches = [
+    STATIC_CACHE_NAME,
+    RUNTIME_CACHE_NAME,
+    RSC_CACHE_NAME,
+    API_CACHE_NAME,
+  ];
   event.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
@@ -81,7 +87,6 @@ self.addEventListener("fetch", (event) => {
           if (cachedResponse) {
             return cachedResponse;
           }
-          // Return empty offline JSON fallback if not cached yet
           return new Response(
             JSON.stringify({ offline: true, message: "Mode Offline Aktif", data: null }),
             {
@@ -95,11 +100,70 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // 2. Next.js Static Chunks, Images, Styles, Fonts, RSC Payloads (Stale-While-Revalidate with Cache-Ignore-Search fallback)
-  if (
-    url.pathname.startsWith("/_next/static/") ||
+  // 2. Next.js RSC (React Server Component) Flight Payloads
+  const isRsc =
     url.searchParams.has("_rsc") ||
     request.headers.get("rsc") === "1" ||
+    request.headers.get("accept")?.includes("text/x-component");
+
+  if (isRsc) {
+    event.respondWith(
+      (async () => {
+        const rscCache = await caches.open(RSC_CACHE_NAME);
+
+        // A. Match exact request
+        const cachedExact = await rscCache.match(request);
+        if (cachedExact) {
+          // Refresh in background if online
+          fetch(request)
+            .then((res) => {
+              if (res.status === 200) {
+                const clone = res.clone();
+                rscCache.put(request, clone);
+              }
+            })
+            .catch(() => {});
+          return cachedExact;
+        }
+
+        // B. Match ignoring search params in RSC cache
+        const cachedIgnoreSearch = await rscCache.match(request, { ignoreSearch: true });
+        if (cachedIgnoreSearch) {
+          return cachedIgnoreSearch;
+        }
+
+        // C. Match by base pathname in RSC cache (e.g. /settings)
+        const cachedByPathname = await rscCache.match(url.pathname);
+        if (cachedByPathname) {
+          return cachedByPathname;
+        }
+
+        // D. Try Network Fetch
+        try {
+          const networkResponse = await fetch(request);
+          if (networkResponse.status === 200) {
+            const clone1 = networkResponse.clone();
+            const clone2 = networkResponse.clone();
+            rscCache.put(request, clone1);
+            rscCache.put(url.pathname, clone2);
+          }
+          return networkResponse;
+        } catch {
+          // If offline and not in cache, return 503 so Next.js falls back to hard navigation
+          return new Response("Offline", {
+            status: 503,
+            statusText: "Offline",
+            headers: { "Content-Type": "text/plain" },
+          });
+        }
+      })()
+    );
+    return;
+  }
+
+  // 3. Static Assets (_next/static, css, js, fonts, images, manifest)
+  if (
+    url.pathname.startsWith("/_next/static/") ||
     request.destination === "style" ||
     request.destination === "script" ||
     request.destination === "image" ||
@@ -107,30 +171,9 @@ self.addEventListener("fetch", (event) => {
   ) {
     event.respondWith(
       (async () => {
-        // Exact match first
         const cached = await caches.match(request);
-        if (cached) {
-          // If online, update in background
-          fetch(request)
-            .then((networkResponse) => {
-              if (networkResponse.status === 200) {
-                const clone = networkResponse.clone();
-                caches.open(RUNTIME_CACHE_NAME).then((cache) => {
-                  cache.put(request, clone);
-                });
-              }
-            })
-            .catch(() => {});
-          return cached;
-        }
+        if (cached) return cached;
 
-        // Try matching ignoring search params (e.g. ?_rsc=hash)
-        const cachedIgnoreSearch = await caches.match(request, { ignoreSearch: true });
-        if (cachedIgnoreSearch) {
-          return cachedIgnoreSearch;
-        }
-
-        // Try network fetch
         try {
           const networkResponse = await fetch(request);
           if (networkResponse.status === 200) {
@@ -141,66 +184,68 @@ self.addEventListener("fetch", (event) => {
           }
           return networkResponse;
         } catch {
-          // Fallback for RSC / sub-routes
-          if (url.searchParams.has("_rsc") || request.headers.get("rsc") === "1") {
-            const baseCached = await caches.match(url.pathname, { ignoreSearch: true });
-            if (baseCached) return baseCached;
-            const dashCached = await caches.match("/dashboard");
-            if (dashCached) return dashCached;
-          }
-          // Default empty 200 response to prevent Promise resolving to undefined
-          return new Response("", { status: 200, headers: { "Content-Type": "text/plain" } });
+          return cached || new Response("", { status: 200 });
         }
       })()
     );
     return;
   }
 
-  // 3. HTML Navigation Requests (Network First with fallback to Cached Page / App Shell)
+  // 4. HTML Navigation Requests (mode === 'navigate' or text/html)
   if (
     request.mode === "navigate" ||
     (request.headers.get("accept") && request.headers.get("accept").includes("text/html"))
   ) {
     event.respondWith(
       (async () => {
+        const staticCache = await caches.open(STATIC_CACHE_NAME);
+
         try {
           const networkResponse = await fetch(request);
           if (networkResponse.status === 200) {
-            const clone = networkResponse.clone();
-            caches.open(STATIC_CACHE_NAME).then((cache) => {
-              cache.put(request, clone);
-            });
+            const clone1 = networkResponse.clone();
+            const clone2 = networkResponse.clone();
+            staticCache.put(request, clone1);
+            staticCache.put(url.pathname, clone2);
           }
           return networkResponse;
         } catch {
-          // Attempt exact cached page match
-          const cachedPage = await caches.match(request);
+          // 1. Exact match
+          const cachedPage = await staticCache.match(request);
           if (cachedPage) return cachedPage;
 
-          // Attempt match ignoring query params
-          const cachedIgnoreSearch = await caches.match(request, { ignoreSearch: true });
+          // 2. Ignore query params match
+          const cachedIgnoreSearch = await staticCache.match(request, { ignoreSearch: true });
           if (cachedIgnoreSearch) return cachedIgnoreSearch;
 
-          // Match by specific pathname
-          const pathnameMatch = await caches.match(url.pathname);
+          // 3. Pathname match
+          const pathnameMatch = await staticCache.match(url.pathname);
           if (pathnameMatch) return pathnameMatch;
 
-          // If navigation is within app, try fallback to cached /settings or /dashboard shell
-          if (
-            url.pathname.startsWith("/dashboard") ||
-            url.pathname.startsWith("/calendar") ||
-            url.pathname.startsWith("/history") ||
-            url.pathname.startsWith("/statistics") ||
-            url.pathname.startsWith("/settings")
-          ) {
-            const settingsCache = await caches.match("/settings");
-            if (settingsCache && url.pathname.startsWith("/settings")) return settingsCache;
-            const dashboardCache = await caches.match("/dashboard");
-            if (dashboardCache) return dashboardCache;
+          // 4. Subpage shells
+          if (url.pathname.startsWith("/settings")) {
+            const s = await staticCache.match("/settings");
+            if (s) return s;
+          }
+          if (url.pathname.startsWith("/calendar")) {
+            const c = await staticCache.match("/calendar");
+            if (c) return c;
+          }
+          if (url.pathname.startsWith("/history")) {
+            const h = await staticCache.match("/history");
+            if (h) return h;
+          }
+          if (url.pathname.startsWith("/statistics")) {
+            const st = await staticCache.match("/statistics");
+            if (st) return st;
           }
 
-          // Fallback to offline.html
-          const offlinePage = await caches.match("/offline.html");
+          // 5. General Dashboard shell fallback
+          const dashboardCache = await staticCache.match("/dashboard");
+          if (dashboardCache) return dashboardCache;
+
+          // 6. Offline fallback page
+          const offlinePage = await staticCache.match("/offline.html");
           if (offlinePage) return offlinePage;
 
           return new Response(
@@ -216,7 +261,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // 4. Default handler: Stale-While-Revalidate
+  // 5. Default handler: Stale-While-Revalidate
   event.respondWith(
     caches.match(request).then((cached) => {
       return (
