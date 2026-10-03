@@ -1,8 +1,13 @@
 "use client";
 
-import React, { useState, useEffect, useTransition } from "react";
+import React, { useState, useEffect, useTransition, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { CycleSummaryStats, DailyLogData } from "@/lib/calculations/cycle";
+import {
+  CycleSummaryStats,
+  DailyLogData,
+  calculateCycleStats,
+  CycleData,
+} from "@/lib/calculations/cycle";
 import { CycleCircle } from "@/components/dashboard/CycleCircle";
 import { DailySummaryCard } from "@/components/dashboard/DailySummaryCard";
 import { QuickStatsCard } from "@/components/dashboard/QuickStatsCard";
@@ -10,8 +15,16 @@ import { MedicalDisclaimer } from "@/components/ui/MedicalDisclaimer";
 import { DailyLogModal } from "@/components/log/DailyLogModal";
 import { AddCycleModal } from "@/components/cycle/AddCycleModal";
 import { EditCycleModal } from "@/components/cycle/EditCycleModal";
-import { PlusCircle, CheckCircle2, Calendar, Sparkles } from "lucide-react";
-import { formatShortDate } from "@/lib/utils";
+import { PlusCircle, CheckCircle2 } from "lucide-react";
+import { formatShortDate, formatISODateOnly } from "@/lib/utils";
+import {
+  hydrateLocalCache,
+  getCachedCycles,
+  getCachedLogs,
+  getCachedSettings,
+  SYNC_EVENTS,
+  isOnline,
+} from "@/lib/offline/syncManager";
 
 interface DashboardClientProps {
   stats: CycleSummaryStats;
@@ -29,19 +42,121 @@ interface DashboardClientProps {
 }
 
 export const DashboardClient: React.FC<DashboardClientProps> = ({
-  stats,
-  todayLog,
+  stats: initialStats,
+  todayLog: initialTodayLog,
   reminderPms = true,
-  latestCycle,
+  latestCycle: initialLatestCycle,
   user,
 }) => {
   const router = useRouter();
   const [, startTransition] = useTransition();
 
+  const [stats, setStats] = useState<CycleSummaryStats>(initialStats);
+  const [todayLog, setTodayLog] = useState<DailyLogData | null>(initialTodayLog);
+  const [latestCycle, setLatestCycle] = useState<{
+    id: string;
+    startDate: string;
+    endDate?: string | null;
+    notes?: string | null;
+  } | null>(initialLatestCycle || null);
+
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
   const [isCycleModalOpen, setIsCycleModalOpen] = useState(false);
   const [isEditCycleModalOpen, setIsEditCycleModalOpen] = useState(false);
 
+  // Recompute stats and view state from local IndexedDB data
+  const recomputeFromLocal = useCallback(async () => {
+    try {
+      const [localCycles, localLogs, localSettings] = await Promise.all([
+        getCachedCycles(),
+        getCachedLogs(),
+        getCachedSettings(),
+      ]);
+
+      const todayStr = formatISODateOnly(new Date());
+
+      // Update today's log
+      const foundTodayLog = localLogs.find((l) => l.date === todayStr);
+      if (foundTodayLog) {
+        setTodayLog({
+          id: foundTodayLog.id || "local_today",
+          date: foundTodayLog.date,
+          flow: foundTodayLog.flow || "none",
+          mood: foundTodayLog.mood || [],
+          symptoms: foundTodayLog.symptoms || [],
+          notes: foundTodayLog.notes || null,
+        });
+      } else if (localLogs.length > 0) {
+        setTodayLog(null);
+      }
+
+      // Update cycles and stats
+      if (localCycles && localCycles.length > 0) {
+        const sortedCycles = [...localCycles].sort(
+          (a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
+        );
+        const latest = sortedCycles[0];
+        setLatestCycle({
+          id: latest.id,
+          startDate: latest.startDate,
+          endDate: latest.endDate,
+          notes: latest.notes,
+        });
+
+        const cycleLengthDefault = localSettings?.cycleLengthDefault || 28;
+        const periodDurationDefault = localSettings?.periodDurationDefault || 5;
+
+        const cycleDataList: CycleData[] = sortedCycles.map((c) => ({
+          id: c.id,
+          startDate: c.startDate,
+          endDate: c.endDate,
+          notes: c.notes,
+        }));
+
+        const computedStats = calculateCycleStats(
+          cycleDataList,
+          cycleLengthDefault,
+          periodDurationDefault
+        );
+        setStats(computedStats);
+      }
+    } catch (err) {
+      console.warn("Failed to recompute from local IndexedDB:", err);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      // 1. Hydrate cache with server-rendered initial data
+      hydrateLocalCache({
+        cycles: initialLatestCycle ? [initialLatestCycle] : [],
+        logs: initialTodayLog ? [{ ...initialTodayLog, date: initialTodayLog.date || "" }] : [],
+      });
+
+      // 2. Initial check against local IndexedDB (which might contain offline changes)
+      recomputeFromLocal();
+
+      // 3. Listen for sync/mutation events
+      const handleDataUpdated = () => {
+        recomputeFromLocal();
+        if (isOnline()) {
+          startTransition(() => {
+            router.refresh();
+          });
+        }
+      };
+
+      window.addEventListener(SYNC_EVENTS.DATA_UPDATED, handleDataUpdated);
+      window.addEventListener(SYNC_EVENTS.SYNC_COMPLETED, handleDataUpdated);
+
+      return () => {
+        window.removeEventListener(SYNC_EVENTS.DATA_UPDATED, handleDataUpdated);
+        window.removeEventListener(SYNC_EVENTS.SYNC_COMPLETED, handleDataUpdated);
+      };
+    }
+  }, [initialLatestCycle, initialTodayLog, recomputeFromLocal, router]);
+
+  // PMS notification trigger
   useEffect(() => {
     if (typeof window === "undefined" || !reminderPms) return;
     if (!stats.isPmsPhase || !stats.estimatedNextPeriodDate) return;
@@ -56,16 +171,19 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({
 
         let sentViaSw = false;
         if ("serviceWorker" in navigator) {
-          navigator.serviceWorker.getRegistration().then((reg) => {
-            if (reg && reg.showNotification) {
-              reg.showNotification(title, {
-                body,
-                icon: "/icons/icon-192.svg",
-                tag: `ricils-pms-${stats.estimatedNextPeriodDate}`,
-              });
-              sentViaSw = true;
-            }
-          }).catch(() => {});
+          navigator.serviceWorker
+            .getRegistration()
+            .then((reg) => {
+              if (reg && reg.showNotification) {
+                reg.showNotification(title, {
+                  body,
+                  icon: "/icons/icon-192.svg",
+                  tag: `ricils-pms-${stats.estimatedNextPeriodDate}`,
+                });
+                sentViaSw = true;
+              }
+            })
+            .catch(() => {});
         }
 
         if (!sentViaSw) {
@@ -86,9 +204,12 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({
   }, [stats.isPmsPhase, stats.estimatedNextPeriodDate, stats.daysUntilNextPeriod, reminderPms]);
 
   const handleSmoothRefresh = () => {
-    startTransition(() => {
-      router.refresh();
-    });
+    recomputeFromLocal();
+    if (isOnline()) {
+      startTransition(() => {
+        router.refresh();
+      });
+    }
   };
 
   const isOngoingPeriod = latestCycle && !latestCycle.endDate;
@@ -177,3 +298,4 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({
     </div>
   );
 };
+

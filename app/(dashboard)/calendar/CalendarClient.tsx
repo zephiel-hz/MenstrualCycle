@@ -1,11 +1,19 @@
 "use client";
 
-import React, { useState, useEffect, useTransition } from "react";
+import React, { useState, useEffect, useTransition, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { CycleCalendar } from "@/components/calendar/CycleCalendar";
 import { DailyLogModal } from "@/components/log/DailyLogModal";
 import { MedicalDisclaimer } from "@/components/ui/MedicalDisclaimer";
-import { hydrateLocalCache, SYNC_EVENTS } from "@/lib/offline/syncManager";
+import {
+  hydrateLocalCache,
+  getCachedCycles,
+  getCachedLogs,
+  getCachedSettings,
+  SYNC_EVENTS,
+  isOnline,
+} from "@/lib/offline/syncManager";
+import { calculateCycleStats, CycleData } from "@/lib/calculations/cycle";
 
 interface CalendarClientProps {
   cycles: Array<{ id: string; startDate: string; endDate?: string | null }>;
@@ -22,28 +30,89 @@ interface CalendarClientProps {
 }
 
 export const CalendarClient: React.FC<CalendarClientProps> = ({
-  cycles,
-  logs,
-  estimatedNextPeriodDate,
-  averagePeriodDuration,
+  cycles: initialCycles,
+  logs: initialLogs,
+  estimatedNextPeriodDate: initialEstimatedNextPeriodDate,
+  averagePeriodDuration: initialAveragePeriodDuration,
 }) => {
   const router = useRouter();
   const [, startTransition] = useTransition();
 
+  const [cycles, setCycles] = useState(initialCycles);
+  const [logs, setLogs] = useState(initialLogs);
+  const [estimatedNextPeriodDate, setEstimatedNextPeriodDate] = useState(
+    initialEstimatedNextPeriodDate
+  );
+  const [averagePeriodDuration, setAveragePeriodDuration] = useState(
+    initialAveragePeriodDuration
+  );
+
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | undefined>(undefined);
+
+  const recomputeFromLocal = useCallback(async () => {
+    try {
+      const [localCycles, localLogs, localSettings] = await Promise.all([
+        getCachedCycles(),
+        getCachedLogs(),
+        getCachedSettings(),
+      ]);
+
+      if (localCycles && localCycles.length > 0) {
+        setCycles(localCycles);
+
+        const cycleLengthDefault = localSettings?.cycleLengthDefault || 28;
+        const periodDurationDefault = localSettings?.periodDurationDefault || 5;
+
+        const cycleDataList: CycleData[] = localCycles.map((c) => ({
+          id: c.id,
+          startDate: c.startDate,
+          endDate: c.endDate,
+          notes: c.notes,
+        }));
+
+        const computedStats = calculateCycleStats(
+          cycleDataList,
+          cycleLengthDefault,
+          periodDurationDefault
+        );
+        setEstimatedNextPeriodDate(computedStats.estimatedNextPeriodDate);
+        setAveragePeriodDuration(computedStats.averagePeriodDuration);
+      }
+
+      if (localLogs && localLogs.length > 0) {
+        setLogs(
+          localLogs.map((l) => ({
+            id: l.id || `log_${l.date}`,
+            date: l.date,
+            flow: l.flow || "none",
+            mood: l.mood || [],
+            symptoms: l.symptoms || [],
+            notes: l.notes || null,
+          }))
+        );
+      }
+    } catch (err) {
+      console.warn("Failed to recompute calendar from local IndexedDB:", err);
+    }
+  }, []);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       hydrateLocalCache({
-        cycles,
-        logs,
+        cycles: initialCycles,
+        logs: initialLogs,
       });
 
+      recomputeFromLocal();
+
       const handleDataUpdated = () => {
-        startTransition(() => {
-          router.refresh();
-        });
+        recomputeFromLocal();
+        if (isOnline()) {
+          startTransition(() => {
+            router.refresh();
+          });
+        }
       };
 
       window.addEventListener(SYNC_EVENTS.DATA_UPDATED, handleDataUpdated);
@@ -54,7 +123,7 @@ export const CalendarClient: React.FC<CalendarClientProps> = ({
         window.removeEventListener(SYNC_EVENTS.SYNC_COMPLETED, handleDataUpdated);
       };
     }
-  }, [cycles, logs, router]);
+  }, [initialCycles, initialLogs, recomputeFromLocal, router]);
 
   const handleOpenLogModal = (dateStr: string) => {
     setSelectedDate(dateStr);
@@ -62,9 +131,12 @@ export const CalendarClient: React.FC<CalendarClientProps> = ({
   };
 
   const handleSmoothRefresh = () => {
-    startTransition(() => {
-      router.refresh();
-    });
+    recomputeFromLocal();
+    if (isOnline()) {
+      startTransition(() => {
+        router.refresh();
+      });
+    }
   };
 
   return (
@@ -88,3 +160,4 @@ export const CalendarClient: React.FC<CalendarClientProps> = ({
     </div>
   );
 };
+

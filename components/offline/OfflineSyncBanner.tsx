@@ -16,7 +16,7 @@ export const OfflineSyncBanner: React.FC = () => {
         setShowSyncSuccess(true);
         const timer = setTimeout(() => {
           setShowSyncSuccess(false);
-        }, 3500);
+        }, 3000);
         return () => clearTimeout(timer);
       }
     };
@@ -27,7 +27,7 @@ export const OfflineSyncBanner: React.FC = () => {
     };
   }, []);
 
-  // When completely online with 0 pending items and not syncing/success, hide banner
+  // When online, not syncing, no recent sync message, and no pending mutations, hide
   if (isOnline && !isSyncing && !showSyncSuccess && pendingCount === 0) {
     return null;
   }
@@ -36,65 +36,40 @@ export const OfflineSyncBanner: React.FC = () => {
     <div
       role="status"
       aria-live="polite"
-      className="fixed top-18 md:top-20 left-1/2 -translate-x-1/2 z-40 max-w-md w-[calc(100%-2rem)] animate-in fade-in slide-in-from-top-3 duration-250 pointer-events-auto"
+      className="fixed bottom-20 md:bottom-6 right-3 sm:right-6 z-40 max-w-fit animate-in fade-in slide-in-from-bottom-2 duration-200 pointer-events-auto select-none"
     >
       {!isOnline ? (
-        <div className="px-4 py-2.5 rounded-2xl bg-[#221B1F]/90 text-white backdrop-blur-md border border-white/10 shadow-lg flex items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-2.5">
-            <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0" />
-            <WifiOff className="w-4 h-4 text-amber-300 shrink-0" />
-            <div>
-              <span className="font-semibold">Mode Offline</span>
-              <span className="text-[#D3CBCF] block text-[11px]">
-                {pendingCount > 0
-                  ? `${pendingCount} perubahan tersimpan lokal`
-                  : "Data tersimpan di perangkat"}
-              </span>
-            </div>
-          </div>
-          <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-[#FAF6F3]">
-            Auto-sync saat online
-          </span>
+        <div className="px-2.5 py-1 rounded-full bg-[#221B1F]/90 text-white backdrop-blur-md border border-white/15 shadow-md flex items-center gap-2 text-[11px] font-medium">
+          <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse shrink-0" />
+          <WifiOff className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+          <span>Offline</span>
+          {pendingCount > 0 && (
+            <span className="px-1.5 py-0.2 rounded-full bg-white/20 text-[10px] text-white">
+              {pendingCount}
+            </span>
+          )}
         </div>
       ) : isSyncing ? (
-        <div className="px-4 py-2.5 rounded-2xl bg-[#FAF0F2] text-[#8B263E] border border-[#D8647F]/30 shadow-md backdrop-blur-md flex items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-2.5">
-            <RefreshCw className="w-4 h-4 text-[#D8647F] animate-spin shrink-0" />
-            <div>
-              <span className="font-semibold">Menyinkronkan Perubahan...</span>
-              <span className="text-[#8B263E]/80 block text-[11px]">
-                Mengirim {pendingCount} data lokal ke server
-              </span>
-            </div>
-          </div>
+        <div className="px-2.5 py-1 rounded-full bg-[#FAF0F2]/95 text-[#8B263E] border border-[#D8647F]/30 shadow-md backdrop-blur-md flex items-center gap-1.5 text-[11px] font-medium">
+          <RefreshCw className="w-3.5 h-3.5 text-[#D8647F] animate-spin shrink-0" />
+          <span>Menyinkronkan...</span>
         </div>
       ) : showSyncSuccess ? (
-        <div className="px-4 py-2.5 rounded-2xl bg-[#EBF4F0] text-[#2E5E4E] border border-[#588B76]/30 shadow-md backdrop-blur-md flex items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-2.5">
-            <CheckCircle2 className="w-4 h-4 text-[#588B76] shrink-0" />
-            <div>
-              <span className="font-semibold">Sinkronisasi Berhasil</span>
-              <span className="text-[#2E5E4E]/80 block text-[11px]">
-                Data lokal telah tersinkron dengan server
-              </span>
-            </div>
-          </div>
+        <div className="px-2.5 py-1 rounded-full bg-[#EBF4F0]/95 text-[#2E5E4E] border border-[#588B76]/30 shadow-md backdrop-blur-md flex items-center gap-1.5 text-[11px] font-medium">
+          <CheckCircle2 className="w-3.5 h-3.5 text-[#588B76] shrink-0" />
+          <span>Tersinkron</span>
         </div>
       ) : pendingCount > 0 ? (
-        <div className="px-4 py-2.5 rounded-2xl bg-white text-[#221B1F] border border-[#EFE9E2] shadow-lg flex items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-2">
-            <CloudUpload className="w-4 h-4 text-[#D8647F] shrink-0" />
-            <span className="font-medium text-[11px]">
-              {pendingCount} perubahan belum terkirim
-            </span>
-          </div>
-          <button
-            onClick={() => triggerSync()}
-            className="px-3 py-1 bg-[#D8647F] hover:bg-[#C5536D] active:scale-95 text-white text-[11px] font-semibold rounded-full shadow-2xs transition-all cursor-pointer"
-          >
-            Sinkronkan Sekarang
-          </button>
-        </div>
+        <button
+          onClick={() => triggerSync()}
+          className="px-2.5 py-1 rounded-full bg-white text-[#221B1F] border border-[#EFE9E2] shadow-md hover:border-[#D8647F]/40 active:scale-95 flex items-center gap-1.5 text-[11px] font-medium cursor-pointer transition-all"
+        >
+          <CloudUpload className="w-3.5 h-3.5 text-[#D8647F] shrink-0" />
+          <span>{pendingCount} tertunda</span>
+          <span className="text-[10px] text-[#D8647F] font-semibold underline ml-0.5">
+            Sync
+          </span>
+        </button>
       ) : null}
     </div>
   );
