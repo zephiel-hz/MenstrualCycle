@@ -107,7 +107,7 @@ export async function setCachedProfile(profile: LocalProfile): Promise<void> {
 }
 
 /* ==========================================================================
-   INITIAL CACHE HYDRATION (Called by client views when receiving server data)
+   NON-DESTRUCTIVE CACHE HYDRATION
    ========================================================================== */
 
 export async function hydrateLocalCache(data: {
@@ -116,24 +116,111 @@ export async function hydrateLocalCache(data: {
   settings?: LocalSettings;
   profile?: LocalProfile;
 }): Promise<void> {
-  if (data.cycles) {
+  // 1. Non-destructive cycle merge by ID
+  if (data.cycles && data.cycles.length > 0) {
     const existing = await getCachedCycles();
-    // Retain any pending local-only cycles not yet saved on server
-    const pendingLocalCycles = existing.filter((c) => c.isLocalOnly);
-    const combined = [...pendingLocalCycles, ...data.cycles.filter((c) => !c.isLocalOnly)];
-    await setCachedCycles(combined);
+    const map = new Map<string, LocalCycle>();
+
+    for (const c of existing) {
+      map.set(c.id, c);
+    }
+    for (const c of data.cycles) {
+      const isLocal = existing.find((e) => e.id === c.id)?.isLocalOnly ?? false;
+      map.set(c.id, { ...c, isLocalOnly: isLocal });
+    }
+
+    const merged = Array.from(map.values()).sort(
+      (a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
+    );
+    await setCachedCycles(merged);
   }
-  if (data.logs) {
+
+  // 2. Non-destructive daily log merge by date (YYYY-MM-DD)
+  if (data.logs && data.logs.length > 0) {
     const existing = await getCachedLogs();
-    const pendingLogs = existing.filter((l) => l.isLocalOnly);
-    const combined = [...pendingLogs, ...data.logs.filter((l) => !l.isLocalOnly)];
-    await setCachedLogs(combined);
+    const map = new Map<string, LocalLog>();
+
+    for (const l of existing) {
+      map.set(l.date, l);
+    }
+    for (const l of data.logs) {
+      const isLocal = existing.find((e) => e.date === l.date)?.isLocalOnly ?? false;
+      map.set(l.date, { ...l, isLocalOnly: isLocal });
+    }
+
+    const merged = Array.from(map.values()).sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+    await setCachedLogs(merged);
   }
+
   if (data.settings) {
     await setCachedSettings(data.settings);
   }
   if (data.profile) {
     await setCachedProfile(data.profile);
+  }
+}
+
+/* ==========================================================================
+   BACKGROUND FULL SERVER DATA WARM-UP (When Online)
+   ========================================================================== */
+
+let backgroundSyncRunning = false;
+
+export async function syncAllDataFromServer(): Promise<void> {
+  if (backgroundSyncRunning || !isOnline()) return;
+  backgroundSyncRunning = true;
+
+  try {
+    const [cyclesRes, logsRes, settingsRes, profileRes] = await Promise.allSettled([
+      fetch("/api/cycles", { headers: { "bypass-tunnel-reminder": "true" } }),
+      fetch("/api/logs", { headers: { "bypass-tunnel-reminder": "true" } }),
+      fetch("/api/settings", { headers: { "bypass-tunnel-reminder": "true" } }),
+      fetch("/api/profile", { headers: { "bypass-tunnel-reminder": "true" } }),
+    ]);
+
+    let dataChanged = false;
+
+    if (cyclesRes.status === "fulfilled" && cyclesRes.value.ok) {
+      const cyclesData = await cyclesRes.value.json();
+      if (Array.isArray(cyclesData.cycles)) {
+        await hydrateLocalCache({ cycles: cyclesData.cycles });
+        dataChanged = true;
+      }
+    }
+
+    if (logsRes.status === "fulfilled" && logsRes.value.ok) {
+      const logsData = await logsRes.value.json();
+      if (Array.isArray(logsData.logs)) {
+        await hydrateLocalCache({ logs: logsData.logs });
+        dataChanged = true;
+      }
+    }
+
+    if (settingsRes.status === "fulfilled" && settingsRes.value.ok) {
+      const settingsData = await settingsRes.value.json();
+      if (settingsData.settings) {
+        await setCachedSettings(settingsData.settings);
+        dataChanged = true;
+      }
+    }
+
+    if (profileRes.status === "fulfilled" && profileRes.value.ok) {
+      const profileData = await profileRes.value.json();
+      if (profileData.profile) {
+        await setCachedProfile(profileData.profile);
+        dataChanged = true;
+      }
+    }
+
+    if (dataChanged) {
+      notifyDataUpdated("server_full_sync");
+    }
+  } catch (err) {
+    console.warn("Background server warm-cache failed (offline/error):", err);
+  } finally {
+    backgroundSyncRunning = false;
   }
 }
 
@@ -601,28 +688,7 @@ export async function processSyncQueue(): Promise<{
 
     // Refresh server data into local cache when queue items synced
     if (syncedCount > 0 && isOnline()) {
-      try {
-        const [cyclesRes, logsRes] = await Promise.all([
-          fetch("/api/cycles", { headers: { "bypass-tunnel-reminder": "true" } }),
-          fetch("/api/logs", { headers: { "bypass-tunnel-reminder": "true" } }),
-        ]);
-
-        if (cyclesRes.ok) {
-          const cyclesData = await cyclesRes.json();
-          if (cyclesData.cycles) {
-            await setCachedCycles(cyclesData.cycles);
-          }
-        }
-
-        if (logsRes.ok) {
-          const logsData = await logsRes.json();
-          if (logsData.logs) {
-            await setCachedLogs(logsData.logs);
-          }
-        }
-      } catch (refreshErr) {
-        console.warn("Error refreshing server cache post-sync:", refreshErr);
-      }
+      await syncAllDataFromServer();
     }
   } finally {
     syncInProgress = false;
@@ -674,6 +740,7 @@ export function initOfflineSyncEngine(): () => void {
     // Trigger sync when reconnected
     setTimeout(() => {
       processSyncQueue();
+      syncAllDataFromServer();
     }, 1000);
   };
 
@@ -684,7 +751,7 @@ export function initOfflineSyncEngine(): () => void {
   window.addEventListener("online", handleOnline);
   window.addEventListener("offline", handleOffline);
 
-  // Periodic queue processing check every 30 seconds if online and pending
+  // Periodic check every 30 seconds
   const intervalId = setInterval(async () => {
     if (isOnline()) {
       const queue = await getSyncQueue();
@@ -694,11 +761,12 @@ export function initOfflineSyncEngine(): () => void {
     }
   }, 30000);
 
-  // Initial check on page load
+  // Initial check and background warm-cache on page load
   if (isOnline()) {
     setTimeout(() => {
       processSyncQueue();
-    }, 2000);
+      syncAllDataFromServer();
+    }, 1500);
   }
 
   return () => {

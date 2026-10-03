@@ -1,6 +1,6 @@
-const STATIC_CACHE_NAME = "ricils-pwa-static-v2";
-const RUNTIME_CACHE_NAME = "ricils-pwa-runtime-v2";
-const API_CACHE_NAME = "ricils-pwa-api-v2";
+const STATIC_CACHE_NAME = "ricils-pwa-static-v3";
+const RUNTIME_CACHE_NAME = "ricils-pwa-runtime-v3";
+const API_CACHE_NAME = "ricils-pwa-api-v3";
 
 const PRECACHE_ASSETS = [
   "/",
@@ -58,7 +58,6 @@ self.addEventListener("fetch", (event) => {
 
   // 1. API GET Requests (Network First, Cache Fallback)
   if (url.pathname.startsWith("/api/")) {
-    // Skip auth/session routes from long caching if not necessary, but allow /api/cycles, /api/logs, etc.
     event.respondWith(
       fetch(request)
         .then((networkResponse) => {
@@ -88,9 +87,11 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // 2. Next.js Static Chunks, Images, Styles, Fonts (Stale-While-Revalidate / Cache-First)
+  // 2. Next.js Static Chunks, Images, Styles, Fonts, RSC Payloads (Stale-While-Revalidate / Cache-First)
   if (
     url.pathname.startsWith("/_next/static/") ||
+    url.searchParams.has("_rsc") ||
+    request.headers.get("rsc") === "1" ||
     request.destination === "style" ||
     request.destination === "script" ||
     request.destination === "image" ||
@@ -204,4 +205,3 @@ self.addEventListener("notificationclick", (event) => {
     })
   );
 });
-

@@ -25,6 +25,7 @@ import {
   getCachedCycles,
   getCachedLogs,
   getCachedSettings,
+  hydrateLocalCache,
   SYNC_EVENTS,
   isOnline,
 } from "@/lib/offline/syncManager";
@@ -41,6 +42,20 @@ interface StatisticsViewProps {
     cycleNumber: number;
     startDate: string;
     duration: number;
+  }>;
+  allCycles?: Array<{
+    id: string;
+    startDate: string;
+    endDate?: string | null;
+    notes?: string | null;
+  }>;
+  allLogs?: Array<{
+    id: string;
+    date: string;
+    flow: string;
+    mood: string[];
+    symptoms: string[];
+    notes?: string | null;
   }>;
 }
 
@@ -83,6 +98,8 @@ export const StatisticsView: React.FC<StatisticsViewProps> = ({
   insights: initialInsights,
   cycleTrends: initialCycleTrends,
   periodTrends: initialPeriodTrends,
+  allCycles,
+  allLogs,
 }) => {
   const router = useRouter();
   const [, startTransition] = useTransition();
@@ -144,6 +161,13 @@ export const StatisticsView: React.FC<StatisticsViewProps> = ({
 
   useEffect(() => {
     if (typeof window !== "undefined") {
+      if ((allCycles && allCycles.length > 0) || (allLogs && allLogs.length > 0)) {
+        hydrateLocalCache({
+          cycles: allCycles,
+          logs: allLogs,
+        });
+      }
+
       recomputeFromLocal();
 
       const handleDataUpdated = () => {
@@ -163,7 +187,7 @@ export const StatisticsView: React.FC<StatisticsViewProps> = ({
         window.removeEventListener(SYNC_EVENTS.SYNC_COMPLETED, handleDataUpdated);
       };
     }
-  }, [recomputeFromLocal, router]);
+  }, [allCycles, allLogs, recomputeFromLocal, router]);
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto pb-10">

@@ -6,6 +6,8 @@ import { Droplet, Calendar, Trash2, CheckCircle2, AlertCircle, Smile, Activity, 
 import { formatISODateOnly } from "@/lib/utils";
 import {
   getCachedLogByDate,
+  getCachedLogs,
+  hydrateLocalCache,
   offlineSaveDailyLog,
   offlineDeleteDailyLog,
   isOnline,
@@ -81,16 +83,23 @@ export const DailyLogModal: React.FC<DailyLogModalProps> = ({
       setErrorMessage(null);
 
       // 1. Check local IndexedDB cache first
-      const localCached = await getCachedLogByDate(targetDate);
+      const allLogs = await getCachedLogs();
+      const localCached = allLogs.find((l) => l.date === targetDate);
       if (localCached) {
         setExistingLogId(localCached.id || null);
         setFlow(localCached.flow || "none");
         setSelectedMoods(Array.isArray(localCached.mood) ? localCached.mood : []);
         setSelectedSymptoms(Array.isArray(localCached.symptoms) ? localCached.symptoms : []);
         setNotes(localCached.notes || "");
+      } else {
+        setExistingLogId(null);
+        setFlow("none");
+        setSelectedMoods([]);
+        setSelectedSymptoms([]);
+        setNotes("");
       }
 
-      // 2. If online, fetch latest from server
+      // 2. If online, fetch latest from server and update IndexedDB cache
       if (isOnline()) {
         try {
           const res = await fetch(`/api/logs?date=${targetDate}`, {
@@ -104,6 +113,7 @@ export const DailyLogModal: React.FC<DailyLogModalProps> = ({
               setSelectedMoods(Array.isArray(data.log.mood) ? data.log.mood : []);
               setSelectedSymptoms(Array.isArray(data.log.symptoms) ? data.log.symptoms : []);
               setNotes(data.log.notes || "");
+              await hydrateLocalCache({ logs: [data.log] });
             } else if (!localCached) {
               setExistingLogId(null);
               setFlow("none");
@@ -115,12 +125,6 @@ export const DailyLogModal: React.FC<DailyLogModalProps> = ({
         } catch {
           // If network fetch fails, stay with localCached
         }
-      } else if (!localCached) {
-        setExistingLogId(null);
-        setFlow("none");
-        setSelectedMoods([]);
-        setSelectedSymptoms([]);
-        setNotes("");
       }
     } catch {
       setErrorMessage("Gagal memuat catatan harian.");

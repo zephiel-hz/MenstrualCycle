@@ -24,11 +24,20 @@ import {
   getCachedSettings,
   SYNC_EVENTS,
   isOnline,
+  LocalCycle,
+  LocalSettings,
 } from "@/lib/offline/syncManager";
 
 interface DashboardClientProps {
   stats: CycleSummaryStats;
   todayLog: DailyLogData | null;
+  allCycles?: Array<{
+    id: string;
+    startDate: string;
+    endDate?: string | null;
+    notes?: string | null;
+  }>;
+  settings?: LocalSettings;
   reminderPms?: boolean;
   latestCycle?: {
     id: string;
@@ -44,6 +53,8 @@ interface DashboardClientProps {
 export const DashboardClient: React.FC<DashboardClientProps> = ({
   stats: initialStats,
   todayLog: initialTodayLog,
+  allCycles = [],
+  settings: initialSettings,
   reminderPms = true,
   latestCycle: initialLatestCycle,
   user,
@@ -127,13 +138,21 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      // 1. Hydrate cache with server-rendered initial data
+      // 1. Non-destructively hydrate allCycles and todayLog to IndexedDB
+      const cyclesToHydrate: LocalCycle[] =
+        allCycles && allCycles.length > 0
+          ? allCycles
+          : initialLatestCycle
+          ? [initialLatestCycle]
+          : [];
+
       hydrateLocalCache({
-        cycles: initialLatestCycle ? [initialLatestCycle] : [],
+        cycles: cyclesToHydrate,
         logs: initialTodayLog ? [{ ...initialTodayLog, date: initialTodayLog.date || "" }] : [],
+        settings: initialSettings,
       });
 
-      // 2. Initial check against local IndexedDB (which might contain offline changes)
+      // 2. Read full state from local IndexedDB
       recomputeFromLocal();
 
       // 3. Listen for sync/mutation events
@@ -154,7 +173,7 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({
         window.removeEventListener(SYNC_EVENTS.SYNC_COMPLETED, handleDataUpdated);
       };
     }
-  }, [initialLatestCycle, initialTodayLog, recomputeFromLocal, router]);
+  }, [allCycles, initialLatestCycle, initialTodayLog, initialSettings, recomputeFromLocal, router]);
 
   // PMS notification trigger
   useEffect(() => {
@@ -280,6 +299,7 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({
       <DailyLogModal
         isOpen={isLogModalOpen}
         onClose={() => setIsLogModalOpen(false)}
+        initialDate={todayLog?.date || formatISODateOnly(new Date())}
         onLogSaved={handleSmoothRefresh}
       />
       <AddCycleModal
@@ -298,4 +318,3 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({
     </div>
   );
 };
-

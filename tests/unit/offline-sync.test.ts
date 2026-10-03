@@ -13,6 +13,9 @@ import {
   getCachedCycles,
   getCachedLogs,
   setCachedCycles,
+  setCachedLogs,
+  hydrateLocalCache,
+  getCachedLogByDate,
 } from "@/lib/offline/syncManager";
 import { calculateCycleStats, CycleData } from "@/lib/calculations/cycle";
 
@@ -127,5 +130,37 @@ describe("Offline DB & Sync Queue", () => {
     expect(stats.totalCyclesLogged).toBe(3);
     expect(stats.averageCycleLength).toBe(28);
   });
-});
 
+  it("should non-destructively merge incoming partial logs and cycles without wiping existing cache", async () => {
+    // 1. Initial cached history with 3 cycles and 2 logs
+    await setCachedCycles([
+      { id: "c1", startDate: "2026-07-01", endDate: "2026-07-05" },
+      { id: "c2", startDate: "2026-08-01", endDate: "2026-08-05" },
+    ]);
+    await setCachedLogs([
+      { id: "l1", date: "2026-07-02", flow: "medium", mood: ["baik"], symptoms: [] },
+      { id: "l2", date: "2026-08-02", flow: "heavy", mood: ["stres"], symptoms: ["kram"] },
+    ]);
+
+    // 2. Hydrate with only today's log and 1 new cycle
+    await hydrateLocalCache({
+      cycles: [{ id: "c3", startDate: "2026-09-01", endDate: "2026-09-05" }],
+      logs: [{ id: "l3", date: "2026-09-02", flow: "light", mood: ["senang"], symptoms: [] }],
+    });
+
+    const cachedCycles = await getCachedCycles();
+    const cachedLogs = await getCachedLogs();
+
+    // Must have all 3 cycles preserved!
+    expect(cachedCycles.length).toBe(3);
+    expect(cachedCycles.map((c) => c.id)).toContain("c1");
+    expect(cachedCycles.map((c) => c.id)).toContain("c2");
+    expect(cachedCycles.map((c) => c.id)).toContain("c3");
+
+    // Must have all 3 logs preserved!
+    expect(cachedLogs.length).toBe(3);
+    expect(await getCachedLogByDate("2026-07-02")).toBeDefined();
+    expect(await getCachedLogByDate("2026-08-02")).toBeDefined();
+    expect(await getCachedLogByDate("2026-09-02")).toBeDefined();
+  });
+});
