@@ -1,6 +1,6 @@
-const STATIC_CACHE_NAME = "ricils-pwa-static-v3";
-const RUNTIME_CACHE_NAME = "ricils-pwa-runtime-v3";
-const API_CACHE_NAME = "ricils-pwa-api-v3";
+const STATIC_CACHE_NAME = "ricils-pwa-static-v4";
+const RUNTIME_CACHE_NAME = "ricils-pwa-runtime-v4";
+const API_CACHE_NAME = "ricils-pwa-api-v4";
 
 const PRECACHE_ASSETS = [
   "/",
@@ -17,13 +17,20 @@ const PRECACHE_ASSETS = [
   "/icons/icon-512.svg",
 ];
 
-// Install: precache primary static assets & page shells
+// Install: precache primary static assets & page shells safely
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(STATIC_CACHE_NAME).then((cache) => {
-      return cache.addAll(PRECACHE_ASSETS).catch((err) => {
-        console.warn("Precache partial error:", err);
-      });
+    caches.open(STATIC_CACHE_NAME).then(async (cache) => {
+      for (const asset of PRECACHE_ASSETS) {
+        try {
+          const response = await fetch(asset, { cache: "no-cache" });
+          if (response.ok) {
+            await cache.put(asset, response);
+          }
+        } catch (err) {
+          console.warn("Precache item skipped (offline/redirect):", asset, err);
+        }
+      }
     })
   );
   self.skipWaiting();
@@ -59,8 +66,9 @@ self.addEventListener("fetch", (event) => {
   // 1. API GET Requests (Network First, Cache Fallback)
   if (url.pathname.startsWith("/api/")) {
     event.respondWith(
-      fetch(request)
-        .then((networkResponse) => {
+      (async () => {
+        try {
+          const networkResponse = await fetch(request);
           if (networkResponse.status === 200) {
             const clone = networkResponse.clone();
             caches.open(API_CACHE_NAME).then((cache) => {
@@ -68,8 +76,7 @@ self.addEventListener("fetch", (event) => {
             });
           }
           return networkResponse;
-        })
-        .catch(async () => {
+        } catch {
           const cachedResponse = await caches.match(request);
           if (cachedResponse) {
             return cachedResponse;
@@ -82,12 +89,13 @@ self.addEventListener("fetch", (event) => {
               headers: { "Content-Type": "application/json" },
             }
           );
-        })
+        }
+      })()
     );
     return;
   }
 
-  // 2. Next.js Static Chunks, Images, Styles, Fonts, RSC Payloads (Stale-While-Revalidate / Cache-First)
+  // 2. Next.js Static Chunks, Images, Styles, Fonts, RSC Payloads (Stale-While-Revalidate with Cache-Ignore-Search fallback)
   if (
     url.pathname.startsWith("/_next/static/") ||
     url.searchParams.has("_rsc") ||
@@ -98,21 +106,52 @@ self.addEventListener("fetch", (event) => {
     request.destination === "font"
   ) {
     event.respondWith(
-      caches.match(request).then((cached) => {
-        const fetchPromise = fetch(request)
-          .then((networkResponse) => {
-            if (networkResponse.status === 200) {
-              const clone = networkResponse.clone();
-              caches.open(RUNTIME_CACHE_NAME).then((cache) => {
-                cache.put(request, clone);
-              });
-            }
-            return networkResponse;
-          })
-          .catch(() => cached);
+      (async () => {
+        // Exact match first
+        const cached = await caches.match(request);
+        if (cached) {
+          // If online, update in background
+          fetch(request)
+            .then((networkResponse) => {
+              if (networkResponse.status === 200) {
+                const clone = networkResponse.clone();
+                caches.open(RUNTIME_CACHE_NAME).then((cache) => {
+                  cache.put(request, clone);
+                });
+              }
+            })
+            .catch(() => {});
+          return cached;
+        }
 
-        return cached || fetchPromise;
-      })
+        // Try matching ignoring search params (e.g. ?_rsc=hash)
+        const cachedIgnoreSearch = await caches.match(request, { ignoreSearch: true });
+        if (cachedIgnoreSearch) {
+          return cachedIgnoreSearch;
+        }
+
+        // Try network fetch
+        try {
+          const networkResponse = await fetch(request);
+          if (networkResponse.status === 200) {
+            const clone = networkResponse.clone();
+            caches.open(RUNTIME_CACHE_NAME).then((cache) => {
+              cache.put(request, clone);
+            });
+          }
+          return networkResponse;
+        } catch {
+          // Fallback for RSC / sub-routes
+          if (url.searchParams.has("_rsc") || request.headers.get("rsc") === "1") {
+            const baseCached = await caches.match(url.pathname, { ignoreSearch: true });
+            if (baseCached) return baseCached;
+            const dashCached = await caches.match("/dashboard");
+            if (dashCached) return dashCached;
+          }
+          // Default empty 200 response to prevent Promise resolving to undefined
+          return new Response("", { status: 200, headers: { "Content-Type": "text/plain" } });
+        }
+      })()
     );
     return;
   }
@@ -123,8 +162,9 @@ self.addEventListener("fetch", (event) => {
     (request.headers.get("accept") && request.headers.get("accept").includes("text/html"))
   ) {
     event.respondWith(
-      fetch(request)
-        .then((networkResponse) => {
+      (async () => {
+        try {
+          const networkResponse = await fetch(request);
           if (networkResponse.status === 200) {
             const clone = networkResponse.clone();
             caches.open(STATIC_CACHE_NAME).then((cache) => {
@@ -132,15 +172,20 @@ self.addEventListener("fetch", (event) => {
             });
           }
           return networkResponse;
-        })
-        .catch(async () => {
+        } catch {
           // Attempt exact cached page match
           const cachedPage = await caches.match(request);
-          if (cachedPage) {
-            return cachedPage;
-          }
+          if (cachedPage) return cachedPage;
 
-          // If navigation is within app, try fallback to cached /dashboard shell
+          // Attempt match ignoring query params
+          const cachedIgnoreSearch = await caches.match(request, { ignoreSearch: true });
+          if (cachedIgnoreSearch) return cachedIgnoreSearch;
+
+          // Match by specific pathname
+          const pathnameMatch = await caches.match(url.pathname);
+          if (pathnameMatch) return pathnameMatch;
+
+          // If navigation is within app, try fallback to cached /settings or /dashboard shell
           if (
             url.pathname.startsWith("/dashboard") ||
             url.pathname.startsWith("/calendar") ||
@@ -148,22 +193,25 @@ self.addEventListener("fetch", (event) => {
             url.pathname.startsWith("/statistics") ||
             url.pathname.startsWith("/settings")
           ) {
+            const settingsCache = await caches.match("/settings");
+            if (settingsCache && url.pathname.startsWith("/settings")) return settingsCache;
             const dashboardCache = await caches.match("/dashboard");
-            if (dashboardCache) {
-              return dashboardCache;
-            }
+            if (dashboardCache) return dashboardCache;
           }
 
           // Fallback to offline.html
           const offlinePage = await caches.match("/offline.html");
-          if (offlinePage) {
-            return offlinePage;
-          }
+          if (offlinePage) return offlinePage;
 
-          return new Response("Mode Offline - Ricil's", {
-            headers: { "Content-Type": "text/html" },
-          });
-        })
+          return new Response(
+            "<!DOCTYPE html><html><head><title>Mode Offline - Ricil's</title></head><body><h1>Mode Offline Aktif</h1><p>Aplikasi siap digunakan dalam mode offline.</p></body></html>",
+            {
+              headers: { "Content-Type": "text/html" },
+              status: 200,
+            }
+          );
+        }
+      })()
     );
     return;
   }
@@ -183,7 +231,7 @@ self.addEventListener("fetch", (event) => {
             }
             return response;
           })
-          .catch(() => cached)
+          .catch(() => cached || new Response("", { status: 200 }))
       );
     })
   );

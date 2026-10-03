@@ -22,44 +22,55 @@ import {
   offlineUpdateProfile,
   offlineUpdateSettings,
   hydrateLocalCache,
+  getCachedSettings,
+  getCachedProfile,
+  SYNC_EVENTS,
+  isOnline,
 } from "@/lib/offline/syncManager";
 
 interface SettingsViewProps {
-  user: {
-    email: string;
+  user?: {
+    email?: string | null;
     displayName?: string | null;
-    timezone?: string;
+    timezone?: string | null;
   };
-  settings: {
-    reminderPeriod: boolean;
-    reminderLogging: boolean;
-    reminderSymptoms: boolean;
+  settings?: {
+    reminderPeriod?: boolean;
+    reminderLogging?: boolean;
+    reminderSymptoms?: boolean;
     reminderPms?: boolean;
-    cycleLengthDefault: number;
-    periodDurationDefault: number;
+    cycleLengthDefault?: number;
+    periodDurationDefault?: number;
   };
 }
 
 export const SettingsView: React.FC<SettingsViewProps> = ({
-  user,
-  settings: initialSettings,
+  user = { email: "" },
+  settings: initialSettings = {
+    reminderPeriod: true,
+    reminderLogging: true,
+    reminderSymptoms: false,
+    reminderPms: true,
+    cycleLengthDefault: 28,
+    periodDurationDefault: 5,
+  },
 }) => {
   const router = useRouter();
 
-  const [displayName, setDisplayName] = useState(user.displayName || "");
-  const [timezone, setTimezone] = useState(user.timezone || "Asia/Jakarta");
+  const [displayName, setDisplayName] = useState(user?.displayName || "");
+  const [timezone, setTimezone] = useState(user?.timezone || "Asia/Jakarta");
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [profileMsg, setProfileMsg] = useState<string | null>(null);
 
-  const [reminderPeriod, setReminderPeriod] = useState(initialSettings.reminderPeriod);
-  const [reminderLogging, setReminderLogging] = useState(initialSettings.reminderLogging);
-  const [reminderSymptoms, setReminderSymptoms] = useState(initialSettings.reminderSymptoms);
-  const [reminderPms, setReminderPms] = useState(initialSettings.reminderPms ?? true);
+  const [reminderPeriod, setReminderPeriod] = useState(initialSettings?.reminderPeriod ?? true);
+  const [reminderLogging, setReminderLogging] = useState(initialSettings?.reminderLogging ?? true);
+  const [reminderSymptoms, setReminderSymptoms] = useState(initialSettings?.reminderSymptoms ?? false);
+  const [reminderPms, setReminderPms] = useState(initialSettings?.reminderPms ?? true);
   const [cycleLengthDefault, setCycleLengthDefault] = useState(
-    initialSettings.cycleLengthDefault || 28
+    initialSettings?.cycleLengthDefault || 28
   );
   const [periodDurationDefault, setPeriodDurationDefault] = useState(
-    initialSettings.periodDurationDefault || 5
+    initialSettings?.periodDurationDefault || 5
   );
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [settingsMsg, setSettingsMsg] = useState<string | null>(null);
@@ -78,13 +89,51 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      hydrateLocalCache({
-        settings: initialSettings,
-        profile: {
-          displayName: user.displayName,
-          timezone: user.timezone,
-        },
-      });
+      // 1. Hydrate cache if server props provided and online
+      if (initialSettings && isOnline()) {
+        hydrateLocalCache({
+          settings: {
+            reminderPeriod: initialSettings.reminderPeriod ?? true,
+            reminderLogging: initialSettings.reminderLogging ?? true,
+            reminderSymptoms: initialSettings.reminderSymptoms ?? false,
+            reminderPms: initialSettings.reminderPms ?? true,
+            cycleLengthDefault: initialSettings.cycleLengthDefault || 28,
+            periodDurationDefault: initialSettings.periodDurationDefault || 5,
+          },
+          profile: {
+            displayName: user?.displayName || null,
+            timezone: user?.timezone || "Asia/Jakarta",
+          },
+        });
+      }
+
+      // 2. Load latest settings and profile from IndexedDB (offline-first)
+      const loadFromCache = async () => {
+        try {
+          const [cachedSettings, cachedProfile] = await Promise.all([
+            getCachedSettings(),
+            getCachedProfile(),
+          ]);
+
+          if (cachedSettings) {
+            if (cachedSettings.reminderPeriod !== undefined) setReminderPeriod(cachedSettings.reminderPeriod);
+            if (cachedSettings.reminderLogging !== undefined) setReminderLogging(cachedSettings.reminderLogging);
+            if (cachedSettings.reminderSymptoms !== undefined) setReminderSymptoms(cachedSettings.reminderSymptoms);
+            if (cachedSettings.reminderPms !== undefined) setReminderPms(cachedSettings.reminderPms ?? true);
+            if (cachedSettings.cycleLengthDefault) setCycleLengthDefault(cachedSettings.cycleLengthDefault);
+            if (cachedSettings.periodDurationDefault) setPeriodDurationDefault(cachedSettings.periodDurationDefault);
+          }
+
+          if (cachedProfile) {
+            if (cachedProfile.displayName !== undefined) setDisplayName(cachedProfile.displayName || "");
+            if (cachedProfile.timezone) setTimezone(cachedProfile.timezone);
+          }
+        } catch (err) {
+          console.warn("Failed to load settings from cache:", err);
+        }
+      };
+
+      loadFromCache();
 
       if ("Notification" in window) {
         setNotifPermission(Notification.permission);
@@ -104,12 +153,21 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       }
 
       const onPromptAvailable = () => setCanPromptPwa(true);
+      const onDataUpdated = () => {
+        loadFromCache();
+      };
+
       window.addEventListener("ricils:pwa-prompt-available", onPromptAvailable);
+      window.addEventListener(SYNC_EVENTS.DATA_UPDATED, onDataUpdated);
+      window.addEventListener(SYNC_EVENTS.SYNC_COMPLETED, onDataUpdated);
+
       return () => {
         window.removeEventListener("ricils:pwa-prompt-available", onPromptAvailable);
+        window.removeEventListener(SYNC_EVENTS.DATA_UPDATED, onDataUpdated);
+        window.removeEventListener(SYNC_EVENTS.SYNC_COMPLETED, onDataUpdated);
       };
     }
-  }, [initialSettings, user.displayName, user.timezone]);
+  }, [initialSettings, user?.displayName, user?.timezone]);
 
   const handleInstallPwa = async () => {
     const prompt = window.__RICILS_PWA_PROMPT__;
@@ -311,7 +369,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             <input
               type="email"
               disabled
-              value={user.email}
+              value={user?.email || "Pengguna Terdaftar"}
               className="w-full px-3.5 py-2.5 rounded-xl bg-[#F4EFEA]/70 border border-[#E8E0D5] text-xs text-[#7A6E75] cursor-not-allowed"
             />
           </div>

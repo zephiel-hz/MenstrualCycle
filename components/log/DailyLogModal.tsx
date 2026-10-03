@@ -184,13 +184,19 @@ export const DailyLogModal: React.FC<DailyLogModalProps> = ({
   };
 
   const handleDelete = async () => {
-    if (!existingLogId && !date) return;
+    if (!date) return;
     if (!confirm("Hapus catatan harian untuk tanggal ini?")) return;
 
     try {
       setIsDeleting(true);
       setErrorMessage(null);
       await offlineDeleteDailyLog(existingLogId, date);
+
+      setExistingLogId(null);
+      setFlow("none");
+      setSelectedMoods([]);
+      setSelectedSymptoms([]);
+      setNotes("");
 
       onLogSaved?.();
       onClose();
@@ -361,7 +367,13 @@ export const DailyLogModal: React.FC<DailyLogModalProps> = ({
 
         {/* Modal Actions */}
         <div className="flex items-center justify-between pt-3 border-t border-[#EFE9E2]">
-          {existingLogId ? (
+          {Boolean(
+            existingLogId ||
+              flow !== "none" ||
+              selectedMoods.length > 0 ||
+              selectedSymptoms.length > 0 ||
+              notes.trim()
+          ) ? (
             <button
               type="button"
               onClick={handleDelete}

@@ -329,12 +329,25 @@ export async function offlineDeleteDailyLog(
   date: string
 ): Promise<{ success: boolean; isOffline: boolean }> {
   const currentLogs = await getCachedLogs();
-  const updatedLogs = currentLogs.filter((l) => l.date !== date && (logId ? l.id !== logId : true));
+  const updatedLogs = currentLogs.filter(
+    (l) => l.date !== date && (logId ? l.id !== logId : true)
+  );
   await setCachedLogs(updatedLogs);
   notifyDataUpdated("log_deleted_local");
 
-  if (!logId || logId.startsWith("temp_log_") || !isOnline()) {
-    if (logId && !logId.startsWith("temp_log_")) {
+  // Purge any pending SAVE_LOG for this date from the sync queue
+  const queue = await getSyncQueue();
+  for (const item of queue) {
+    if (item.type === "SAVE_LOG" && item.payload?.date === date) {
+      await removeSyncQueueItem(item.id);
+    }
+  }
+
+  const hasRealServerId =
+    logId && !logId.startsWith("temp_log_") && !logId.startsWith("local_");
+
+  if (!hasRealServerId || !isOnline()) {
+    if (hasRealServerId) {
       await addToSyncQueue({
         type: "DELETE_LOG",
         endpoint: `/api/logs/${logId}`,
@@ -350,7 +363,7 @@ export async function offlineDeleteDailyLog(
       method: "DELETE",
       headers: { "bypass-tunnel-reminder": "true" },
     });
-    if (!res.ok) throw new Error(`Server error: ${res.status}`);
+    if (!res.ok && res.status !== 404) throw new Error(`Server error: ${res.status}`);
     return { success: true, isOffline: false };
   } catch (err) {
     console.warn("Failed to delete log online, queueing:", err);
@@ -500,8 +513,20 @@ export async function offlineDeleteCycle(
   await setCachedCycles(updated);
   notifyDataUpdated("cycle_deleted_local");
 
-  if (cycleId.startsWith("temp_cycle_") || !isOnline()) {
-    if (!cycleId.startsWith("temp_cycle_")) {
+  // Purge any pending ADD_CYCLE or UPDATE_CYCLE for this cycle
+  const isTemp = cycleId.startsWith("temp_cycle_") || cycleId.startsWith("local_");
+  const queue = await getSyncQueue();
+  for (const item of queue) {
+    if (
+      (item.type === "UPDATE_CYCLE" && item.endpoint.includes(cycleId)) ||
+      (item.type === "ADD_CYCLE" && isTemp)
+    ) {
+      await removeSyncQueueItem(item.id);
+    }
+  }
+
+  if (isTemp || !isOnline()) {
+    if (!isTemp) {
       await addToSyncQueue({
         type: "DELETE_CYCLE",
         endpoint: `/api/cycles/${cycleId}`,
@@ -517,7 +542,7 @@ export async function offlineDeleteCycle(
       method: "DELETE",
       headers: { "bypass-tunnel-reminder": "true" },
     });
-    if (!res.ok) throw new Error(`Server error: ${res.status}`);
+    if (!res.ok && res.status !== 404) throw new Error(`Server error: ${res.status}`);
     return { success: true, isOffline: false };
   } catch (err) {
     console.warn("Failed to delete cycle online, queueing:", err);

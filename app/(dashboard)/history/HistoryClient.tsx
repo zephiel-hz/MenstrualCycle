@@ -27,7 +27,7 @@ export const HistoryClient: React.FC<HistoryClientProps> = ({ initialCycles }) =
   const fetchCycles = useCallback(async () => {
     try {
       const cached = await getCachedCycles();
-      if (cached && cached.length > 0) {
+      if (Array.isArray(cached)) {
         setCycles(cached);
       }
 
@@ -37,7 +37,7 @@ export const HistoryClient: React.FC<HistoryClientProps> = ({ initialCycles }) =
         });
         if (res.ok) {
           const data = await res.json();
-          if (data.cycles) {
+          if (Array.isArray(data.cycles)) {
             setCycles(data.cycles);
           }
         }
@@ -49,7 +49,9 @@ export const HistoryClient: React.FC<HistoryClientProps> = ({ initialCycles }) =
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      hydrateLocalCache({ cycles: initialCycles });
+      if (initialCycles && initialCycles.length > 0 && isOnline()) {
+        hydrateLocalCache({ cycles: initialCycles });
+      }
       fetchCycles();
 
       const handleDataUpdated = () => {

@@ -58,11 +58,11 @@ export const CalendarClient: React.FC<CalendarClientProps> = ({
         getCachedSettings(),
       ]);
 
-      if (localCycles && localCycles.length > 0) {
-        setCycles(localCycles);
+      const cycleLengthDefault = localSettings?.cycleLengthDefault || 28;
+      const periodDurationDefault = localSettings?.periodDurationDefault || 5;
 
-        const cycleLengthDefault = localSettings?.cycleLengthDefault || 28;
-        const periodDurationDefault = localSettings?.periodDurationDefault || 5;
+      if (Array.isArray(localCycles)) {
+        setCycles(localCycles);
 
         const cycleDataList: CycleData[] = localCycles.map((c) => ({
           id: c.id,
@@ -80,7 +80,7 @@ export const CalendarClient: React.FC<CalendarClientProps> = ({
         setAveragePeriodDuration(computedStats.averagePeriodDuration);
       }
 
-      if (localLogs && localLogs.length > 0) {
+      if (Array.isArray(localLogs)) {
         setLogs(
           localLogs.map((l) => ({
             id: l.id || `log_${l.date}`,
@@ -99,10 +99,12 @@ export const CalendarClient: React.FC<CalendarClientProps> = ({
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      hydrateLocalCache({
-        cycles: initialCycles,
-        logs: initialLogs,
-      });
+      if (isOnline() && (initialCycles?.length || initialLogs?.length)) {
+        hydrateLocalCache({
+          cycles: initialCycles,
+          logs: initialLogs,
+        });
+      }
 
       recomputeFromLocal();
 

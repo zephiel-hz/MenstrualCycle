@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { Modal } from "@/components/ui/Modal";
-import { AlertCircle } from "lucide-react";
-import { offlineUpdateCycle } from "@/lib/offline/syncManager";
+import { AlertCircle, Trash2 } from "lucide-react";
+import { offlineUpdateCycle, offlineDeleteCycle } from "@/lib/offline/syncManager";
 
 interface CycleItem {
   id: string;
@@ -29,6 +29,7 @@ export const EditCycleModal: React.FC<EditCycleModalProps> = ({
   const [endDate, setEndDate] = useState<string>("");
   const [notes, setNotes] = useState<string>("");
   const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [isDeleting, setIsDeleting] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -65,6 +66,24 @@ export const EditCycleModal: React.FC<EditCycleModalProps> = ({
       setErrorMessage(msg);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!cycle?.id) return;
+    if (!confirm("Hapus catatan siklus menstruasi ini?")) return;
+
+    try {
+      setIsDeleting(true);
+      setErrorMessage(null);
+      await offlineDeleteCycle(cycle.id);
+      onCycleUpdated?.();
+      onClose();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Gagal menghapus siklus.";
+      setErrorMessage(msg);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -122,21 +141,33 @@ export const EditCycleModal: React.FC<EditCycleModalProps> = ({
           </div>
         )}
 
-        <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#F2ECE4]">
+        <div className="flex items-center justify-between pt-3 border-t border-[#F2ECE4]">
           <button
             type="button"
-            onClick={onClose}
-            className="px-4 py-2 text-xs font-semibold text-[#79716B] hover:bg-[#F2ECE4] rounded-xl transition-colors cursor-pointer"
+            onClick={handleDelete}
+            disabled={isSaving || isDeleting}
+            className="px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 rounded-xl transition-colors cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
           >
-            Batal
+            <Trash2 className="w-3.5 h-3.5" />
+            <span>{isDeleting ? "Menghapus..." : "Hapus Siklus"}</span>
           </button>
-          <button
-            type="submit"
-            disabled={isSaving}
-            className="px-5 py-2 text-xs font-semibold text-white bg-[#E78895] hover:bg-[#d66d7d] rounded-xl shadow-sm transition-all cursor-pointer disabled:opacity-50"
-          >
-            {isSaving ? "Menyimpan..." : "Simpan Perubahan"}
-          </button>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-xs font-semibold text-[#79716B] hover:bg-[#F2ECE4] rounded-xl transition-colors cursor-pointer"
+            >
+              Batal
+            </button>
+            <button
+              type="submit"
+              disabled={isSaving || isDeleting}
+              className="px-5 py-2 text-xs font-semibold text-white bg-[#E78895] hover:bg-[#d66d7d] rounded-xl shadow-sm transition-all cursor-pointer disabled:opacity-50"
+            >
+              {isSaving ? "Menyimpan..." : "Simpan Perubahan"}
+            </button>
+          </div>
         </div>
       </form>
     </Modal>

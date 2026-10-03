@@ -87,49 +87,56 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({
       const todayStr = formatISODateOnly(new Date());
 
       // Update today's log
-      const foundTodayLog = localLogs.find((l) => l.date === todayStr);
-      if (foundTodayLog) {
-        setTodayLog({
-          id: foundTodayLog.id || "local_today",
-          date: foundTodayLog.date,
-          flow: foundTodayLog.flow || "none",
-          mood: foundTodayLog.mood || [],
-          symptoms: foundTodayLog.symptoms || [],
-          notes: foundTodayLog.notes || null,
-        });
-      } else if (localLogs.length > 0) {
-        setTodayLog(null);
+      if (Array.isArray(localLogs)) {
+        const foundTodayLog = localLogs.find((l) => l.date === todayStr);
+        if (foundTodayLog) {
+          setTodayLog({
+            id: foundTodayLog.id || "local_today",
+            date: foundTodayLog.date,
+            flow: foundTodayLog.flow || "none",
+            mood: foundTodayLog.mood || [],
+            symptoms: foundTodayLog.symptoms || [],
+            notes: foundTodayLog.notes || null,
+          });
+        } else {
+          setTodayLog(null);
+        }
       }
 
       // Update cycles and stats
-      if (localCycles && localCycles.length > 0) {
-        const sortedCycles = [...localCycles].sort(
-          (a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
-        );
-        const latest = sortedCycles[0];
-        setLatestCycle({
-          id: latest.id,
-          startDate: latest.startDate,
-          endDate: latest.endDate,
-          notes: latest.notes,
-        });
+      const cycleLengthDefault = localSettings?.cycleLengthDefault || 28;
+      const periodDurationDefault = localSettings?.periodDurationDefault || 5;
 
-        const cycleLengthDefault = localSettings?.cycleLengthDefault || 28;
-        const periodDurationDefault = localSettings?.periodDurationDefault || 5;
+      if (Array.isArray(localCycles)) {
+        if (localCycles.length > 0) {
+          const sortedCycles = [...localCycles].sort(
+            (a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
+          );
+          const latest = sortedCycles[0];
+          setLatestCycle({
+            id: latest.id,
+            startDate: latest.startDate,
+            endDate: latest.endDate,
+            notes: latest.notes,
+          });
 
-        const cycleDataList: CycleData[] = sortedCycles.map((c) => ({
-          id: c.id,
-          startDate: c.startDate,
-          endDate: c.endDate,
-          notes: c.notes,
-        }));
+          const cycleDataList: CycleData[] = sortedCycles.map((c) => ({
+            id: c.id,
+            startDate: c.startDate,
+            endDate: c.endDate,
+            notes: c.notes,
+          }));
 
-        const computedStats = calculateCycleStats(
-          cycleDataList,
-          cycleLengthDefault,
-          periodDurationDefault
-        );
-        setStats(computedStats);
+          const computedStats = calculateCycleStats(
+            cycleDataList,
+            cycleLengthDefault,
+            periodDurationDefault
+          );
+          setStats(computedStats);
+        } else {
+          setLatestCycle(null);
+          setStats(calculateCycleStats([], cycleLengthDefault, periodDurationDefault));
+        }
       }
     } catch (err) {
       console.warn("Failed to recompute from local IndexedDB:", err);
@@ -138,19 +145,21 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      // 1. Non-destructively hydrate allCycles and todayLog to IndexedDB
-      const cyclesToHydrate: LocalCycle[] =
-        allCycles && allCycles.length > 0
-          ? allCycles
-          : initialLatestCycle
-          ? [initialLatestCycle]
-          : [];
+      // 1. Non-destructively hydrate allCycles and todayLog to IndexedDB if online
+      if (isOnline()) {
+        const cyclesToHydrate: LocalCycle[] =
+          allCycles && allCycles.length > 0
+            ? allCycles
+            : initialLatestCycle
+            ? [initialLatestCycle]
+            : [];
 
-      hydrateLocalCache({
-        cycles: cyclesToHydrate,
-        logs: initialTodayLog ? [{ ...initialTodayLog, date: initialTodayLog.date || "" }] : [],
-        settings: initialSettings,
-      });
+        hydrateLocalCache({
+          cycles: cyclesToHydrate,
+          logs: initialTodayLog ? [{ ...initialTodayLog, date: initialTodayLog.date || "" }] : [],
+          settings: initialSettings,
+        });
+      }
 
       // 2. Read full state from local IndexedDB
       recomputeFromLocal();
