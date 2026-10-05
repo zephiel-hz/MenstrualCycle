@@ -80,6 +80,8 @@ export const userSettings = pgTable("user_settings", {
   reminderLogging: boolean("reminder_logging").default(true).notNull(),
   reminderSymptoms: boolean("reminder_symptoms").default(false).notNull(),
   reminderPms: boolean("reminder_pms").default(true).notNull(),
+  reminderDaily: boolean("reminder_daily").default(true).notNull(),
+  dailyReminderTime: text("daily_reminder_time").default("12:00").notNull(),
   cycleLengthDefault: integer("cycle_length_default").default(28).notNull(),
   periodDurationDefault: integer("period_duration_default").default(5).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),

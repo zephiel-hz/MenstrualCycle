@@ -48,6 +48,8 @@ export interface LocalSettings {
   reminderLogging: boolean;
   reminderSymptoms: boolean;
   reminderPms?: boolean;
+  reminderDaily?: boolean;
+  dailyReminderTime?: string;
   cycleLengthDefault: number;
   periodDurationDefault: number;
 }

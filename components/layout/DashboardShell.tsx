@@ -8,8 +8,10 @@ import { BottomNav } from "./BottomNav";
 import { DailyLogModal } from "@/components/log/DailyLogModal";
 import { PwaInstaller } from "@/components/pwa/PwaInstaller";
 import { NotificationPermissionPrompt } from "@/components/notifications/NotificationPermissionPrompt";
+import { DailyReminderScheduler } from "@/components/notifications/DailyReminderScheduler";
 import { PwaNavigationHandler } from "@/components/pwa/PwaNavigationHandler";
 import { OfflineSyncBanner } from "@/components/offline/OfflineSyncBanner";
+import { prewarmAppRoutes } from "@/lib/offline/syncManager";
 
 interface DashboardShellProps {
   user: {
@@ -25,6 +27,10 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({ user, children }
 
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
   const [selectedLogDate, setSelectedLogDate] = useState<string | undefined>(undefined);
+
+  React.useEffect(() => {
+    prewarmAppRoutes();
+  }, []);
 
   const openLogModal = (date?: string) => {
     setSelectedLogDate(date);
@@ -63,6 +69,7 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({ user, children }
       <OfflineSyncBanner />
       <PwaInstaller />
       <NotificationPermissionPrompt />
+      <DailyReminderScheduler />
       <PwaNavigationHandler />
     </div>
   );

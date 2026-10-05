@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { registerSchema, loginSchema, deleteAccountSchema } from "@/lib/validation/auth";
 import { createCycleSchema } from "@/lib/validation/cycle";
 import { dailyLogSchema } from "@/lib/validation/log";
+import { userSettingsSchema } from "@/lib/validation/settings";
 
 describe("Zod Validation Schemas", () => {
   it("should validate valid registration inputs", () => {
@@ -73,5 +74,33 @@ describe("Zod Validation Schemas", () => {
       confirmText: "hapus akun saya",
     });
     expect(invalid.success).toBe(false);
+  });
+
+  it("should validate user settings including daily reminder and time format", () => {
+    const valid = userSettingsSchema.safeParse({
+      reminderPeriod: true,
+      reminderLogging: true,
+      reminderSymptoms: false,
+      reminderPms: true,
+      reminderDaily: true,
+      dailyReminderTime: "12:00",
+      cycleLengthDefault: 28,
+      periodDurationDefault: 5,
+    });
+    expect(valid.success).toBe(true);
+
+    // Test default values when omitted
+    const defaults = userSettingsSchema.safeParse({});
+    expect(defaults.success).toBe(true);
+    if (defaults.success) {
+      expect(defaults.data.reminderDaily).toBe(true);
+      expect(defaults.data.dailyReminderTime).toBe("12:00");
+    }
+
+    // Invalid time format
+    const invalidTime = userSettingsSchema.safeParse({
+      dailyReminderTime: "25:99",
+    });
+    expect(invalidTime.success).toBe(false);
   });
 });

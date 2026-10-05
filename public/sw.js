@@ -1,7 +1,7 @@
-const STATIC_CACHE_NAME = "ricils-pwa-static-v5";
-const RUNTIME_CACHE_NAME = "ricils-pwa-runtime-v5";
-const RSC_CACHE_NAME = "ricils-pwa-rsc-v5";
-const API_CACHE_NAME = "ricils-pwa-api-v5";
+const STATIC_CACHE_NAME = "ricils-pwa-static-v6";
+const RUNTIME_CACHE_NAME = "ricils-pwa-runtime-v6";
+const RSC_CACHE_NAME = "ricils-pwa-rsc-v6";
+const API_CACHE_NAME = "ricils-pwa-api-v6";
 
 const PRECACHE_ASSETS = [
   "/",
@@ -240,9 +240,11 @@ self.addEventListener("fetch", (event) => {
             if (st) return st;
           }
 
-          // 5. General Dashboard shell fallback
-          const dashboardCache = await staticCache.match("/dashboard");
-          if (dashboardCache) return dashboardCache;
+          // 5. General Dashboard shell fallback ONLY when accessing root or dashboard
+          if (url.pathname === "/" || url.pathname.startsWith("/dashboard")) {
+            const dashboardCache = await staticCache.match("/dashboard");
+            if (dashboardCache) return dashboardCache;
+          }
 
           // 6. Offline fallback page
           const offlinePage = await staticCache.match("/offline.html");
@@ -285,15 +287,16 @@ self.addEventListener("fetch", (event) => {
 // Notifications click handler
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
+  const targetUrl = event.notification.data?.url || "/dashboard";
   event.waitUntil(
     self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
       for (const client of clientList) {
-        if (client.url.includes("/dashboard") && "focus" in client) {
+        if (client.url.includes(targetUrl) && "focus" in client) {
           return client.focus();
         }
       }
       if (self.clients.openWindow) {
-        return self.clients.openWindow("/dashboard");
+        return self.clients.openWindow(targetUrl);
       }
     })
   );

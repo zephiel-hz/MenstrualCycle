@@ -68,6 +68,7 @@ export const Navbar: React.FC<NavbarProps> = ({ user }) => {
                     </div>
                     <Link
                       href="/settings"
+                      prefetch={true}
                       replace={pathname !== "/dashboard"}
                       onClick={() => setDropdownOpen(false)}
                       className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-[#221B1F] hover:bg-[#FAF6F3] transition-colors"

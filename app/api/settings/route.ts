@@ -26,6 +26,8 @@ export async function GET() {
           reminderLogging: true,
           reminderSymptoms: false,
           reminderPms: true,
+          reminderDaily: true,
+          dailyReminderTime: "12:00",
           cycleLengthDefault: 28,
           periodDurationDefault: 5,
         })
@@ -63,6 +65,8 @@ export async function PUT(req: NextRequest) {
       reminderLogging,
       reminderSymptoms,
       reminderPms,
+      reminderDaily,
+      dailyReminderTime,
       cycleLengthDefault,
       periodDurationDefault,
     } = result.data;
@@ -75,6 +79,8 @@ export async function PUT(req: NextRequest) {
         reminderLogging,
         reminderSymptoms,
         reminderPms,
+        reminderDaily,
+        dailyReminderTime,
         cycleLengthDefault,
         periodDurationDefault,
       })
@@ -85,6 +91,8 @@ export async function PUT(req: NextRequest) {
           reminderLogging,
           reminderSymptoms,
           reminderPms,
+          reminderDaily,
+          dailyReminderTime,
           cycleLengthDefault,
           periodDurationDefault,
           updatedAt: new Date(),

@@ -289,6 +289,35 @@ export async function syncAllDataFromServer(): Promise<void> {
   }
 }
 
+let routesPrewarmed = false;
+export async function prewarmAppRoutes(): Promise<void> {
+  if (routesPrewarmed || typeof window === "undefined" || !isOnline()) return;
+  routesPrewarmed = true;
+
+  const routes = ["/dashboard", "/calendar", "/history", "/statistics", "/settings"];
+  const runner = (cb: () => void) => {
+    if ("requestIdleCallback" in window) {
+      (window as unknown as { requestIdleCallback: (fn: () => void) => void }).requestIdleCallback(cb);
+    } else {
+      setTimeout(cb, 1200);
+    }
+  };
+
+  runner(async () => {
+    for (const route of routes) {
+      try {
+        await fetch(route, { credentials: "include", headers: { "bypass-tunnel-reminder": "true" } });
+        await fetch(`${route}?_rsc=prewarm`, {
+          credentials: "include",
+          headers: { RSC: "1", "bypass-tunnel-reminder": "true" },
+        });
+      } catch {
+        // Silently skip if network fails
+      }
+    }
+  });
+}
+
 /* ==========================================================================
    OFFLINE-FIRST MUTATIONS
    ========================================================================== */

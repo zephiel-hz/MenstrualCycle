@@ -39,6 +39,8 @@ interface SettingsViewProps {
     reminderLogging?: boolean;
     reminderSymptoms?: boolean;
     reminderPms?: boolean;
+    reminderDaily?: boolean;
+    dailyReminderTime?: string;
     cycleLengthDefault?: number;
     periodDurationDefault?: number;
   };
@@ -51,6 +53,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     reminderLogging: true,
     reminderSymptoms: false,
     reminderPms: true,
+    reminderDaily: true,
+    dailyReminderTime: "12:00",
     cycleLengthDefault: 28,
     periodDurationDefault: 5,
   },
@@ -66,6 +70,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const [reminderLogging, setReminderLogging] = useState(initialSettings?.reminderLogging ?? true);
   const [reminderSymptoms, setReminderSymptoms] = useState(initialSettings?.reminderSymptoms ?? false);
   const [reminderPms, setReminderPms] = useState(initialSettings?.reminderPms ?? true);
+  const [reminderDaily, setReminderDaily] = useState(initialSettings?.reminderDaily ?? true);
+  const [dailyReminderTime, setDailyReminderTime] = useState(initialSettings?.dailyReminderTime || "12:00");
   const [cycleLengthDefault, setCycleLengthDefault] = useState(
     initialSettings?.cycleLengthDefault || 28
   );
@@ -74,6 +80,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   );
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [settingsMsg, setSettingsMsg] = useState<string | null>(null);
+  const [testNotifMsg, setTestNotifMsg] = useState<string | null>(null);
 
   const [notifPermission, setNotifPermission] = useState<string>("default");
 
@@ -97,6 +104,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             reminderLogging: initialSettings.reminderLogging ?? true,
             reminderSymptoms: initialSettings.reminderSymptoms ?? false,
             reminderPms: initialSettings.reminderPms ?? true,
+            reminderDaily: initialSettings.reminderDaily ?? true,
+            dailyReminderTime: initialSettings.dailyReminderTime || "12:00",
             cycleLengthDefault: initialSettings.cycleLengthDefault || 28,
             periodDurationDefault: initialSettings.periodDurationDefault || 5,
           },
@@ -120,6 +129,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             if (cachedSettings.reminderLogging !== undefined) setReminderLogging(cachedSettings.reminderLogging);
             if (cachedSettings.reminderSymptoms !== undefined) setReminderSymptoms(cachedSettings.reminderSymptoms);
             if (cachedSettings.reminderPms !== undefined) setReminderPms(cachedSettings.reminderPms ?? true);
+            if (cachedSettings.reminderDaily !== undefined) setReminderDaily(cachedSettings.reminderDaily);
+            if (cachedSettings.dailyReminderTime) setDailyReminderTime(cachedSettings.dailyReminderTime);
             if (cachedSettings.cycleLengthDefault) setCycleLengthDefault(cachedSettings.cycleLengthDefault);
             if (cachedSettings.periodDurationDefault) setPeriodDurationDefault(cachedSettings.periodDurationDefault);
           }
@@ -203,7 +214,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       setSettingsMsg(null);
 
       if (
-        (reminderPeriod || reminderLogging || reminderSymptoms || reminderPms) &&
+        (reminderPeriod || reminderLogging || reminderSymptoms || reminderPms || reminderDaily) &&
         typeof window !== "undefined" &&
         "Notification" in window &&
         Notification.permission === "default"
@@ -217,6 +228,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         reminderLogging,
         reminderSymptoms,
         reminderPms,
+        reminderDaily,
+        dailyReminderTime,
         cycleLengthDefault,
         periodDurationDefault,
       });
@@ -227,6 +240,58 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       setSettingsMsg("Terjadi kesalahan.");
     } finally {
       setIsSavingSettings(false);
+    }
+  };
+
+  const handleTestNotification = async () => {
+    if (typeof window === "undefined" || !("Notification" in window)) {
+      setTestNotifMsg("Browser ini tidak mendukung notifikasi.");
+      return;
+    }
+
+    try {
+      let perm = Notification.permission;
+      if (perm === "default") {
+        try {
+          perm = await Notification.requestPermission();
+        } catch {
+          perm = await new Promise((resolve) => Notification.requestPermission(resolve));
+        }
+        setNotifPermission(perm);
+      }
+
+      if (perm !== "granted") {
+        setTestNotifMsg("Izin notifikasi belum diaktifkan di browsermu.");
+        setTimeout(() => setTestNotifMsg(null), 4000);
+        return;
+      }
+
+      const title = "🌸 Uji Pengingat Harian — Ricil's";
+      const options: NotificationOptions = {
+        body: `Notifikasi pengingat harian aktif untuk jam ${dailyReminderTime} (${timezone.includes("Jakarta") ? "WIB" : timezone.includes("Makassar") ? "WITA" : timezone.includes("Jayapura") ? "WIT" : timezone}).`,
+        icon: "/icons/icon-192.svg",
+        badge: "/icons/icon-192.svg",
+        tag: "ricils-test-reminder",
+        data: { url: "/dashboard" },
+      };
+
+      if ("serviceWorker" in navigator) {
+        const reg = await navigator.serviceWorker.ready;
+        if (reg && reg.showNotification) {
+          await reg.showNotification(title, options);
+          setTestNotifMsg("Notifikasi terkirim!");
+          setTimeout(() => setTestNotifMsg(null), 3000);
+          return;
+        }
+      }
+
+      new Notification(title, options);
+      setTestNotifMsg("Notifikasi terkirim!");
+      setTimeout(() => setTestNotifMsg(null), 3000);
+    } catch (err) {
+      console.warn("Test notification failed:", err);
+      setTestNotifMsg("Gagal mengirim notifikasi uji coba.");
+      setTimeout(() => setTestNotifMsg(null), 4000);
     }
   };
 
@@ -555,6 +620,78 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   Pengingat mencatat gejala fisik & suasana hati
                 </span>
               </label>
+
+              {/* Pengingat Harian (Daily Reminder) */}
+              <div className="pt-3 mt-2 border-t border-[#F0EAE1]/80 space-y-3">
+                <label className="flex items-start gap-3 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked={reminderDaily}
+                    onChange={(e) => setReminderDaily(e.target.checked)}
+                    className="w-4 h-4 rounded text-[#D8647F] focus:ring-[#D8647F] accent-[#D8647F] mt-0.5"
+                  />
+                  <div>
+                    <span className="text-xs font-semibold text-[#221B1F] group-hover:text-[#D8647F] transition-colors block">
+                      Pengingat Harian (Daily Reminder)
+                    </span>
+                    <span className="text-[11px] text-[#7A6E75] block mt-0.5 leading-relaxed">
+                      Kirimkan notifikasi setiap hari untuk mengingatkan mencatat kondisi fisik, emosi, atau perkembangan siklus.
+                    </span>
+                  </div>
+                </label>
+
+                {reminderDaily && (
+                  <div className="pl-7 pt-1 space-y-3">
+                    <div className="bg-[#FAF9F6] p-3.5 rounded-2xl border border-[#E8E0D5] space-y-2">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                        <div>
+                          <label className="block text-xs font-medium text-[#221B1F]">
+                            Waktu Pengingat Harian
+                          </label>
+                          <span className="text-[10px] text-[#7A6E75]">
+                            Disesuaikan dengan zona waktu{" "}
+                            <strong>
+                              {timezone.includes("Jakarta")
+                                ? "WIB (Asia/Jakarta)"
+                                : timezone.includes("Makassar")
+                                ? "WITA (Asia/Makassar)"
+                                : timezone.includes("Jayapura")
+                                ? "WIT (Asia/Jayapura)"
+                                : timezone}
+                            </strong>{" "}
+                            (Default: 12:00 Siang).
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="time"
+                            value={dailyReminderTime}
+                            onChange={(e) => setDailyReminderTime(e.target.value)}
+                            className="px-3 py-1.5 rounded-xl bg-white border border-[#E8E0D5] text-xs font-semibold text-[#221B1F] focus:outline-none focus:ring-2 focus:ring-[#D8647F]/30 focus:border-[#D8647F]"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="pt-2 border-t border-[#EFE8DE] flex flex-wrap items-center justify-between gap-2">
+                        <button
+                          type="button"
+                          onClick={handleTestNotification}
+                          className="px-3 py-1.5 rounded-full bg-white hover:bg-[#FAF0F2] border border-[#E8E0D5] hover:border-[#D8647F]/40 text-[11px] font-medium text-[#D8647F] transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
+                        >
+                          <Bell className="w-3 h-3" />
+                          Uji Notifikasi Sekarang
+                        </button>
+                        {testNotifMsg && (
+                          <span className="text-[11px] font-medium text-[#588B76] animate-in fade-in duration-150">
+                            {testNotifMsg}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 

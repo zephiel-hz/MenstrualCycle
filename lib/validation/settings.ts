@@ -5,6 +5,11 @@ export const userSettingsSchema = z.object({
   reminderLogging: z.boolean().default(true),
   reminderSymptoms: z.boolean().default(false),
   reminderPms: z.boolean().default(true),
+  reminderDaily: z.boolean().default(true),
+  dailyReminderTime: z
+    .string()
+    .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, { message: "Format waktu harus HH:mm (contoh: 12:00)" })
+    .default("12:00"),
   cycleLengthDefault: z
     .number()
     .int()
