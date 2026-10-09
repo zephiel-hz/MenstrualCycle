@@ -290,3 +290,38 @@ export async function clearSyncQueue(): Promise<void> {
   }
 }
 
+export async function clearLocalStore(): Promise<void> {
+  try {
+    const db = await openDB();
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction("local_store", "readwrite");
+      const store = tx.objectStore("local_store");
+      const req = store.clear();
+      req.onsuccess = () => resolve();
+      req.onerror = () => reject(req.error);
+    });
+  } catch {}
+
+  try {
+    if (typeof localStorage !== "undefined") {
+      const keysToRemove: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith("ricils_offline_") || key.startsWith("ricils_"))) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach((k) => localStorage.removeItem(k));
+    }
+  } catch {}
+}
+
+export async function clearFullDatabase(): Promise<void> {
+  await Promise.allSettled([clearSyncQueue(), clearLocalStore()]);
+  try {
+    if (typeof window !== "undefined" && window.indexedDB) {
+      window.indexedDB.deleteDatabase(DB_NAME);
+    }
+  } catch {}
+}
+

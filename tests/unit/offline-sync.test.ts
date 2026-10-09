@@ -40,7 +40,9 @@ beforeEach(async () => {
     clear: () => {
       for (const k of Object.keys(mockStorage)) delete mockStorage[k];
     },
-    length: Object.keys(mockStorage).length,
+    get length() {
+      return Object.keys(mockStorage).length;
+    },
     key: (i: number) => Object.keys(mockStorage)[i] || null,
   };
 });
@@ -216,6 +218,39 @@ describe("Offline DB & Sync Queue", () => {
 
     const insights = generateCycleInsights([], [], stats);
     expect(Array.isArray(insights)).toBe(true);
+  });
+
+  it("should completely clear local database, sync queue, and cached items with clearAllLocalCacheAndStorage", async () => {
+    // 1. Populate some cycles and logs
+    await setCachedCycles([
+      { id: "c1", startDate: "2026-07-01", endDate: "2026-07-05" },
+    ]);
+    await setCachedLogs([
+      { date: "2026-07-01", flow: "medium", mood: ["senang"], symptoms: [] },
+    ]);
+    await addToSyncQueue({
+      type: "ADD_CYCLE",
+      endpoint: "/api/cycles",
+      method: "POST",
+      payload: { startDate: "2026-07-01" },
+    });
+
+    let cycles = await getCachedCycles();
+    let queue = await getSyncQueue();
+    expect(cycles.length).toBe(1);
+    expect(queue.length).toBe(1);
+
+    // 2. Perform full clear
+    const { clearAllLocalCacheAndStorage } = await import("@/lib/offline/syncManager");
+    await clearAllLocalCacheAndStorage();
+
+    cycles = await getCachedCycles();
+    const logs = await getCachedLogs();
+    queue = await getSyncQueue();
+
+    expect(cycles.length).toBe(0);
+    expect(logs.length).toBe(0);
+    expect(queue.length).toBe(0);
   });
 });
 

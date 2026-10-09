@@ -148,10 +148,10 @@ export const StatisticsView: React.FC<StatisticsViewProps> = ({
       );
       const { cycleTrends: cTrends, periodTrends: pTrends } = computeTrends(cycleDataList);
 
-      setStats(computedStats);
-      setInsights(computedInsights);
-      setCycleTrends(cTrends);
-      setPeriodTrends(pTrends);
+      setStats((prev) => (JSON.stringify(prev) === JSON.stringify(computedStats) ? prev : computedStats));
+      setInsights((prev) => (JSON.stringify(prev) === JSON.stringify(computedInsights) ? prev : computedInsights));
+      setCycleTrends((prev) => (JSON.stringify(prev) === JSON.stringify(cTrends) ? prev : cTrends));
+      setPeriodTrends((prev) => (JSON.stringify(prev) === JSON.stringify(pTrends) ? prev : pTrends));
     } catch (err) {
       console.warn("Failed to recompute statistics from local IndexedDB:", err);
     }

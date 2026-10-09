@@ -28,19 +28,10 @@ export const HistoryClient: React.FC<HistoryClientProps> = ({ initialCycles }) =
     try {
       const cached = await getCachedCycles();
       if (Array.isArray(cached)) {
-        setCycles(cached);
-      }
-
-      if (isOnline()) {
-        const res = await fetch("/api/cycles", {
-          headers: { "bypass-tunnel-reminder": "true" },
+        setCycles((prev) => {
+          if (JSON.stringify(prev) === JSON.stringify(cached)) return prev;
+          return cached;
         });
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data.cycles)) {
-            setCycles(data.cycles);
-          }
-        }
       }
     } catch {
       // Keep existing or cached state

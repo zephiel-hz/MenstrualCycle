@@ -62,7 +62,7 @@ export const CalendarClient: React.FC<CalendarClientProps> = ({
       const periodDurationDefault = localSettings?.periodDurationDefault || 5;
 
       if (Array.isArray(localCycles)) {
-        setCycles(localCycles);
+        setCycles((prev) => (JSON.stringify(prev) === JSON.stringify(localCycles) ? prev : localCycles));
 
         const cycleDataList: CycleData[] = localCycles.map((c) => ({
           id: c.id,
@@ -76,21 +76,24 @@ export const CalendarClient: React.FC<CalendarClientProps> = ({
           cycleLengthDefault,
           periodDurationDefault
         );
-        setEstimatedNextPeriodDate(computedStats.estimatedNextPeriodDate);
-        setAveragePeriodDuration(computedStats.averagePeriodDuration);
+        setEstimatedNextPeriodDate((prev) =>
+          prev === computedStats.estimatedNextPeriodDate ? prev : computedStats.estimatedNextPeriodDate
+        );
+        setAveragePeriodDuration((prev) =>
+          prev === computedStats.averagePeriodDuration ? prev : computedStats.averagePeriodDuration
+        );
       }
 
       if (Array.isArray(localLogs)) {
-        setLogs(
-          localLogs.map((l) => ({
-            id: l.id || `log_${l.date}`,
-            date: l.date,
-            flow: l.flow || "none",
-            mood: l.mood || [],
-            symptoms: l.symptoms || [],
-            notes: l.notes || null,
-          }))
-        );
+        const newLogs = localLogs.map((l) => ({
+          id: l.id || `log_${l.date}`,
+          date: l.date,
+          flow: l.flow || "none",
+          mood: l.mood || [],
+          symptoms: l.symptoms || [],
+          notes: l.notes || null,
+        }));
+        setLogs((prev) => (JSON.stringify(prev) === JSON.stringify(newLogs) ? prev : newLogs));
       }
     } catch (err) {
       console.warn("Failed to recompute calendar from local IndexedDB:", err);

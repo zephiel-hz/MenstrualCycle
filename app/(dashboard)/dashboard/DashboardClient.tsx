@@ -90,16 +90,17 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({
       if (Array.isArray(localLogs)) {
         const foundTodayLog = localLogs.find((l) => l.date === todayStr);
         if (foundTodayLog) {
-          setTodayLog({
+          const newTodayLog: DailyLogData = {
             id: foundTodayLog.id || "local_today",
             date: foundTodayLog.date,
             flow: foundTodayLog.flow || "none",
             mood: foundTodayLog.mood || [],
             symptoms: foundTodayLog.symptoms || [],
             notes: foundTodayLog.notes || null,
-          });
+          };
+          setTodayLog((prev) => (JSON.stringify(prev) === JSON.stringify(newTodayLog) ? prev : newTodayLog));
         } else {
-          setTodayLog(null);
+          setTodayLog((prev) => (prev === null ? prev : null));
         }
       }
 
@@ -113,12 +114,13 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({
             (a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
           );
           const latest = sortedCycles[0];
-          setLatestCycle({
+          const newLatest = {
             id: latest.id,
             startDate: latest.startDate,
             endDate: latest.endDate,
             notes: latest.notes,
-          });
+          };
+          setLatestCycle((prev) => (JSON.stringify(prev) === JSON.stringify(newLatest) ? prev : newLatest));
 
           const cycleDataList: CycleData[] = sortedCycles.map((c) => ({
             id: c.id,
@@ -132,10 +134,11 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({
             cycleLengthDefault,
             periodDurationDefault
           );
-          setStats(computedStats);
+          setStats((prev) => (JSON.stringify(prev) === JSON.stringify(computedStats) ? prev : computedStats));
         } else {
-          setLatestCycle(null);
-          setStats(calculateCycleStats([], cycleLengthDefault, periodDurationDefault));
+          setLatestCycle((prev) => (prev === null ? prev : null));
+          const emptyStats = calculateCycleStats([], cycleLengthDefault, periodDurationDefault);
+          setStats((prev) => (JSON.stringify(prev) === JSON.stringify(emptyStats) ? prev : emptyStats));
         }
       }
     } catch (err) {

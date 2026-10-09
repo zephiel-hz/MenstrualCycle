@@ -7,6 +7,9 @@ import {
   getSyncQueue,
   removeSyncQueueItem,
   updateSyncQueueItem,
+  clearSyncQueue,
+  clearLocalStore,
+  clearFullDatabase,
   QueuedMutation,
   LocalCycle,
   LocalLog,
@@ -19,6 +22,9 @@ export {
   addToSyncQueue,
   removeSyncQueueItem,
   updateSyncQueueItem,
+  clearSyncQueue,
+  clearLocalStore,
+  clearFullDatabase,
   getLocalItem,
   setLocalItem,
 };
@@ -54,13 +60,23 @@ export function notifySyncStatus(statusPartial?: Partial<SyncStatus>) {
   );
 }
 
+let notifyDebounceTimer: NodeJS.Timeout | null = null;
+let lastUpdateSource: string | undefined = undefined;
+
 export function notifyDataUpdated(source?: string) {
   if (typeof window === "undefined") return;
-  window.dispatchEvent(
-    new CustomEvent(SYNC_EVENTS.DATA_UPDATED, {
-      detail: { source, timestamp: Date.now() },
-    })
-  );
+  lastUpdateSource = source;
+  if (notifyDebounceTimer) {
+    clearTimeout(notifyDebounceTimer);
+  }
+  notifyDebounceTimer = setTimeout(() => {
+    window.dispatchEvent(
+      new CustomEvent(SYNC_EVENTS.DATA_UPDATED, {
+        detail: { source: lastUpdateSource, timestamp: Date.now() },
+      })
+    );
+    notifyDebounceTimer = null;
+  }, 35);
 }
 
 /* ==========================================================================
@@ -990,4 +1006,104 @@ export function initOfflineSyncEngine(): () => void {
     clearInterval(intervalId);
     isInitialized = false;
   };
+}
+
+/* ==========================================================================
+   COMPLETE CACHE RESET & SERVER RE-SYNC
+   ========================================================================== */
+
+/**
+ * Completely clears all local IndexedDB cache, pending sync queues,
+ * localStorage items, and Service Worker Cache Storage.
+ */
+export async function clearAllLocalCacheAndStorage(): Promise<void> {
+  // 1. Clear IndexedDB
+  await clearFullDatabase();
+
+  // 2. Clear localStorage keys
+  try {
+    if (typeof window !== "undefined") {
+      const keysToRemove: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith("ricils_") || key.startsWith("lunara_"))) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach((k) => localStorage.removeItem(k));
+    }
+  } catch {}
+
+  // 3. Clear Cache Storage (Service Worker caches)
+  try {
+    if (typeof window !== "undefined" && "caches" in window) {
+      const cacheNames = await window.caches.keys();
+      await Promise.all(cacheNames.map((name) => window.caches.delete(name)));
+    }
+  } catch {}
+
+  notifyDataUpdated("cache_cleared");
+}
+
+/**
+ * Resets local cache and forces a clean re-sync from server.
+ */
+export async function resetAndResyncFromServer(): Promise<{
+  success: boolean;
+  cyclesCount: number;
+  logsCount: number;
+}> {
+  await clearAllLocalCacheAndStorage();
+
+  if (!isOnline()) {
+    return { success: true, cyclesCount: 0, logsCount: 0 };
+  }
+
+  try {
+    const [cyclesRes, logsRes, settingsRes, profileRes] = await Promise.allSettled([
+      fetch("/api/cycles", { headers: { "bypass-tunnel-reminder": "true" } }),
+      fetch("/api/logs", { headers: { "bypass-tunnel-reminder": "true" } }),
+      fetch("/api/settings", { headers: { "bypass-tunnel-reminder": "true" } }),
+      fetch("/api/profile", { headers: { "bypass-tunnel-reminder": "true" } }),
+    ]);
+
+    let cyclesCount = 0;
+    let logsCount = 0;
+
+    if (cyclesRes.status === "fulfilled" && cyclesRes.value.ok) {
+      const data = await cyclesRes.value.json();
+      if (Array.isArray(data.cycles)) {
+        await reconcileCyclesWithServer(data.cycles, true);
+        cyclesCount = data.cycles.length;
+      }
+    }
+
+    if (logsRes.status === "fulfilled" && logsRes.value.ok) {
+      const data = await logsRes.value.json();
+      if (Array.isArray(data.logs)) {
+        await reconcileLogsWithServer(data.logs, true);
+        logsCount = data.logs.length;
+      }
+    }
+
+    if (settingsRes.status === "fulfilled" && settingsRes.value.ok) {
+      const data = await settingsRes.value.json();
+      if (data.settings) {
+        await setCachedSettings(data.settings);
+      }
+    }
+
+    if (profileRes.status === "fulfilled" && profileRes.value.ok) {
+      const data = await profileRes.value.json();
+      if (data.profile) {
+        await setCachedProfile(data.profile);
+      }
+    }
+
+    notifyDataUpdated("resync_completed");
+    return { success: true, cyclesCount, logsCount };
+  } catch (err) {
+    console.warn("Failed to resync from server after cache reset:", err);
+    return { success: false, cyclesCount: 0, logsCount: 0 };
+  }
 }

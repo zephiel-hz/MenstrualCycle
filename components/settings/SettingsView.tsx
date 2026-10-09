@@ -16,6 +16,9 @@ import {
   ShieldCheck,
   Bell,
   Check,
+  Database,
+  RotateCcw,
+  CheckCircle2,
 } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import {
@@ -24,6 +27,8 @@ import {
   hydrateLocalCache,
   getCachedSettings,
   getCachedProfile,
+  clearAllLocalCacheAndStorage,
+  resetAndResyncFromServer,
   SYNC_EVENTS,
   isOnline,
 } from "@/lib/offline/syncManager";
@@ -93,6 +98,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  const [isClearingCache, setIsClearingCache] = useState(false);
+  const [cacheActionMsg, setCacheActionMsg] = useState<{ text: string; type: "success" | "error" } | null>(null);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -292,6 +300,53 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       console.warn("Test notification failed:", err);
       setTestNotifMsg("Gagal mengirim notifikasi uji coba.");
       setTimeout(() => setTestNotifMsg(null), 4000);
+    }
+  };
+
+  const handleResetAndResync = async () => {
+    try {
+      setIsClearingCache(true);
+      setCacheActionMsg(null);
+      const res = await resetAndResyncFromServer();
+      if (res.success) {
+        setCacheActionMsg({
+          text: `Cache lokal berhasil dibersihkan! ${res.cyclesCount} siklus dan ${res.logsCount} catatan disinkronkan ulang dari database server.`,
+          type: "success",
+        });
+        setTimeout(() => setCacheActionMsg(null), 6000);
+      } else {
+        setCacheActionMsg({
+          text: "Cache dibersihkan, tetapi gagal terhubung ke server untuk sinkronisasi ulang.",
+          type: "error",
+        });
+      }
+    } catch {
+      setCacheActionMsg({ text: "Gagal menyetel ulang database lokal.", type: "error" });
+    } finally {
+      setIsClearingCache(false);
+    }
+  };
+
+  const handleClearAllOfflineCache = async () => {
+    if (!confirm("Bersihkan seluruh cache lokal dan database offline di browser ini? Data di server tetap aman.")) {
+      return;
+    }
+    try {
+      setIsClearingCache(true);
+      setCacheActionMsg(null);
+      await clearAllLocalCacheAndStorage();
+      setCacheActionMsg({
+        text: "Seluruh cache lokal, IndexedDB, dan penyimpanan offline berhasil dibersihkan. Memuat ulang halaman...",
+        type: "success",
+      });
+      setTimeout(() => {
+        setCacheActionMsg(null);
+        window.location.reload();
+      }, 1200);
+    } catch {
+      setCacheActionMsg({ text: "Gagal membersihkan cache offline.", type: "error" });
+    } finally {
+      setIsClearingCache(false);
     }
   };
 
@@ -712,6 +767,72 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             </button>
           </div>
         </form>
+      </div>
+
+      {/* Database & Cache Offline */}
+      <div className="surface-card p-5 sm:p-6">
+        <div className="flex items-center gap-2 mb-2 pb-3 border-b border-[#F0EAE1]">
+          <div className="w-6 h-6 rounded-full bg-[#FAF0F2] text-[#D8647F] flex items-center justify-center">
+            <Database className="w-3.5 h-3.5" />
+          </div>
+          <h3 className="text-xs font-semibold text-[#221B1F]">Penyimpanan & Database Lokal (Offline Cache)</h3>
+        </div>
+        <p className="text-xs text-[#7A6E75] mb-4 leading-relaxed">
+          Ricil&apos;s menyimpan data siklus dan catatan harian di database lokal (IndexedDB) agar aplikasi tetap responsif dan dapat diakses saat offline. Jika Anda merasa data tidak sinkron, tersangkut, atau tampilan berkedip karena sisa cache lama, gunakan opsi di bawah ini:
+        </p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+          <div className="p-3 rounded-xl bg-[#FAF9F6] border border-[#E8E0D5] flex items-center justify-between">
+            <span className="text-xs text-[#221B1F] font-medium">Database Lokal (IndexedDB)</span>
+            <span className="text-[10px] font-semibold text-[#588B76] bg-[#EBF4F0] px-2 py-0.5 rounded-full">
+              Aktif & Siap Offline
+            </span>
+          </div>
+          <div className="p-3 rounded-xl bg-[#FAF9F6] border border-[#E8E0D5] flex items-center justify-between">
+            <span className="text-xs text-[#221B1F] font-medium">PWA Service Worker</span>
+            <span className="text-[10px] font-semibold text-[#588B76] bg-[#EBF4F0] px-2 py-0.5 rounded-full">
+              Cache v6 Aktif
+            </span>
+          </div>
+        </div>
+
+        {cacheActionMsg && (
+          <div
+            className={`mb-4 p-3 rounded-xl text-xs flex items-center gap-2 ${
+              cacheActionMsg.type === "success"
+                ? "bg-[#EBF4F0] border border-[#588B76]/20 text-[#588B76]"
+                : "bg-red-50 border border-red-200 text-red-600"
+            }`}
+          >
+            {cacheActionMsg.type === "success" ? (
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
+            ) : (
+              <AlertCircle className="w-4 h-4 shrink-0" />
+            )}
+            <span>{cacheActionMsg.text}</span>
+          </div>
+        )}
+
+        <div className="flex flex-wrap gap-2.5">
+          <button
+            type="button"
+            onClick={handleResetAndResync}
+            disabled={isClearingCache}
+            className="px-4 py-2.5 rounded-full bg-[#D8647F] hover:bg-[#C5536D] text-xs font-medium text-white flex items-center gap-2 transition-all cursor-pointer shadow-xs active:scale-95 disabled:opacity-50"
+          >
+            <RotateCcw className={`w-3.5 h-3.5 ${isClearingCache ? "animate-spin" : ""}`} />
+            <span>{isClearingCache ? "Menyinkronkan Ulang..." : "Hapus Cache & Sinkronkan Ulang dari Server"}</span>
+          </button>
+          <button
+            type="button"
+            onClick={handleClearAllOfflineCache}
+            disabled={isClearingCache}
+            className="px-4 py-2.5 rounded-full bg-white border border-[#E8E0D5] hover:border-red-300 hover:text-red-600 text-xs font-medium text-[#7A6E75] flex items-center gap-2 transition-all cursor-pointer shadow-2xs active:scale-95 disabled:opacity-50"
+          >
+            <Trash2 className="w-3.5 h-3.5 text-red-500" />
+            <span>Bersihkan Seluruh Penyimpanan Offline</span>
+          </button>
+        </div>
       </div>
 
       {/* Ekspor Data */}
