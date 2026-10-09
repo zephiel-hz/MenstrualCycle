@@ -41,6 +41,7 @@ export default async function DashboardPage() {
       stats={stats}
       todayLog={todayLog || null}
       reminderPms={settings?.reminderPms ?? true}
+      allCycles={userCycles}
       latestCycle={
         latestCycle
           ? {

@@ -148,11 +148,16 @@ export function calculateCycleStats(
 
   const estimatedOvulationDay = avgCycleLength - 14;
 
-  if (latestCycle && !latestCycle.endDate && currentCycleDay <= avgPeriodDuration + 2) {
-    currentPhase = "menstrual";
-    currentPhaseTitle = "Fase Menstruasi";
-    currentPhaseTips = "Tubuh sedang melepaskan lapisan rahim. Luangkan waktu untuk istirahat hangat, cukupi zat besi, dan hidrasi yang baik.";
-  } else if (currentCycleDay <= avgPeriodDuration) {
+  const isPeriodExplicitlyEnded =
+    Boolean(latestCycle?.endDate) &&
+    differenceInDays(referenceDate, parseLocalDate(latestCycle.endDate!)) > 0;
+
+  if (
+    !isPeriodExplicitlyEnded &&
+    ((latestCycle && !latestCycle.endDate && currentCycleDay <= avgPeriodDuration + 2) ||
+      (!latestCycle?.endDate && currentCycleDay <= avgPeriodDuration) ||
+      (latestCycle?.endDate && differenceInDays(referenceDate, parseLocalDate(latestCycle.endDate)) <= 0))
+  ) {
     currentPhase = "menstrual";
     currentPhaseTitle = "Fase Menstruasi";
     currentPhaseTips = "Tubuh sedang melepaskan lapisan rahim. Luangkan waktu untuk istirahat hangat, cukupi zat besi, dan hidrasi yang baik.";

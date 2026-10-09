@@ -111,7 +111,8 @@ export async function setCachedProfile(profile: LocalProfile): Promise<void> {
    ========================================================================== */
 
 export async function reconcileCyclesWithServer(
-  serverCycles: LocalCycle[] = []
+  serverCycles: LocalCycle[] = [],
+  isFullSync: boolean = true
 ): Promise<boolean> {
   const existing = await getCachedCycles();
   const queue = await getSyncQueue();
@@ -124,18 +125,33 @@ export async function reconcileCyclesWithServer(
 
   const resultMap = new Map<string, LocalCycle>();
 
-  // 1. Authoritative server cycles (excluding those marked for pending deletion)
-  for (const sc of serverCycles) {
-    if (!pendingDeleteIds.has(sc.id)) {
-      resultMap.set(sc.id, { ...sc, isLocalOnly: false });
-    }
-  }
-
-  // 2. Preserve local-only cycles created offline that have not synced yet
-  for (const ec of existing) {
-    if (ec.isLocalOnly || ec.id.startsWith("temp_cycle_")) {
+  if (!isFullSync) {
+    // Non-destructive partial sync: keep all existing cached cycles first
+    for (const ec of existing) {
       if (!pendingDeleteIds.has(ec.id)) {
         resultMap.set(ec.id, ec);
+      }
+    }
+    // Then upsert / overwrite with server-provided cycles
+    for (const sc of serverCycles) {
+      if (!pendingDeleteIds.has(sc.id)) {
+        resultMap.set(sc.id, { ...sc, isLocalOnly: false });
+      }
+    }
+  } else {
+    // Full authoritative sync from server:
+    // 1. Authoritative server cycles
+    for (const sc of serverCycles) {
+      if (!pendingDeleteIds.has(sc.id)) {
+        resultMap.set(sc.id, { ...sc, isLocalOnly: false });
+      }
+    }
+    // 2. Preserve local-only cycles created offline that have not synced yet
+    for (const ec of existing) {
+      if (ec.isLocalOnly || ec.id.startsWith("temp_cycle_") || ec.id.startsWith("local_")) {
+        if (!pendingDeleteIds.has(ec.id)) {
+          resultMap.set(ec.id, ec);
+        }
       }
     }
   }
@@ -152,7 +168,8 @@ export async function reconcileCyclesWithServer(
 }
 
 export async function reconcileLogsWithServer(
-  serverLogs: LocalLog[] = []
+  serverLogs: LocalLog[] = [],
+  isFullSync: boolean = true
 ): Promise<boolean> {
   const existing = await getCachedLogs();
   const queue = await getSyncQueue();
@@ -168,22 +185,38 @@ export async function reconcileLogsWithServer(
 
   const resultMap = new Map<string, LocalLog>();
 
-  // 1. Authoritative server logs (excluding those marked for pending deletion)
-  for (const sl of serverLogs) {
-    if (!pendingDeleteIds.has(sl.id || "")) {
-      resultMap.set(sl.date, { ...sl, isLocalOnly: false });
-    }
-  }
-
-  // 2. Preserve local-only logs created offline
-  for (const el of existing) {
-    if (
-      el.isLocalOnly ||
-      el.id?.startsWith("temp_log_") ||
-      pendingSaveDates.has(el.date)
-    ) {
+  if (!isFullSync) {
+    // Non-destructive partial sync: keep all existing cached logs first
+    for (const el of existing) {
       if (!pendingDeleteIds.has(el.id || "")) {
         resultMap.set(el.date, el);
+      }
+    }
+    // Then upsert / overwrite with server logs (unless date has a pending save queued)
+    for (const sl of serverLogs) {
+      if (!pendingDeleteIds.has(sl.id || "") && !pendingSaveDates.has(sl.date)) {
+        resultMap.set(sl.date, { ...sl, isLocalOnly: false });
+      }
+    }
+  } else {
+    // Full authoritative sync from server:
+    // 1. Authoritative server logs (excluding those marked for pending deletion or pending local saves)
+    for (const sl of serverLogs) {
+      if (!pendingDeleteIds.has(sl.id || "") && !pendingSaveDates.has(sl.date)) {
+        resultMap.set(sl.date, { ...sl, isLocalOnly: false });
+      }
+    }
+    // 2. Preserve local-only logs created offline
+    for (const el of existing) {
+      if (
+        el.isLocalOnly ||
+        el.id?.startsWith("temp_log_") ||
+        el.id?.startsWith("local_") ||
+        pendingSaveDates.has(el.date)
+      ) {
+        if (!pendingDeleteIds.has(el.id || "")) {
+          resultMap.set(el.date, el);
+        }
       }
     }
   }
@@ -205,12 +238,12 @@ export async function hydrateLocalCache(data: {
   settings?: LocalSettings;
   profile?: LocalProfile;
 }): Promise<void> {
-  if (data.cycles !== undefined) {
-    await reconcileCyclesWithServer(data.cycles);
+  if (data.cycles !== undefined && data.cycles.length > 0) {
+    await reconcileCyclesWithServer(data.cycles, false);
   }
 
-  if (data.logs !== undefined) {
-    await reconcileLogsWithServer(data.logs);
+  if (data.logs !== undefined && data.logs.length > 0) {
+    await reconcileLogsWithServer(data.logs, false);
   }
 
   if (data.settings) {
@@ -244,7 +277,7 @@ export async function syncAllDataFromServer(): Promise<void> {
     if (cyclesRes.status === "fulfilled" && cyclesRes.value.ok) {
       const cyclesData = await cyclesRes.value.json();
       if (Array.isArray(cyclesData.cycles)) {
-        const changed = await reconcileCyclesWithServer(cyclesData.cycles);
+        const changed = await reconcileCyclesWithServer(cyclesData.cycles, true);
         if (changed) dataChanged = true;
       }
     }
@@ -252,7 +285,7 @@ export async function syncAllDataFromServer(): Promise<void> {
     if (logsRes.status === "fulfilled" && logsRes.value.ok) {
       const logsData = await logsRes.value.json();
       if (Array.isArray(logsData.logs)) {
-        const changed = await reconcileLogsWithServer(logsData.logs);
+        const changed = await reconcileLogsWithServer(logsData.logs, true);
         if (changed) dataChanged = true;
       }
     }
@@ -500,6 +533,7 @@ export async function offlineAddCycle(cycleData: {
       endpoint: "/api/cycles",
       method: "POST",
       payload: {
+        tempId,
         startDate: cycleData.startDate,
         endDate: cycleData.endDate || null,
         notes: cycleData.notes || null,
@@ -540,6 +574,7 @@ export async function offlineAddCycle(cycleData: {
       endpoint: "/api/cycles",
       method: "POST",
       payload: {
+        tempId,
         startDate: cycleData.startDate,
         endDate: cycleData.endDate || null,
         notes: cycleData.notes || null,
@@ -559,15 +594,44 @@ export async function offlineUpdateCycle(
   }
 ): Promise<{ success: boolean; isOffline: boolean }> {
   const currentCycles = await getCachedCycles();
+  const isTemp = cycleId.startsWith("temp_cycle_") || cycleId.startsWith("local_");
   const updated = currentCycles.map((c) =>
     c.id === cycleId
-      ? { ...c, ...cycleData, isLocalOnly: !isOnline() }
+      ? { ...c, ...cycleData, isLocalOnly: !isOnline() || isTemp }
       : c
   );
   await setCachedCycles(updated);
   notifyDataUpdated("cycle_updated_local");
 
-  if (cycleId.startsWith("temp_cycle_") || !isOnline()) {
+  if (isTemp) {
+    // If updating a pending temp cycle, update the pending ADD_CYCLE mutation payload if present
+    const queue = await getSyncQueue();
+    let updatedInQueue = false;
+    for (const item of queue) {
+      if (item.type === "ADD_CYCLE" && item.payload?.tempId === cycleId) {
+        const newPayload = {
+          ...item.payload,
+          startDate: cycleData.startDate,
+          endDate: cycleData.endDate || null,
+          notes: cycleData.notes || null,
+        };
+        await updateSyncQueueItem(item.id, { payload: newPayload });
+        updatedInQueue = true;
+      }
+    }
+    if (!updatedInQueue && !isOnline()) {
+      await addToSyncQueue({
+        type: "UPDATE_CYCLE",
+        endpoint: `/api/cycles/${cycleId}`,
+        method: "PUT",
+        payload: cycleData,
+      });
+    }
+    notifySyncStatus();
+    return { success: true, isOffline: true };
+  }
+
+  if (!isOnline()) {
     await addToSyncQueue({
       type: "UPDATE_CYCLE",
       endpoint: `/api/cycles/${cycleId}`,
@@ -613,7 +677,7 @@ export async function offlineDeleteCycle(
   for (const item of queue) {
     if (
       (item.type === "UPDATE_CYCLE" && item.endpoint.includes(cycleId)) ||
-      (item.type === "ADD_CYCLE" && isTemp)
+      (item.type === "ADD_CYCLE" && (isTemp || item.payload?.tempId === cycleId))
     ) {
       await removeSyncQueueItem(item.id);
     }
@@ -771,16 +835,48 @@ export async function processSyncQueue(): Promise<{
           continue;
         }
 
+        // Clean payload if needed (remove tempId before sending to server)
+        let bodyPayload = item.payload;
+        if (item.type === "ADD_CYCLE" && bodyPayload && "tempId" in bodyPayload) {
+          const { tempId, ...rest } = bodyPayload;
+          bodyPayload = rest;
+        }
+
         const res = await fetch(endpoint, {
           method: item.method,
           headers: {
             "Content-Type": "application/json",
             "bypass-tunnel-reminder": "true",
           },
-          body: item.payload ? JSON.stringify(item.payload) : undefined,
+          body: bodyPayload ? JSON.stringify(bodyPayload) : undefined,
         });
 
         if (res.ok || res.status === 404) {
+          if (res.ok && item.type === "ADD_CYCLE") {
+            try {
+              const data = await res.json();
+              if (data?.cycle?.id && item.payload?.tempId) {
+                const tempId = item.payload.tempId;
+                const newId = data.cycle.id;
+                const currentCycles = await getCachedCycles();
+                const updated = currentCycles.map((c) =>
+                  c.id === tempId ? { ...data.cycle, isLocalOnly: false } : c
+                );
+                await setCachedCycles(updated);
+
+                const currentQueue = await getSyncQueue();
+                for (const qItem of currentQueue) {
+                  if (qItem.endpoint.includes(tempId)) {
+                    await updateSyncQueueItem(qItem.id, {
+                      endpoint: qItem.endpoint.replace(tempId, newId),
+                    });
+                  }
+                }
+              }
+            } catch {
+              // ignore parse errors
+            }
+          }
           // If 404 (e.g. already deleted on server), consider resolved
           await removeSyncQueueItem(item.id);
           syncedCount++;
