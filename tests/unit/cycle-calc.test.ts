@@ -70,4 +70,18 @@ describe("Cycle & PMS Calculations", () => {
     expect(pmsInsight).toBeDefined();
     expect(pmsInsight?.title).toContain("Pola Gejala PMS: Payudara sensitif");
   });
+
+  it("should immediately transition to follicular phase when period is marked ended today", () => {
+    const cycles: CycleData[] = [
+      { id: "1", startDate: "2026-10-01", endDate: "2026-10-04" },
+    ];
+    // Today is Oct 4 (Day 4 of cycle, same day period was marked ended)
+    const refDate = new Date(2026, 9, 4);
+    const stats = calculateCycleStats(cycles, 28, 5, refDate);
+
+    expect(stats.currentCycleDay).toBe(4);
+    expect(stats.currentPhase).toBe("follicular");
+    expect(stats.currentPhaseTitle).toBe("Fase Folikuler");
+    expect(stats.currentPhaseTips).toContain("Haid telah selesai");
+  });
 });

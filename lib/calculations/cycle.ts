@@ -148,31 +148,49 @@ export function calculateCycleStats(
 
   const estimatedOvulationDay = avgCycleLength - 14;
 
+  // A cycle's period is explicitly ended if endDate is defined and referenceDate is on or after that endDate
   const isPeriodExplicitlyEnded =
     Boolean(latestCycle?.endDate) &&
-    differenceInDays(referenceDate, parseLocalDate(latestCycle.endDate!)) > 0;
+    differenceInDays(referenceDate, parseLocalDate(latestCycle.endDate!)) >= 0;
 
   if (
     !isPeriodExplicitlyEnded &&
     ((latestCycle && !latestCycle.endDate && currentCycleDay <= avgPeriodDuration + 2) ||
       (!latestCycle?.endDate && currentCycleDay <= avgPeriodDuration) ||
-      (latestCycle?.endDate && differenceInDays(referenceDate, parseLocalDate(latestCycle.endDate)) <= 0))
+      (latestCycle?.endDate && differenceInDays(referenceDate, parseLocalDate(latestCycle.endDate)) < 0))
   ) {
     currentPhase = "menstrual";
     currentPhaseTitle = "Fase Menstruasi";
-    currentPhaseTips = "Tubuh sedang melepaskan lapisan rahim. Luangkan waktu untuk istirahat hangat, cukupi zat besi, dan hidrasi yang baik.";
-  } else if (currentCycleDay >= estimatedOvulationDay - 1 && currentCycleDay <= estimatedOvulationDay + 1) {
+    currentPhaseTips =
+      "Tubuh sedang melepaskan lapisan rahim. Luangkan waktu untuk istirahat hangat, cukupi zat besi, dan hidrasi yang baik.";
+  } else if (
+    currentCycleDay >= estimatedOvulationDay - 1 &&
+    currentCycleDay <= estimatedOvulationDay + 1
+  ) {
     currentPhase = "ovulation";
     currentPhaseTitle = "Fase Ovulasi (Masa Subur)";
-    currentPhaseTips = "Puncak pelepasan sel telur dan energi sosial. Peluang pembuahan paling optimal dalam siklus ini.";
+    currentPhaseTips =
+      "Puncak pelepasan sel telur dan energi sosial. Peluang pembuahan paling optimal dalam siklus ini.";
   } else if (isPmsWindowActive) {
     currentPhase = "luteal_pms";
     currentPhaseTitle = "Fase PMS (Pra-Menstruasi)";
-    currentPhaseTips = "Hormon estrogen & progesteron mulai menurun. Konsumsi makanan kaya magnesium (pisang/dark chocolate) dan kurangi kafein untuk meredakan kembung & mood swing.";
+    currentPhaseTips =
+      "Hormon estrogen & progesteron mulai menurun. Konsumsi makanan kaya magnesium (pisang/dark chocolate) dan kurangi kafein untuk meredakan kembung & mood swing.";
   } else if (currentCycleDay > estimatedOvulationDay + 1) {
     currentPhase = "luteal";
     currentPhaseTitle = "Fase Luteal";
-    currentPhaseTips = "Progesteron dominan. Tubuh membutuhkan waktu relaksasi, nutrisi seimbang, dan tidur berkualitas.";
+    currentPhaseTips =
+      "Progesteron dominan. Tubuh membutuhkan waktu relaksasi, nutrisi seimbang, dan tidur berkualitas.";
+  } else {
+    currentPhase = "follicular";
+    currentPhaseTitle = "Fase Folikuler";
+    if (isPeriodExplicitlyEnded && currentCycleDay <= (periodDurations[0] || avgPeriodDuration) + 3) {
+      currentPhaseTips =
+        "Haid telah selesai. Hormon estrogen mulai meningkat, energi tubuh kembali pulih dan suasana hati lebih segar. Waktu yang tepat untuk kembali aktif dan produktif!";
+    } else {
+      currentPhaseTips =
+        "Estrogen meningkat. Energi dan fokus sedang tinggi, waktu terbaik untuk produktivitas dan olahraga dinamis.";
+    }
   }
 
   const isEstimateBasedOnDefaults = cycleLengths.length === 0;
